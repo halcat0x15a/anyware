@@ -1,6 +1,6 @@
 (ns felis.serialization)
 
 (defprotocol Serializable
-  (serialize [this]))
+  (serialize [serializable]))
 
 (defmulti deserialize (fn [serializable string] serializable))

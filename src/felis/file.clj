@@ -1,6 +1,6 @@
 (ns felis.file
-  (:require [felis.buffer :as buffer]
-            [felis.root :as root]
+  (:require [felis.root :as root]
+            [felis.buffer :as buffer]
             [felis.syntax :as syntax]
             [felis.syntax.clojure :as clojure]))
 
@@ -19,3 +19,8 @@
                           :name path
                           :syntax (syntax path)))
                 editor))
+
+(defn save [editor]
+  (-> editor
+      (get-in buffer/path)
+      buffer/serialize))

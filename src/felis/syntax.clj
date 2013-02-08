@@ -6,7 +6,9 @@
 (defrecord Input [source destination cursor])
 
 (defn highlight [parser source]
-  (-> source (Input. "" 0) parser :destination))
+  (let [{:keys [source destination]}
+        (-> source (Input. "" 0) parser)]
+    (str destination source)))
 
 (defn extract [x]
   (cond (coll? x) (first x)

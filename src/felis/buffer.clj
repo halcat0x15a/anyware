@@ -29,12 +29,12 @@
     buffer))
 
 (defn render [{:keys [lefts focus rights syntax]}]
-  (letfn [(outside [text]
-            (->> text text/serialize (syntax/highlight syntax)))]
+  (letfn [(render [text]
+            (text/render (partial syntax/highlight syntax) text))]
     (node/tag :pre {:class "buffer"}
-              (->> (concat (map outside lefts)
-                           (->> focus text/focus (syntax/highlight syntax) list)
-                           (map outside rights))
+              (->> (concat (map render lefts)
+                           (-> focus (assoc :cursor :focus) render list)
+                           (map render rights))
                    (string/make-string "<br>")))))
 
 (defn serialize [{:keys [lefts focus rights]}]

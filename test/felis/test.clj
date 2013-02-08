@@ -16,7 +16,9 @@
   (apply core/list (gen/list f)))
 
 (defn text []
-  (text/->Text (gen/string) (gen/string)))
+  (assoc text/default
+    :lefts (gen/string)
+    :rights (gen/string)))
 
 (defn minibuffer []
   (assoc minibuffer/default
