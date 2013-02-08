@@ -1,15 +1,18 @@
 (ns felis.style)
 
 (def default
-  {:.editor {:color :black
+  {:body {:margin :0px}
+   :.editor {:color :black
              :background-color :white
              :font-size :16px
              :font-family :monospace}
-   :.focus {:text-decoration :blink
-            :color :white
-            :background-color :black}
+   :.cursor {:position :absolute
+             :left :0px}
+   :.hidden {:visibility :hidden}
    :.pointer {:color :white
               :background-color :gray}
+   :.focus {:color :white
+            :background-color :black}
    :.minibuffer {:position :absolute
                  :bottom :0px}
    :.name {:color :blue}

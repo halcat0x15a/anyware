@@ -21,7 +21,7 @@
        (if-let [result (re-find regex source)]
          (let [length (-> result extract count)]
            (Input. (subs source length)
-                   (str destination (transform result))
+                   (->> result transform (str destination))
                    (+ cursor length)))
          input))))
 

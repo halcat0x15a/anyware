@@ -29,9 +29,8 @@
     buffer))
 
 (defn render [{:keys [lefts focus rights syntax]}]
-  (letfn [(render [text]
-            (text/render (partial syntax/highlight syntax) text))]
-    (node/tag :pre {:class "buffer"}
+  (let [render (partial text/render syntax)]
+    (node/tag :pre {:class :buffer}
               (->> (concat (map render lefts)
                            (-> focus (assoc :cursor :focus) render list)
                            (map render rights))

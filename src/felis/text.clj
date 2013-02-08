@@ -6,7 +6,8 @@
             [felis.edit :as edit]
             [felis.node :as node]
             [felis.serialization :as serialization]
-            [felis.default :as default]))
+            [felis.default :as default]
+            [felis.syntax :as syntax]))
 
 (def tag #"^<.+?>")
 
@@ -38,22 +39,17 @@
 (defn delete [text field]
   (update-in text field pop))
 
-(defn render
-  ([text] (render identity text))
-  ([transform {:keys [lefts rights cursor]}]
-     (loop [index (-> lefts string/escape count)
-            left ""
-            right (-> (str lefts rights) string/escape transform)]
-       (if-let [tag (re-find tag right)]
-         (recur index (str left tag) (subs right (count tag)))
-         (if (or (empty? right) (zero? index))
-           (str left
-                (node/tag :span {:class cursor} (get right 0 " "))
-                (string/rest right))
-           (recur (dec index) (str left (first right)) (subs right 1)))))))
-
 (defn serialize [{:keys [lefts rights]}]
   (str lefts rights))
+
+(defn render
+  ([text] (serialize text))
+  ([syntax {:keys [lefts rights cursor] :as text}]
+     (node/tag :span {:class :text}
+               (->> text serialize (syntax/highlight syntax))
+               (node/tag :span {:class :cursor}
+                         (node/tag :span {:class :hidden} lefts)
+                         (node/tag :span {:class cursor} (get rights 0 " "))))))
 
 (defrecord Text [lefts rights cursor]
   edit/Edit
