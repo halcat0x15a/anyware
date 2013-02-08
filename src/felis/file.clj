@@ -16,11 +16,14 @@
 (defn open [editor path string]
   (root/update (partial root/add
                         (assoc (buffer/deserialize string)
-                          :name path
+                          :path path
                           :syntax (syntax path)))
                 editor))
 
-(defn save [editor]
-  (-> editor
-      (get-in buffer/path)
-      buffer/serialize))
+(defn save [editor save]
+  (save (-> editor
+            (get-in (conj buffer/path :path))
+            name)
+        (-> editor
+            (get-in buffer/path)
+            buffer/serialize)))

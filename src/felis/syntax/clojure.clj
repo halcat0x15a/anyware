@@ -14,15 +14,14 @@
                         (node/tag :span {:class :name} name)))))
 
 (def special
-  (syntax/parser #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
-                 (fn [[_ special space]]
-                   (str \(
-                        (node/tag :span {:class :special}
-                                  special)
-                        space))))
+  (syntax/parser
+   #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
+   (fn [[_ special space]]
+     (str \( (node/tag :span {:class :special} special) space))))
 
 (def string
-  (syntax/parser #"^\".*\"" (partial node/tag :span {:class :string})))
+  (syntax/parser #"^\".*\""
+                 (partial node/tag :span {:class :string})))
 
 (def keyword
   (syntax/parser #"^:[^\(\)\s]+" (partial node/tag :span {:class :keyword})))

@@ -6,6 +6,10 @@
              :background-color :white
              :font-size :16px
              :font-family :monospace}
+   :.status {:color :black
+             :background-color :silver
+             :margin :0px}
+   :.buffer {:margin :0px}
    :.cursor {:position :absolute
              :left :0px}
    :.hidden {:visibility :hidden}
