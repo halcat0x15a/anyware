@@ -14,20 +14,23 @@
             text/serialize
             (string/split #" "))]
     (if-let [f (-> editor (get-in minibuffer/commands) (get command))]
-      (apply f editor args)
+      (assoc-in (apply f editor args) minibuffer/text text/default)
       editor)))
 
-(defn update [f editor]
-  (update-in editor minibuffer/text f))
+(defn focus [editor]
+  (update-in editor minibuffer/text text/focus))
 
-(def prev (partial update edit/prev))
+(defn prev [editor]
+  (update-in editor minibuffer/text edit/prev))
 
-(def next (partial update edit/next))
+(defn next [editor]
+  (update-in editor minibuffer/text edit/next))
 
 (defn append [editor char]
-  (update (partial edit/append char) editor))
+  (update-in editor minibuffer/text (partial edit/append char)))
 
-(def backspace (partial update edit/backspace))
+(defn backspace [editor]
+  (update-in editor minibuffer/text edit/backspace))
 
 (defn command [editor key f]
   (update-in editor minibuffer/commands #(assoc % key f)))

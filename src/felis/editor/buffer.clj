@@ -19,6 +19,9 @@
 (def insert-newline
   (partial buffer/update (partial edit/insert text/default)))
 
+(defn break [editor]
+  (update-in editor buffer/path (partial buffer/break :rights)))
+
 (def append-newline
   (partial buffer/update (partial edit/append text/default)))
 

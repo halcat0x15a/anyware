@@ -1,12 +1,12 @@
 (ns felis.syntax.clojure
   (:refer-clojure :exclude [keyword comment])
-  (:require [felis.syntax :as syntax]
+  (:require [felis.parser :as parser]
             [felis.node :as node]))
 
-(def identifier (syntax/parser #"^[^\":;]"))
+(def identifier (parser/parser #"^[^\":;]"))
 
 (def definition
-  (syntax/parser #"^\((def.*?)(\s+)(\S*)"
+  (parser/parser #"^\((def.*?)(\s+)(\S*)"
                  (fn [[_ definition space name]]
                    (str \(
                         (node/tag :span {:class :special} definition)
@@ -14,20 +14,20 @@
                         (node/tag :span {:class :name} name)))))
 
 (def special
-  (syntax/parser
+  (parser/parser
    #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
    (fn [[_ special space]]
      (str \( (node/tag :span {:class :special} special) space))))
 
 (def string
-  (syntax/parser #"^\".*\""
+  (parser/parser #"^\".*\""
                  (partial node/tag :span {:class :string})))
 
 (def keyword
-  (syntax/parser #"^:[^\(\)\s]+" (partial node/tag :span {:class :keyword})))
+  (parser/parser #"^:[^\(\)\s]+" (partial node/tag :span {:class :keyword})))
 
 (def comment
-  (syntax/parser #"^;.*" (partial node/tag :span {:class :comment})))
+  (parser/parser #"^;.*" (partial node/tag :span {:class :comment})))
 
 (def syntax
-  (syntax/repeat (syntax/or comment string keyword definition special identifier)))
+  (parser/repeat (parser/or comment string keyword definition special identifier)))

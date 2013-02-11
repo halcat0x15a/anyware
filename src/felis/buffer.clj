@@ -28,19 +28,19 @@
         (update-in [field] collection/pop))
     buffer))
 
-(defn render [{:keys [path lefts focus rights syntax]}]
-  (let [render (partial text/render syntax)]
-    (str (node/tag :p {:class :status} (name path))
-         (node/tag :pre {:class :buffer}
-                   (->> (concat (map render lefts)
-                                (-> focus (assoc :cursor :focus) render list)
-                                (map render rights))
-                        (string/make-string "<br>"))))))
-
 (defn serialize [{:keys [lefts focus rights]}]
   (->> (concat lefts (list focus) rights)
        (map text/serialize)
        (string/make-string \newline)))
+
+(defn render [{:keys [path lefts focus rights syntax] :as buffer}]
+  (str (node/tag :p {:class :status} (name path))
+       (node/tag :pre {:class :buffer}
+                 (text/tag (->> buffer serialize (syntax/highlight syntax)))
+                 (node/tag :span {:class :cursor}
+                           (->> (concat lefts (-> focus text/focus list) rights)
+                                (map text/cursor)
+                                (string/make-string \newline))))))
 
 (defrecord Buffer [path focus lefts rights syntax]
   edit/Edit
@@ -70,3 +70,9 @@
 (defmethod default/default Buffer [_] default)
 
 (defmethod serialization/deserialize Buffer [_ string] (deserialize string))
+
+(defn break [field {:keys [focus] :as buffer}]
+  (-> buffer
+      (assoc :focus (assoc focus field ""))
+      (insert (edit/opposite field)
+              (assoc focus (edit/opposite field) ""))))

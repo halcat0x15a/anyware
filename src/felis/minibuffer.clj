@@ -5,7 +5,7 @@
 
 (defn render [text]
   (node/tag :pre {:class :minibuffer}
-            (-> text (assoc :cursor :focus) text/render)))
+            (text/render text)))
 
 (defrecord Minibuffer [text commands]
   node/Node

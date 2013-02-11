@@ -9,16 +9,20 @@
    :.status {:color :black
              :background-color :silver
              :margin :0px}
-   :.buffer {:margin :0px}
+   :.buffer {:position :relative
+             :margin :0px}
+   :.text {:position :absolute}
    :.cursor {:position :absolute
+             :top :0px
              :left :0px}
    :.hidden {:visibility :hidden}
    :.pointer {:color :white
               :background-color :gray}
    :.focus {:color :white
             :background-color :black}
-   :.minibuffer {:position :absolute
-                 :bottom :0px}
+   :.minibuffer {:position :fixed
+                 :bottom :0px
+                 :margin :0px}
    :.name {:color :blue}
    :.special {:color :fuchsia}
    :.string {:color :red}

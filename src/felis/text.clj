@@ -42,14 +42,16 @@
 (defn serialize [{:keys [lefts rights]}]
   (str lefts rights))
 
-(defn render
-  ([text] (serialize text))
-  ([syntax {:keys [lefts rights cursor] :as text}]
-     (node/tag :span {:class :text}
-               (->> text serialize (syntax/highlight syntax))
-               (node/tag :span {:class :cursor}
-                         (node/tag :span {:class :hidden} lefts)
-                         (node/tag :span {:class cursor} (get rights 0 " "))))))
+(defn cursor [{:keys [lefts rights cursor]}]
+  (str (node/tag :span {:class :hidden} lefts)
+       (node/tag :span {:class cursor} (get rights 0 " "))))
+
+(defn tag [string]
+  (node/tag :span {:class :text} string))
+
+(defn render [text]
+  (str (-> text serialize tag)
+       (cursor text)))
 
 (defrecord Text [lefts rights cursor]
   edit/Edit
@@ -83,3 +85,6 @@
 
 (defmethod serialization/deserialize Text [_ string]
   (deserialize string))
+
+(defn focus [text]
+  (assoc text :cursor :focus))

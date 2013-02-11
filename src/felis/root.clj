@@ -28,7 +28,7 @@
                                 (node/render buffer)
                                 (node/render minibuffer)))))
 
-(defrecord Root [buffer buffers minibuffer style]
+(defrecord Root [buffer buffers minibuffer style settings]
   node/Node
   (render [root] (render root)))
 
@@ -38,7 +38,7 @@
   (update-in editor path update))
 
 (def default
-  (Root. buffer/default #{} minibuffer/default style/default))
+  (Root. buffer/default #{} minibuffer/default style/default {}))
 
 (defmethod node/path Root [_] path)
 

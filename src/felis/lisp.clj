@@ -1,77 +1,151 @@
 (ns felis.lisp
-  (:refer-clojure :exclude [eval apply])
-  (:require [clojure.core :as core]))
+  (:refer-clojure :exclude [eval apply read-string])
+  (:require [clojure.core :as core]
+            [felis.parser :as parser]
+            [felis.lisp.lexer :as lexer]))
+
+(def fn' 'fn)
+
+(def default
+  {'+ +
+   '- -
+   '* *
+   '= =
+   'dec dec
+   'zero? zero?
+   'comp comp
+   'map map
+   'dorun dorun})
 
 (defrecord Lambda [environment parameters body])
+  
+(defrecord Failure [message])
+
+(defn expression [env exp] exp)
 
 (defn literal? [exp]
   (or (true? exp)
       (false? exp)
       (number? exp)
+      (char? exp)
       (string? exp)
       (keyword? exp)
       (nil? exp)))
 
-(defmulti eval-form (fn [_ [tag]] tag))
+(defmulti analyze-form (fn [[tag]] tag))
+
+(defn- lookup [variable]
+  (fn [k env]
+    (if (contains? env variable)
+      (k env (get env variable))
+      (Failure. (str "Unable to resolve symbol: "
+                     variable
+                     " in this context")))))
+
+(defn analyze [exp]
+  (cond (literal? exp) (fn [k env] (k env exp))
+        (symbol? exp) (lookup exp)
+        (seq? exp) (analyze-form exp)))
 
 (defn eval
-  ([exp] (eval (atom {}) exp))
+  ([exp] (eval default exp))
   ([env exp]
-     (cond (literal? exp) exp
-           (symbol? exp) (get @env exp)
-           (list? exp) (eval-form env exp))))
+     ((analyze exp) expression env)))
 
-(defmulti apply (fn [procedure _] (type procedure)))
+(defmulti apply (fn [env procedure _] (type procedure)))
 
-(defmethod apply Lambda [{:keys [environment parameters body]} arguments]
-  (eval (merge environment (interleave parameters arguments)) body))
+(defmethod apply Lambda [environment {:keys [parameters body]} arguments]
+  (body expression (merge environment (zipmap parameters arguments))))
 
-(defmethod apply :default [procedure arguments]
+(defmethod apply :default [environment procedure arguments]
   (core/apply procedure arguments))
 
-(defmethod eval-form 'quote [env [_ & quotation]] quotation)
+(defmethod analyze-form 'quote [[_ & quotation]]
+  (fn [k env] (k env quotation)))
 
-(defmethod eval-form 'def [env [_ variable value]]
-  (swap! env assoc variable (eval env value)))
+(defmethod analyze-form 'def [[_ variable value]]
+  (let [eval-value (analyze value)]
+    (fn [k env]
+      (let [value (eval-value expression env)]
+        (k (assoc env variable value) value)))))
 
-(defmethod eval-form 'if [env [_ predicate consequent alternative]]
-  (if (eval env predicate)
-    (eval env consequent)
-    (eval env alternative)))
+(defmethod analyze-form 'if [[_ predicate consequent alternative]]
+  (let [eval-predicate (analyze predicate)
+        eval-consequent (analyze consequent)
+        eval-alternative (analyze alternative)]
+    (fn [k env]
+      (if (eval-predicate expression env)
+        (k env (eval-consequent expression env))
+        (k env (eval-alternative expression env))))))
+  
+(defmethod analyze-form 'fn [[_ parameters body]]
+  (let [eval-body (analyze body)]
+    (fn [k env]
+      (k env (Lambda. env parameters eval-body)))))
 
-(defmethod eval-form 'fn [env [_ parameters body]]
-  (Lambda. env parameters body))
-
-(defmethod eval-form 'do
-  [env [_ & exps]]
-  (if (not-empty exps)
-    (loop [[exp & exps] exps]
-      (let [value (eval env exp)]
-        (if (empty? exps)
-          value
-          (recur exps))))))
+(defmethod analyze-form 'do [[_ & exps]]
+  (letfn [(sequentially [f g]
+            (fn [k env]
+              (f (fn [env value]
+                   (g k env))
+                 env)))
+          (eval-sequence [proc [proc' & procs' :as procs]]
+            (if (empty? procs)
+              proc
+              (recur (sequentially proc proc') procs')))]
+    (let [[proc & procs] (map analyze exps)]
+      (if (empty? exps)
+        (constantly nil)
+        (eval-sequence proc procs)))))
 
 (defn cond->if [[predicate value & clauses]]
-  (list 'if predicate value
-        (if (not-empty clauses)
-          (cond->if clauses))))
+  `(if ~predicate ~value
+       ~(if (not-empty clauses)
+         (cond->if clauses))))
 
-(defmethod eval-form 'cond [env [_ & clauses]]
-  (eval env (cond->if clauses)))
+(defmethod analyze-form 'cond [[_ & clauses]]
+  (-> clauses cond->if analyze))
+
+(defn and->if [[predicate & predicates' :as predicates]]
+  (if (empty? predicates)
+    true
+    `(if ~predicate ~(and->if predicates') false)))
+
+(defmethod analyze-form 'and [[_ & predicates]]
+  (-> predicates and->if analyze))
+
+(defn or->if [[predicate & predicates' :as predicates]]
+  (if (empty? predicates)
+    false
+    `(if ~predicate true ~(or->if predicates'))))
+
+(defmethod analyze-form 'or [[_ & predicates]]
+  (-> predicates or->if analyze))
 
 (defn let->fn [[variable value & bindings' :as bindings] body]
   (if (empty? bindings)
-    (list (list 'fn [] body))
-    (list (list 'fn [variable]
-                (if (empty? bindings')
-                  body
-                  (let->fn bindings' body)))
-          value)))
+    `((~fn' [] ~body))
+    `((~fn' [~variable]
+            ~(if (empty? bindings')
+               body
+               (let->fn bindings' body)))
+      ~value)))
 
-(defmethod eval-form 'let [env [_ bindings body]]
-  (eval env (let->fn bindings body)))
+(defmethod analyze-form 'let [[_ bindings body]]
+  (analyze (let->fn bindings body)))
 
-(defmethod eval-form :default
-  [env [operator & operands]]
-  (apply (eval env operator)
-         (map (partial eval env) operands)))
+(defn defn->def [name parameters body]
+  `(def ~name (~fn' ~parameters ~body)))
+
+(defmethod analyze-form 'defn [[_ name parameters body]]
+  (analyze (defn->def name parameters body)))
+
+(defmethod analyze-form :default [[operator & operands]]
+  (let [operator-eval (analyze operator)
+        operand-evals (map analyze operands)]
+    (fn [k env]
+      (k env (apply env (operator-eval expression env)
+                    (map #(% expression env) operand-evals))))))
+
+(defn read-string [string]
+  (eval (parser/parse' lexer/lisp string)))

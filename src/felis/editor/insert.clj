@@ -10,7 +10,7 @@
    key/up buffer/top
    key/down buffer/bottom
    key/backspace text/backspace
-   key/enter buffer/append-newline})
+   key/enter buffer/break})
 
 (defrecord Insert [root]
   editor/Editor

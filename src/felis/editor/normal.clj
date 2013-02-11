@@ -28,7 +28,7 @@
    \x text/delete
    \X text/backspace
    \d delete/map->Delete
-   \: minibuffer/map->Minibuffer})
+   \: (comp minibuffer/map->Minibuffer minibuffer/focus)})
 
 (defrecord Normal [root]
   editor/Editor
