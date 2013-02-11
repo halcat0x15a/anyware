@@ -1,7 +1,6 @@
 (ns felis.editor.text
   (:refer-clojure :exclude [replace])
   (:require [felis.text :as text]
-            [felis.node :as node]
             [felis.editor.edit :as edit]))
 
 (defn left [editor]

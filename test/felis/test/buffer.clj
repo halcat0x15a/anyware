@@ -1,2 +1,2 @@
-(ns felis.test.serialization
+(ns felis.test.buffer
   (:require [clojure.test.generative :refer :all]))

@@ -1,15 +1,17 @@
 (ns felis.test.node
-  (:require [clojure.test.generative :refer :all]
-            [felis.test :as test]
-            [felis.node :refer :all]))
+  (:require [clojure.test :refer :all]
+            [felis.root :as root]
+            [felis.workspace :as workspace]
+            [felis.buffer :as buffer]
+            [felis.text :as text]
+            [felis.editor.normal :as normal]))
 
-(defspec render-string
-  render
-  [^test/node node]
-  (is (string? %)))
-
-(defspec get-in-path
-  (fn [editor node]
-    (->> node type path (get-in editor)))
-  [^test/editor editor ^test/node node]
-  (is (not (nil? %))))
+(deftest path
+  (testing "get in editor"
+    (are [path] (not (nil? (get-in normal/default path)))
+         root/path
+         workspace/path
+         workspace/name
+         buffer/path
+         text/path
+         text/minibuffer)))

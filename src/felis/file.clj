@@ -1,6 +1,7 @@
 (ns felis.file
   (:require [felis.root :as root]
             [felis.buffer :as buffer]
+            [felis.workspace :as workspace]
             [felis.syntax :as syntax]
             [felis.syntax.clojure :as clojure]))
 
@@ -17,13 +18,14 @@
   (update-in editor
              root/path
              (partial root/add
-                      (assoc (buffer/read content)
-                        :path path
+                      (assoc workspace/default
+                        :name path
+                        :buffer (buffer/read content)
                         :syntax (syntax path)))))
 
 (defn save [editor save]
   (save (-> editor
-            (get-in (conj buffer/path :path))
+            (get-in workspace/name)
             name)
         (-> editor
             (get-in buffer/path)

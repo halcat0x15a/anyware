@@ -1,55 +1,45 @@
 (ns felis.root
   (:refer-clojure :exclude [remove find])
   (:require [clojure.string :as string]
-            [clojure.walk :as walk]
-            [felis.style :as style]
+            [felis.html :as html]
             [felis.lisp.environment :as environment]
-            [felis.buffer :as buffer]
-            [felis.node :as node]
-            [felis.minibuffer :as minibuffer]
-            [felis.default :as default]))
+            [felis.workspace :as workspace]
+            [felis.text :as text]))
 
-(defn add [buffer' {:keys [buffer buffers] :as root}]
+(defn add [workspace' {:keys [workspace workspaces] :as root}]
   (assoc root
-    :buffer buffer'
-    :buffers (conj buffers buffer)))
+    :workspace workspace'
+    :workspaces (conj workspaces workspace)))
 
-(defn remove [{:keys [buffer buffers] :as root}]
-  (if-let [buffer' (first buffers)]
+(defn remove [{:keys [workspace workspaces] :as root}]
+  (if-let [workspace' (first workspaces)]
     (assoc root
-      :buffer buffer'
-      :buffers (disj buffers buffer'))
+      :workspace workspace'
+      :workspaces (disj workspaces workspace'))
     root))
 
-(defn find [name {:keys [buffers]}]
-  (->> buffers (filter (comp (partial = name) :name)) first))
-
-(defn render [{:keys [buffer minibuffer style]}]
-  (node/tag :html {}
-            (node/tag :head {}
-                      (node/tag :style {:type "text/css"}
+(defn render [{:keys [workspace minibuffer style]}]
+  (html/tag :html {}
+            (html/tag :head {}
+                      (html/tag :style {:type "text/css"}
                                 "<!-- "
-                                (style/css style)
+                                (html/css style)
                                 " -->"))
-            (node/tag :body {}
-                      (node/tag :div {:class :editor}
-                                (node/render buffer)
-                                (node/render minibuffer)))))
+            (html/tag :body {}
+                      (html/tag :div {:class :editor}
+                                (workspace/render workspace)
+                                (html/tag :pre {:class :minibuffer}
+                                          (text/render minibuffer))))))
 
-(defrecord Root [buffer buffers minibuffer environment style settings]
-  node/Node
-  (render [root] (render root)))
+(defrecord Root
+    [workspace workspaces minibuffer environment style settings])
 
 (def path [:root])
 
 (def default
-  (Root. buffer/default
+  (Root. workspace/default
          #{}
-         minibuffer/default
+         text/default
          environment/global
-         style/default
+         html/style
          {}))
-
-(defmethod node/path Root [_] path)
-
-(defmethod default/default Root [_] default)

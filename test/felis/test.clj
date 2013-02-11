@@ -4,10 +4,9 @@
             [clojure.data.generators :as gen]
             [felis.edit :as edit]
             [felis.text :as text]
-            [felis.minibuffer :as minibuffer]
             [felis.buffer :as buffer]
+            [felis.workspace :as workspace]
             [felis.root :as root]
-            [felis.default :as default]
             [felis.editor.normal :as normal]
             [felis.editor.insert :as insert]
             [felis.editor.delete :as delete]))
@@ -19,10 +18,6 @@
   (assoc text/default
     :lefts (gen/string)
     :rights (gen/string)))
-
-(defn minibuffer []
-  (assoc minibuffer/default
-    :text (text)))
 
 (defn top []
   (gen/vec text))
@@ -37,24 +32,20 @@
     :lefts (top)
     :rights (bottom)))
 
-(defn edit []
-  (gen/rand-nth [(text) (buffer)]))
+(defn workspace []
+  (assoc workspace/default
+    :buffer (buffer)))
 
 (defn root []
   (assoc root/default
-    :buffer (buffer)
-    :minibuffer (minibuffer)))
-
-(defn node []
-  (rand-nth [(root) (buffer) (minibuffer) (text)]))
+    :workspace (workspace)
+    :minibuffer (text)))
 
 (defn editor []
-  (gen/rand-nth [(normal/->Normal (root))
-                 (insert/->Insert (root))
-                 (delete/->Delete (root))]))
-
-(defn field []
-  (gen/rand-nth [:lefts :rights]))
+  ((gen/rand-nth [normal/->Normal
+                  insert/->Insert
+                  delete/->Delete])
+   (root)))
 
 (defprotocol Container
   (element [edit]))

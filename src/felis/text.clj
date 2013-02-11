@@ -1,48 +1,58 @@
 (ns felis.text
-  (:refer-clojure :exclude [peek pop conj read])
+  (:refer-clojure :exclude [peek pop read])
   (:require [clojure.core :as core]
             [felis.string :as string]
+            [felis.html :as html]
             [felis.edit :as edit]
-            [felis.node :as node]
-            [felis.serialization :as serialization]
-            [felis.default :as default]
             [felis.syntax :as syntax]))
 
-(defmulti peek (fn [feild string] feild))
-(defmethod peek :rights [_ string] (first string))
-(defmethod peek :lefts [_ string] (last string))
+(defmulti peek (fn [_ feild] feild))
 
-(defmulti pop (fn [feild string] feild))
-(defmethod pop :rights [_ string] (string/rest string))
-(defmethod pop :lefts [_ string] (string/butlast string))
+(defmethod peek :rights [text field]
+  (-> text field first))
 
-(defmulti conj (fn [char feild string] feild))
-(defmethod conj :rights [char _ string] (str char string))
-(defmethod conj :lefts [char _ string] (str string char))
+(defmethod peek :lefts [text field]
+  (-> text field last))
+
+(defmulti pop (fn [_ feild] feild))
+
+(defmethod pop :rights [text field]
+  (update-in text [field] #(subs % 1)))
+
+(defmethod pop :lefts [text field]
+  (update-in text [field]
+             (fn [string]
+               (subs string 0 (-> string count dec)))))
+
+(defmulti insert (fn [_ feild _] feild))
+
+(defmethod insert :rights [text field char]
+  (update-in text [field] (partial str char)))
+
+(defmethod insert :lefts [text field char]
+  (update-in text [field] #(str % char)))
 
 (defn move [text field]
-  (if-let [char (->> text field (peek field))]
-    (let [field' (edit/opposite field)]
-      (-> text
-          (update-in [field] (partial pop field))
-          (update-in [field'] (partial conj char field'))))
+  (if-let [char (peek text field)]
+    (-> text
+        (pop field)
+        (insert (edit/opposite field) char))
     text))
 
-(defn insert [text field char]
-  (update-in text [field] (partial conj char field)))
-
 (defn delete [text field]
-  (update-in text [field] (partial pop field)))
+  (if (empty? (field text))
+    text
+    (pop text field)))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
 
 (defn cursor [{:keys [lefts rights cursor]}]
-  (str (node/tag :span {:class :hidden} lefts)
-       (node/tag :span {:class cursor} (get rights 0 " "))))
+  (str (html/tag :span {:class :hidden} lefts)
+       (html/tag :span {:class cursor} (get rights 0 " "))))
 
 (defn tag [string]
-  (node/tag :span {:class :text} string))
+  (html/tag :span {:class :text} string))
 
 (defn render [text]
   (str (-> text write tag)
@@ -52,17 +62,15 @@
   edit/Edit
   (move [text field] (move text field))
   (insert [text field char] (insert text field char))
-  (delete [text field] (delete text field))
-  node/Node
-  (render [text] (render text))
-  serialization/Serializable
-  (write [text] (write text)))
+  (delete [text field] (delete text field)))
 
-(def path [:root :buffer :focus])
+(def path [:root :workspace :buffer :focus])
 
-(def lefts (core/conj path :lefts))
+(def lefts (conj path :lefts))
 
-(def rights (core/conj path :rights))
+(def rights (conj path :rights))
+
+(def minibuffer [:root :minibuffer])
 
 (def default (Text. "" "" :pointer))
 
@@ -70,12 +78,6 @@
   (assoc default
     :lefts ""
     :rights string))
-
-(defmethod node/path Text [_] path)
-
-(defmethod default/default Text [_] default)
-
-(defmethod serialization/read Text [_ string] (read string))
 
 (defn focus [text]
   (assoc text :cursor :focus))

@@ -1,6 +1,7 @@
-(ns felis.style)
+(ns felis.html
+  (:require [clojure.string :as string]))
 
-(def default
+(def style
   {:body {:margin :0px}
    :.editor {:color :black
              :background-color :white
@@ -28,6 +29,15 @@
    :.string {:color :red}
    :.keyword {:color :aqua}
    :.comment {:color :maroon}})
+
+(defn attribute [attributes key value]
+  (str attributes \space (name key) \= \" (name value) \"))
+
+(defn tag [tag attributes & contents]
+  (let [tag (name tag)]
+    (str \< tag (reduce-kv attribute "" attributes) \>
+         (string/join contents)
+         \< \/ tag \>)))
 
 (defn css [style]
   (reduce-kv (fn [string selector block]

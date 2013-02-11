@@ -1,7 +1,6 @@
 (ns felis.editor.buffer
   (:require [felis.buffer :as buffer]
             [felis.text :as text]
-            [felis.node :as node]
             [felis.editor.edit :as edit]))
 
 (defn top [editor]
