@@ -30,9 +30,6 @@
 (defn bottom []
   (list text))
 
-(defn collection []
-  (gen/rand-nth [(list gen/anything) (gen/vec gen/anything)]))
-
 (defn buffer []
   (assoc buffer/default
     :name (gen/keyword)
@@ -57,13 +54,7 @@
                  (delete/->Delete (root))]))
 
 (defn field []
-  (gen/rand-nth [edit/lefts edit/rights]))
-
-(defn serializable []
-  (letfn [(text [] (assoc text/default :rights (gen/string)))]
-    (gen/rand-nth [(text) (assoc buffer/default
-                            :focus (text)
-                            :rights (list (text)))])))
+  (gen/rand-nth [:lefts :rights]))
 
 (defprotocol Container
   (element [edit]))

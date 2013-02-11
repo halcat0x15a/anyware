@@ -4,6 +4,7 @@
             [felis.key :as key]
             [felis.minibuffer :as minibuffer]
             [felis.text :as text]
+            [felis.lisp.environment :as environment]
             [felis.editor :as editor]
             [felis.editor.edit :as edit]))
 
@@ -11,9 +12,9 @@
   (let [[command & args]
         (-> editor
             (get-in minibuffer/text)
-            text/serialize
+            text/write
             (string/split #" "))]
-    (if-let [f (-> editor (get-in minibuffer/commands) (get command))]
+    (if-let [f (-> editor (get-in environment/path) (get (symbol command)))]
       (assoc-in (apply f editor args) minibuffer/text text/default)
       editor)))
 
@@ -31,9 +32,6 @@
 
 (defn backspace [editor]
   (update-in editor minibuffer/text edit/backspace))
-
-(defn command [editor key f]
-  (update-in editor minibuffer/commands #(assoc % key f)))
 
 (def keymap
   {key/enter run

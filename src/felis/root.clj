@@ -1,8 +1,9 @@
 (ns felis.root
-  (:refer-clojure :exclude [find])
+  (:refer-clojure :exclude [remove find])
   (:require [clojure.string :as string]
             [clojure.walk :as walk]
             [felis.style :as style]
+            [felis.lisp.environment :as environment]
             [felis.buffer :as buffer]
             [felis.node :as node]
             [felis.minibuffer :as minibuffer]
@@ -12,6 +13,13 @@
   (assoc root
     :buffer buffer'
     :buffers (conj buffers buffer)))
+
+(defn remove [{:keys [buffer buffers] :as root}]
+  (if-let [buffer' (first buffers)]
+    (assoc root
+      :buffer buffer'
+      :buffers (disj buffers buffer'))
+    root))
 
 (defn find [name {:keys [buffers]}]
   (->> buffers (filter (comp (partial = name) :name)) first))
@@ -28,17 +36,19 @@
                                 (node/render buffer)
                                 (node/render minibuffer)))))
 
-(defrecord Root [buffer buffers minibuffer style settings]
+(defrecord Root [buffer buffers minibuffer environment style settings]
   node/Node
   (render [root] (render root)))
 
 (def path [:root])
 
-(defn update [update editor]
-  (update-in editor path update))
-
 (def default
-  (Root. buffer/default #{} minibuffer/default style/default {}))
+  (Root. buffer/default
+         #{}
+         minibuffer/default
+         environment/global
+         style/default
+         {}))
 
 (defmethod node/path Root [_] path)
 

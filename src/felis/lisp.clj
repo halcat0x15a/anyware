@@ -2,20 +2,8 @@
   (:refer-clojure :exclude [eval apply read-string])
   (:require [clojure.core :as core]
             [felis.parser :as parser]
-            [felis.lisp.lexer :as lexer]))
-
-(def fn' 'fn)
-
-(def default
-  {'+ +
-   '- -
-   '* *
-   '= =
-   'dec dec
-   'zero? zero?
-   'comp comp
-   'map map
-   'dorun dorun})
+            [felis.lisp.lexer :as lexer]
+            [felis.lisp.environment :as environment]))
 
 (defrecord Lambda [environment parameters body])
   
@@ -48,7 +36,7 @@
         (seq? exp) (analyze-form exp)))
 
 (defn eval
-  ([exp] (eval default exp))
+  ([exp] (eval environment/global exp))
   ([env exp]
      ((analyze exp) expression env)))
 
@@ -124,18 +112,19 @@
 
 (defn let->fn [[variable value & bindings' :as bindings] body]
   (if (empty? bindings)
-    `((~fn' [] ~body))
-    `((~fn' [~variable]
-            ~(if (empty? bindings')
-               body
-               (let->fn bindings' body)))
-      ~value)))
+    (list (list [] body))
+    (list (list [variable]
+                (if (empty? bindings')
+                  body
+                  (let->fn bindings' body)))
+          value)))
 
 (defmethod analyze-form 'let [[_ bindings body]]
   (analyze (let->fn bindings body)))
 
 (defn defn->def [name parameters body]
-  `(def ~name (~fn' ~parameters ~body)))
+  (list 'def name
+        (list 'fn parameters body)))
 
 (defmethod analyze-form 'defn [[_ name parameters body]]
   (analyze (defn->def name parameters body)))

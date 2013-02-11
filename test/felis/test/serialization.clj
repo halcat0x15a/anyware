@@ -1,16 +1,29 @@
 (ns felis.test.serialization
   (:require [clojure.test.generative :refer :all]
-            [felis.test :as test]
-            [felis.serialization :refer :all]))
+            [clojure.data.generators :as gen]
+            [felis.text :as text]
+            [felis.buffer :as buffer]
+            [felis.serialization :as serialization]))
 
-(defspec serialize-deserialize
+(defn serializable []
+  (letfn [(text [] (assoc text/default :rights (gen/string)))]
+    (gen/rand-nth
+     [(text) (assoc buffer/default
+               :focus (text)
+               :rights (apply list (gen/list text)))])))
+
+(defspec write-read
   (fn [string serializable]
-    (->> string (deserialize (type serializable)) serialize))
-  [^string string ^test/serializable serializable]
+    (->> string
+         (serialization/read (type serializable))
+         serialization/write))
+  [^string string ^{:tag `serializable} serializable]
   (is (= % string)))
 
-(defspec deserialize-serialize
+(defspec read-write
   (fn [serializable]
-    (->> serializable serialize (deserialize (type serializable))))
-  [^test/serializable serializable]
+    (->> serializable
+         serialization/write
+         (serialization/read (type serializable))))
+  [^{:tag `serializable} serializable]
   (is (= % serializable)))

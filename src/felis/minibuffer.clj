@@ -7,7 +7,7 @@
   (node/tag :pre {:class :minibuffer}
             (text/render text)))
 
-(defrecord Minibuffer [text commands]
+(defrecord Minibuffer [text]
   node/Node
   (render [_] (render text)))
 
@@ -15,9 +15,7 @@
 
 (def text (conj path :text))
 
-(def commands (conj path :commands))
-
-(def default (Minibuffer. text/default {}))
+(def default (Minibuffer. text/default))
 
 (defmethod node/path Minibuffer [_] path)
 

@@ -13,12 +13,13 @@
       syntax/default
       (-> syntaxes first second))))
 
-(defn open [editor path string]
-  (root/update (partial root/add
-                        (assoc (buffer/deserialize string)
-                          :path path
-                          :syntax (syntax path)))
-                editor))
+(defn open [editor path content]
+  (update-in editor
+             root/path
+             (partial root/add
+                      (assoc (buffer/read content)
+                        :path path
+                        :syntax (syntax path)))))
 
 (defn save [editor save]
   (save (-> editor
@@ -26,4 +27,4 @@
             name)
         (-> editor
             (get-in buffer/path)
-            buffer/serialize)))
+            buffer/write)))
