@@ -1,8 +1,21 @@
 (ns felis.html
   (:refer-clojure :exclude [<])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [felis.serialization :as serialization]))
 
-(defrecord Node [label attributes content])
+(declare html)
+
+(defn- write [{:keys [label attributes content]}]
+  (letfn [(attribute [attributes key value]
+            (str attributes \space (name key) \= \" (name value) \"))]
+    (let [label' (name label)]
+      (str \< label' (reduce-kv attribute "" attributes) \>
+           (html content)
+           \< \/ label' \>))))
+
+(defrecord Node [label attributes content]
+  serialization/Serializable
+  (write [node] (write node)))
 
 (defn <
   ([label attributes content]
@@ -13,18 +26,10 @@
 (defn escape [string]
   (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
 
-(defn write
-  ([label attributes content]
-     (letfn [(attribute [attributes key value]
-               (str attributes \space (name key) \= \" (name value) \"))]
-       (let [label' (name label)]
-         (str \< label' (reduce-kv attribute "" attributes) \>
-              (write content)
-              \< \/ label' \>))))
-  ([{:keys [label attributes content] :as node}]
-     (cond (string? node) (escape node)
-           (vector? node) (->> node (mapv write) string/join)
-           :else (write label attributes content))))
+(defn html [node]
+  (cond (string? node) (escape node)
+        (vector? node) (->> node (mapv html) string/join)
+        :else (serialization/write node)))
 
 (defn css [style]
   (letfn [(declaration [declarations property value]

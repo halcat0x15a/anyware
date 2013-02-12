@@ -1,7 +1,7 @@
 (ns felis.text
-  (:refer-clojure :exclude [peek pop read])
-  (:require [clojure.core :as core]
-            [felis.string :as string]
+  (:refer-clojure :exclude [read])
+  (:require [felis.string :as string]
+            [felis.serialization :as serialization]
             [felis.html :as html]
             [felis.edit :as edit]
             [felis.syntax :as syntax]))
@@ -36,7 +36,7 @@
       (assoc text
         field (subs string 0 (-> string count dec))))))
 
-(defn write [{:keys [lefts rights]}]
+(defn- write [{:keys [lefts rights]}]
   (str lefts rights))
 
 (defn cursor [{:keys [lefts rights cursor]}]
@@ -50,7 +50,9 @@
   [(-> text write tag)
    (cursor text)])
 
-(defrecord Text [lefts rights cursor])
+(defrecord Text [lefts rights cursor]
+  serialization/Serializable
+  (write [text] (write text)))
 
 (def path [:root :workspace :buffer :focus])
 

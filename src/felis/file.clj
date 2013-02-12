@@ -1,9 +1,10 @@
 (ns felis.file
-  (:require [felis.root :as root]
-            [felis.buffer :as buffer]
-            [felis.workspace :as workspace]
+  (:require [felis.serialization :as serialization]
             [felis.syntax :as syntax]
-            [felis.syntax.clojure :as clojure]))
+            [felis.syntax.clojure :as clojure]
+            [felis.root :as root]
+            [felis.workspace :as workspace]
+            [felis.buffer :as buffer]))
 
 (def syntaxes
   {#".clj$" clojure/syntax})
@@ -29,4 +30,4 @@
             name)
         (-> editor
             (get-in buffer/path)
-            buffer/write)))
+            serialization/write)))

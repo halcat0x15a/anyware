@@ -1,6 +1,7 @@
 (ns felis.buffer
   (:refer-clojure :exclude [read])
   (:require [felis.string :as string]
+            [felis.serialization :as serialization]
             [felis.edit :as edit]
             [felis.text :as text]
             [felis.html :as html]
@@ -26,20 +27,22 @@
     (assoc buffer
       :focus text/default)))
 
-(defn write [{:keys [tops focus bottoms]}]
+(defn- write [{:keys [tops focus bottoms]}]
   (->> (concat tops (list focus) bottoms)
-       (map text/write)
+       (map serialization/write)
        (string/make-string \newline)))
 
 (defn render [syntax {:keys [lefts focus rights] :as buffer}]
   (html/< :pre {:class :buffer}
-          (text/tag (->> buffer write (syntax/highlight syntax)))
+          (text/tag (->> buffer serialization/write (syntax/highlight syntax)))
           (html/< :span {:class :cursor}
                   (->> (concat lefts (-> focus text/focus list) rights)
                        (map text/cursor)
                        (string/make-string \newline)))))
 
-(defrecord Buffer [focus tops bottoms])
+(defrecord Buffer [focus tops bottoms]
+  serialization/Serializable
+  (write [buffer] (write buffer)))
 
 (def path [:root :workspace :buffer])
 

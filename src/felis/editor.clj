@@ -11,5 +11,4 @@
   (code [this event]))
 
 (defn render [{:keys [root]}]
-  (html/write
-   (html/< :html {} (root/render root))))
+  (html/html (html/< :html {} (root/render root))))

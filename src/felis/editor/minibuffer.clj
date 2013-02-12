@@ -2,8 +2,9 @@
   (:refer-clojure :exclude [next])
   (:require [clojure.string :as string]
             [felis.key :as key]
-            [felis.text :as text]
+            [felis.serialization :as serialization]
             [felis.lisp.environment :as environment]
+            [felis.text :as text]
             [felis.editor :as editor]
             [felis.editor.edit :as edit]))
 
@@ -11,7 +12,7 @@
   (let [[command & args]
         (-> editor
             (get-in text/minibuffer)
-            text/write
+            serialization/write
             (string/split #" "))]
     (if-let [f (-> editor (get-in environment/path) (get (symbol command)))]
       (assoc-in (apply f editor args) text/minibuffer text/default)
