@@ -6,44 +6,42 @@
             [felis.html :as html]
             [felis.syntax :as syntax]))
 
-(defn insert [{:keys [focus] :as buffer} field focus']
+(defmethod edit/invert :tops [side] :bottoms)
+
+(defmethod edit/invert :bottoms [side] :tops)
+
+(defmethod edit/head :default [buffer field]
+  (-> buffer field peek))
+
+(defmethod edit/add :default [{:keys [focus] :as buffer} field focus']
   (-> buffer
       (assoc :focus focus')
       (update-in [field] #(conj % focus))))
 
-(defn move [{:keys [focus] :as buffer} field]
-  (if-let [focus' (-> buffer field peek)]
-    (-> buffer
-        (update-in [field] pop)
-        (insert (edit/opposite field) focus'))
-    buffer))
-
-(defn delete [buffer field]
-  (if-let [focus' (-> buffer field peek)]
+(defmethod edit/remove :default [buffer field]
+  (if-let [focus' (edit/head buffer field)]
     (-> buffer
         (assoc :focus focus')
         (update-in [field] pop))
     (assoc buffer
       :focus text/default)))
 
-(defn write [{:keys [lefts focus rights]}]
-  (->> (concat lefts (list focus) rights)
+(defn write [{:keys [tops focus bottoms]}]
+  (->> (concat tops (list focus) bottoms)
        (map text/write)
        (string/make-string \newline)))
 
 (defn render [syntax {:keys [lefts focus rights] :as buffer}]
-  (html/tag :pre {:class :buffer}
-            (text/tag (->> buffer write (syntax/highlight syntax)))
-            (html/tag :span {:class :cursor}
-                      (->> (concat lefts (-> focus text/focus list) rights)
-                           (map text/cursor)
-                           (string/make-string \newline)))))
+  (html/->Node
+   :pre {:class :buffer}
+   [(text/tag (->> buffer write (syntax/highlight syntax)))
+    (html/->Node
+     :span {:class :cursor}
+     (->> (concat lefts (-> focus text/focus list) rights)
+          (map text/cursor)
+          (string/make-string \newline)))]))
 
-(defrecord Buffer [focus lefts rights]
-  edit/Edit
-  (move [buffer field] (move buffer field))
-  (insert [buffer field focus] (insert buffer field focus))
-  (delete [buffer field] (delete buffer field)))
+(defrecord Buffer [focus tops bottoms])
 
 (def path [:root :workspace :buffer])
 
@@ -53,10 +51,9 @@
   (let [lines (->> string string/split-lines (map text/read))]
     (assoc default
       :focus (first lines)
-      :rights (->> lines rest (apply list)))))
+      :bottoms (->> lines rest (apply list)))))
 
-(defn break [field {:keys [focus] :as buffer}]
+(defn break [{:keys [focus] :as buffer}]
   (-> buffer
-      (assoc :focus (assoc focus field ""))
-      (insert (edit/opposite field)
-              (assoc focus (edit/opposite field) ""))))
+      (update-in [:focus] #(assoc % :rights ""))
+      (edit/add :tops (assoc focus :lefts ""))))

@@ -19,18 +19,18 @@
     :lefts (gen/string)
     :rights (gen/string)))
 
-(defn top []
+(defn tops []
   (gen/vec text))
 
-(defn bottom []
+(defn bottoms []
   (list text))
 
 (defn buffer []
   (assoc buffer/default
     :name (gen/keyword)
     :focus (text)
-    :lefts (top)
-    :rights (bottom)))
+    :tops (tops)
+    :bottoms (bottoms)))
 
 (defn workspace []
   (assoc workspace/default
@@ -46,12 +46,3 @@
                   insert/->Insert
                   delete/->Delete])
    (root)))
-
-(defprotocol Container
-  (element [edit]))
-
-(extend-protocol Container
-  felis.buffer.Buffer
-  (element [edit] (text))
-  felis.text.Text
-  (element [edit] (gen/char)))

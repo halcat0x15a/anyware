@@ -1,10 +1,23 @@
-(ns felis.edit)
+(ns felis.edit
+  (:refer-clojure :exclude [remove]))
 
-(defprotocol Edit
-  (move [this field])
-  (insert [this field value])
-  (delete [this field]))
+(defmulti invert identity)
 
-(defmulti opposite identity)
-(defmethod opposite :lefts [side] :rights)
-(defmethod opposite :rights [side] :lefts)
+(defmulti add (fn [_ field _] field))
+
+(defmulti remove (fn [_ field] field))
+
+(defmulti head (fn [_ field] field))
+
+(defn move [edit field]
+  (if-let [value (head edit field)]
+    (-> edit
+        (add (invert field) value)
+        (remove field))
+    edit))
+
+(defn end [edit field]
+  (let [edit' (move edit field)]
+    (if (identical? edit edit')
+      edit
+      (recur edit' field))))

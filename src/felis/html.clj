@@ -30,14 +30,23 @@
    :.keyword {:color :aqua}
    :.comment {:color :maroon}})
 
+(defrecord Node [label attributes content])
+
+(defn escape [string]
+  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
+
 (defn attribute [attributes key value]
   (str attributes \space (name key) \= \" (name value) \"))
 
-(defn tag [tag attributes & contents]
-  (let [tag (name tag)]
-    (str \< tag (reduce-kv attribute "" attributes) \>
-         (string/join contents)
-         \< \/ tag \>)))
+(defn write [{:keys [label attributes content] :as node}]
+  (cond (string? node) (escape node)
+        (char? node) (-> node str escape)
+        (vector? node) (->> node (mapv write) string/join)
+        :else
+        (let [label' (name label)]
+          (str \< label' (reduce-kv attribute "" attributes) \>
+               (write content)
+               \< \/ label' \>))))
 
 (defn css [style]
   (reduce-kv (fn [string selector block]

@@ -15,9 +15,3 @@
   [^{:tag (gen/rand-nth [string/rest string/butlast])} function
    ^string string]
   (is (not (nil? %))))
-
-(defspec not-contains-lt-and-rl
-  (comp set string/escape)
-  [^string string]
-  (is (and (not (contains? \< %))
-           (not (contains? \> %)))))

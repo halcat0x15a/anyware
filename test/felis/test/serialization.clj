@@ -23,7 +23,7 @@
 (defn buffer []
   (assoc buffer/default
     :focus (text)
-    :rights (apply list (gen/list text))))
+    :bottoms (apply list (gen/list text))))
 
 (defn serializable []
   ((gen/rand-nth [text buffer])))

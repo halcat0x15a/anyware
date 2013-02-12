@@ -19,17 +19,22 @@
     root))
 
 (defn render [{:keys [workspace minibuffer style]}]
-  (html/tag :html {}
-            (html/tag :head {}
-                      (html/tag :style {:type "text/css"}
-                                "<!-- "
-                                (html/css style)
-                                " -->"))
-            (html/tag :body {}
-                      (html/tag :div {:class :editor}
-                                (workspace/render workspace)
-                                (html/tag :pre {:class :minibuffer}
-                                          (text/render minibuffer))))))
+  (html/write
+   (html/->Node
+    :html {}
+    [(html/->Node
+      :head {}
+      (html/->Node
+       :style {:type "text/css"}
+       (str "<!-- " (html/css style) " -->")))
+     (html/->Node
+      :body {}
+      (html/->Node
+       :div {:class :editor}
+       [(workspace/render workspace)
+        (html/->Node
+         :pre {:class :minibuffer}
+         (text/render minibuffer))]))])))
 
 (defrecord Root
     [workspace workspaces minibuffer environment style settings])

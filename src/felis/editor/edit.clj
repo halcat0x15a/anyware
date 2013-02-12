@@ -9,16 +9,16 @@
   (edit/move edit :lefts))
 
 (defn insert [value edit]
-  (edit/insert edit :rights value))
+  (edit/add edit :rights value))
 
 (defn append [value edit]
-  (edit/insert edit :lefts value))
+  (edit/add edit :lefts value))
 
 (defn delete [edit]
-  (edit/delete edit :rights))
+  (edit/remove edit :rights))
 
 (defn backspace [edit]
-  (edit/delete edit :lefts))
+  (edit/remove edit :lefts))
 
 (defn- until [f edit]
   (let [edit' (f edit)]
@@ -40,4 +40,3 @@
       (if (identical? edit' edit)
         n
         (recur edit' (inc n))))))
-

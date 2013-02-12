@@ -6,63 +6,51 @@
             [felis.edit :as edit]
             [felis.syntax :as syntax]))
 
-(defmulti peek (fn [_ feild] feild))
+(defmethod edit/invert :lefts [side] :rights)
 
-(defmethod peek :rights [text field]
+(defmethod edit/invert :rights [side] :lefts)
+
+(defmethod edit/head :rights [text field]
   (-> text field first))
 
-(defmethod peek :lefts [text field]
+(defmethod edit/head :lefts [text field]
   (-> text field last))
 
-(defmulti pop (fn [_ feild] feild))
-
-(defmethod pop :rights [text field]
-  (update-in text [field] #(subs % 1)))
-
-(defmethod pop :lefts [text field]
-  (update-in text [field]
-             (fn [string]
-               (subs string 0 (-> string count dec)))))
-
-(defmulti insert (fn [_ feild _] feild))
-
-(defmethod insert :rights [text field char]
+(defmethod edit/add :rights [text field char]
   (update-in text [field] (partial str char)))
 
-(defmethod insert :lefts [text field char]
+(defmethod edit/add :lefts [text field char]
   (update-in text [field] #(str % char)))
 
-(defn move [text field]
-  (if-let [char (peek text field)]
-    (-> text
-        (pop field)
-        (insert (edit/opposite field) char))
-    text))
+(defmethod edit/remove :rights [text field]
+  (let [string (field text)]
+    (if (empty? string)
+      text
+      (assoc text
+        field (subs string 1)))))
 
-(defn delete [text field]
-  (if (empty? (field text))
-    text
-    (pop text field)))
+(defmethod edit/remove :lefts [text field]
+  (let [string (field text)]
+    (if (empty? string)
+      text
+      (assoc text
+        field (subs string 0 (-> string count dec))))))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
 
 (defn cursor [{:keys [lefts rights cursor]}]
-  (str (html/tag :span {:class :hidden} lefts)
-       (html/tag :span {:class cursor} (get rights 0 " "))))
+  [(html/->Node :span {:class :hidden} lefts)
+   (html/->Node :span {:class cursor} (get rights 0 " "))])
 
 (defn tag [string]
-  (html/tag :span {:class :text} string))
+  (html/->Node :span {:class :text} string))
 
 (defn render [text]
   (str (-> text write tag)
        (cursor text)))
 
-(defrecord Text [lefts rights cursor]
-  edit/Edit
-  (move [text field] (move text field))
-  (insert [text field char] (insert text field char))
-  (delete [text field] (delete text field)))
+(defrecord Text [lefts rights cursor])
 
 (def path [:root :workspace :buffer :focus])
 
