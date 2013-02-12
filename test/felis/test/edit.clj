@@ -1,5 +1,5 @@
 (ns felis.test.edit
-  (:require [clojure.test.generative :refer :all]
+  (:require [clojure.test.generative :refer (defspec is)]
             [clojure.data.generators :as gen]
             [felis.test :as test]
             [felis.edit :as edit]))
