@@ -1,5 +1,39 @@
 (ns felis.html
+  (:refer-clojure :exclude [<])
   (:require [clojure.string :as string]))
+
+(defrecord Node [label attributes content])
+
+(defn <
+  ([label attributes content]
+     (Node. label attributes content))
+  ([label attributes content & contents]
+     (Node. label attributes (vec (cons content contents)))))
+
+(defn escape [string]
+  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
+
+(defn write
+  ([label attributes content]
+     (letfn [(attribute [attributes key value]
+               (str attributes \space (name key) \= \" (name value) \"))]
+       (let [label' (name label)]
+         (str \< label' (reduce-kv attribute "" attributes) \>
+              (write content)
+              \< \/ label' \>))))
+  ([{:keys [label attributes content] :as node}]
+     (cond (string? node) (escape node)
+           (vector? node) (->> node (mapv write) string/join)
+           :else (write label attributes content))))
+
+(defn css [style]
+  (letfn [(declaration [declarations property value]
+            (str declarations \space (name property) \: \space (name value) \;))
+          (block [blocks selector block]
+            (let [selector (name selector)
+                  block (reduce-kv declaration "" block)]
+              (str blocks \space selector \space \{ block \space \})))]
+    (reduce-kv block "" style)))
 
 (def style
   {:body {:margin :0px}
@@ -29,32 +63,3 @@
    :.string {:color :red}
    :.keyword {:color :aqua}
    :.comment {:color :maroon}})
-
-(defrecord Node [label attributes content])
-
-(defn escape [string]
-  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
-
-(defn attribute [attributes key value]
-  (str attributes \space (name key) \= \" (name value) \"))
-
-(defn write [{:keys [label attributes content] :as node}]
-  (cond (string? node) (escape node)
-        (char? node) (-> node str escape)
-        (vector? node) (->> node (mapv write) string/join)
-        :else
-        (let [label' (name label)]
-          (str \< label' (reduce-kv attribute "" attributes) \>
-               (write content)
-               \< \/ label' \>))))
-
-(defn css [style]
-  (reduce-kv (fn [string selector block]
-               (let [selector (name selector)
-                     block (reduce-kv (fn [block property value]
-                                        (str block \space (name property) \: \space (name value) \;))
-                                      ""
-                                      block)]
-                 (str string \space selector \space \{ block \space \})))
-             ""
-             style))

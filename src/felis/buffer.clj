@@ -32,14 +32,12 @@
        (string/make-string \newline)))
 
 (defn render [syntax {:keys [lefts focus rights] :as buffer}]
-  (html/->Node
-   :pre {:class :buffer}
-   [(text/tag (->> buffer write (syntax/highlight syntax)))
-    (html/->Node
-     :span {:class :cursor}
-     (->> (concat lefts (-> focus text/focus list) rights)
-          (map text/cursor)
-          (string/make-string \newline)))]))
+  (html/< :pre {:class :buffer}
+          (text/tag (->> buffer write (syntax/highlight syntax)))
+          (html/< :span {:class :cursor}
+                  (->> (concat lefts (-> focus text/focus list) rights)
+                       (map text/cursor)
+                       (string/make-string \newline)))))
 
 (defrecord Buffer [focus tops bottoms])
 

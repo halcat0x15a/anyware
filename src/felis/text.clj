@@ -40,15 +40,15 @@
   (str lefts rights))
 
 (defn cursor [{:keys [lefts rights cursor]}]
-  [(html/->Node :span {:class :hidden} lefts)
-   (html/->Node :span {:class cursor} (get rights 0 " "))])
+  [(html/< :span {:class :hidden} lefts)
+   (html/< :span {:class cursor} (-> rights (get 0 \space) str))])
 
 (defn tag [string]
-  (html/->Node :span {:class :text} string))
+  (html/< :span {:class :text} string))
 
 (defn render [text]
-  (str (-> text write tag)
-       (cursor text)))
+  [(-> text write tag)
+   (cursor text)])
 
 (defrecord Text [lefts rights cursor])
 

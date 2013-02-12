@@ -7,7 +7,7 @@
             [felis.history :as history]))
 
 (defn render [{:keys [name buffer syntax]}]
-  [(html/->Node :p {:class :status} (core/name name))
+  [(html/< :p {:class :status} (core/name name))
    (buffer/render syntax buffer)])
 
 (defrecord Workspace [name buffer history syntax])
