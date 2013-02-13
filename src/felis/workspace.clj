@@ -10,7 +10,9 @@
   [(html/< :p {:class :status} (core/name name))
    (buffer/render syntax buffer)])
 
-(defrecord Workspace [name buffer history syntax])
+(defrecord Workspace [name buffer history syntax]
+  html/Node
+  (render [workspace] (render workspace)))
 
 (def path [:root :workspace])
 

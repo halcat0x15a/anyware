@@ -28,8 +28,14 @@
                    (html/< :pre {:class :minibuffer}
                            (text/render minibuffer))))])
 
-(defrecord Root
-    [workspace workspaces minibuffer environment style settings])
+(defrecord Root [workspace
+                 workspaces
+                 minibuffer
+                 environment
+                 style
+                 settings]
+  html/Node
+  (render [buffer] (render buffer)))
 
 (def path [:root])
 

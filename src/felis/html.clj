@@ -5,6 +5,9 @@
 
 (declare html)
 
+(defprotocol Node
+  (render [node]))
+
 (defn- write [{:keys [label attributes content]}]
   (letfn [(attribute [attributes key value]
             (str attributes \space (name key) \= \" (name value) \"))]
@@ -13,15 +16,15 @@
            (html content)
            \< \/ label' \>))))
 
-(defrecord Node [label attributes content]
+(defrecord Element [label attributes content]
   serialization/Serializable
   (write [node] (write node)))
 
 (defn <
   ([label attributes content]
-     (Node. label attributes content))
+     (Element. label attributes content))
   ([label attributes content & contents]
-     (Node. label attributes (vec (cons content contents)))))
+     (Element. label attributes (vec (cons content contents)))))
 
 (defn escape [string]
   (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))

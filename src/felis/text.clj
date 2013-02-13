@@ -51,6 +51,8 @@
    (cursor text)])
 
 (defrecord Text [lefts rights cursor]
+  html/Node
+  (render [buffer] (render buffer))
   serialization/Serializable
   (write [text] (write text)))
 

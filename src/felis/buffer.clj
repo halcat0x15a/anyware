@@ -41,6 +41,8 @@
                        (string/make-string \newline)))))
 
 (defrecord Buffer [focus tops bottoms]
+  html/Node
+  (render [buffer] (render syntax/default buffer))
   serialization/Serializable
   (write [buffer] (write buffer)))
 
