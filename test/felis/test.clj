@@ -5,6 +5,7 @@
             [felis.edit :as edit]
             [felis.text :as text]
             [felis.buffer :as buffer]
+            [felis.history :as history]
             [felis.workspace :as workspace]
             [felis.root :as root]
             [felis.editor.normal :as normal]
@@ -31,6 +32,12 @@
     :focus (text)
     :tops (tops)
     :bottoms (bottoms)))
+
+(defn history []
+  (assoc history/default
+    :present (buffer)
+    :past ((gen/rand-nth [(constantly nil) history]))
+    :futures ((gen/rand-nth [(constantly []) (comp vector history)]))))
 
 (defn workspace []
   (assoc workspace/default
