@@ -4,10 +4,14 @@
             [felis.editor.normal :as normal]))
 
 (def global
-  {key/escape normal/map->Normal})
+  { })
 
 (defn run [editor keycode event]
   (let [key (editor/code keycode event)]
-    (if-let [update (get (merge global (editor/keymap editor)) key)]
+    (if-let [update
+             (-> editor
+                 editor/keymap
+                 (update-in [key/escape] (partial comp normal/map->Normal))
+                 (get key))]
       (update editor)
       (editor/input editor key))))

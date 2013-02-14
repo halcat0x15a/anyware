@@ -7,6 +7,6 @@
 
 (defspec commit-undo
   (fn [history buffer]
-    (-> history (history/commit buffer) history/undo :present))
+    (->> history (history/commit buffer) history/undo :present))
   [^test/history history ^test/buffer buffer]
   (is (= % (:present history))))

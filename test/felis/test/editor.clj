@@ -34,8 +34,10 @@
 
 (deftest editor
   (testing "type 'hello world'"
-    (is (= (emulate normal/default \i "helloworld" key/escape)
-           (assoc-in normal/default text/lefts "helloworld"))))
+    (is (= (-> normal/default
+               (emulate \i "helloworld" key/escape \0)
+               (get-in buffer/path))
+           (buffer/read "helloworld"))))
   (testing "move on all sides"
     (is (= (-> normal/default
                (assoc-in buffer/path (buffer/read "hello\nworld"))

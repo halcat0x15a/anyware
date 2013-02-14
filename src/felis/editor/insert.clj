@@ -1,11 +1,13 @@
 (ns felis.editor.insert
   (:require [felis.key :as key]
             [felis.editor :as editor]
-            [felis.editor.text :as text]
-            [felis.editor.buffer :as buffer]))
+            [felis.editor.history :as history]
+            [felis.editor.buffer :as buffer]
+            [felis.editor.text :as text]))
 
 (def keymap
-  {key/left text/left
+  {key/escape history/commit
+   key/left text/left
    key/right text/right
    key/up buffer/top
    key/down buffer/bottom

@@ -1,11 +1,13 @@
 (ns felis.editor.delete
   (:require [felis.key :as key]
             [felis.editor :as editor]
-            [felis.editor.text :as text]
-            [felis.editor.buffer :as buffer]))
+            [felis.editor.history :as history]
+            [felis.editor.buffer :as buffer]
+            [felis.editor.text :as text]))
 
 (def keymap
-  {key/left text/backspace
+  {key/escape history/commit
+   key/left text/backspace
    key/up buffer/delete
    key/down buffer/backspace
    key/right text/delete

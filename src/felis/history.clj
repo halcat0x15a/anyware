@@ -10,8 +10,7 @@
 (defn undo [history]
   (if-let [past (:past history)]
     (assoc past
-      :futures (conj (:futures past) history))
-    history))
+      :futures (conj (:futures past) history))))
 
-(defn commit [history buffer]
+(defn commit [buffer history]
   (History. buffer history []))
