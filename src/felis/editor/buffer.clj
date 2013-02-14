@@ -16,16 +16,16 @@
   (update-in editor buffer/path (partial edit/end :bottoms)))
 
 (defn insert-newline [editor]
-  (update-in editor buffer/path (partial edit/insert text/default :tops)))
+  (update-in editor buffer/path (partial edit/insert text/default :bottoms)))
 
 (defn append-newline [editor]
-  (update-in editor buffer/path (partial edit/insert text/default :bottoms)))
+  (update-in editor buffer/path (partial edit/insert text/default :tops)))
 
 (defn break [editor]
   (update-in editor buffer/path buffer/break))
 
 (defn delete [editor]
-  (update-in editor buffer/path (partial edit/delete :tops)))
+  (update-in editor buffer/path (partial edit/delete :bottoms)))
 
 (defn backspace [editor]
-  (update-in editor buffer/path (partial edit/delete :bottoms)))
+  (update-in editor buffer/path (partial edit/delete :tops)))

@@ -21,7 +21,7 @@
 (defn render [{:keys [workspace minibuffer style]}]
   [(html/< :head {}
            (html/< :style {:type "text/css"}
-                   (str "<!-- " (html/css style) " -->")))
+                   (html/css style)))
    (html/< :body {}
            (html/< :div {:class :editor}
                    (workspace/render workspace)

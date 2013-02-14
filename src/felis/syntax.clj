@@ -4,6 +4,6 @@
 
 (defn highlight [parser source]
   (let [{:keys [source destination]} (parser/parse parser source)]
-    (str (string/join (persistent! destination)) source)))
+    [(persistent! destination) source]))
 
 (def default (parser/parser #".*"))

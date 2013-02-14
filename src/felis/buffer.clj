@@ -36,17 +36,10 @@
        (map serialization/write)
        (string/make-string \newline)))
 
-(defn render [syntax {:keys [lefts focus rights] :as buffer}]
-  (html/< :pre {:class :buffer}
-          (text/tag (->> buffer serialization/write (syntax/highlight syntax)))
-          (html/< :span {:class :cursor}
-                  (->> (concat lefts (-> focus text/focus list) rights)
-                       (map text/cursor)
-                       (string/make-string \newline)))))
+(defn focus [{:keys [tops focus bottoms]}]
+  (concat tops (-> focus text/focus list) bottoms))
 
 (defrecord Buffer [focus tops bottoms]
-  html/Node
-  (render [buffer] (render syntax/default buffer))
   serialization/Serializable
   (write [buffer] (write buffer)))
 

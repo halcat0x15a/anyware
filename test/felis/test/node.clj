@@ -24,7 +24,6 @@
   ((gen/rand-nth
     [test/root
      test/workspace
-     test/buffer
      test/text])))
 
 (defn node? [x]
