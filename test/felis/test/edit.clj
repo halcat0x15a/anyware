@@ -46,28 +46,24 @@
   [^{:tag `edit*field} [edit field]]
   (is (= % field)))
 
-(defspec add-remove
+(defspec insert-delete
   (fn [[edit field]]
-    (-> edit
-        (edit/add field (element edit))
-        (edit/remove field)))
+    (->> edit
+         (edit/insert (element edit) field)
+         (edit/delete field)))
   [^{:tag `edit*field} [edit field]]
   (is (= % edit)))
 
 (defspec move-move
   (fn [[edit field]]
-    (-> edit
-        (edit/add field (element edit))
-        (edit/move field)
-        (edit/move (edit/invert field))
-        (edit/remove field)))
+    (->> edit (edit/move field) field count))
   [^{:tag `edit*field} [edit field]]
-  (is (= % edit)))
+  (is (<= % (-> edit field count))))
 
 (defspec end-head
   (fn [[edit field]]
-    (-> edit
-        (edit/end field)
-        (edit/head field)))
+    (->> edit
+         (edit/end field)
+         (edit/head field)))
   [^{:tag `edit*field} [edit field]]
   (is (nil? %)))

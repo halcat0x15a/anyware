@@ -3,21 +3,30 @@
 
 (defmulti invert identity)
 
-(defmulti add (fn [_ field _] field))
+(defmulti insert (fn [_ field _] field))
 
-(defmulti remove (fn [_ field] field))
+(defmulti delete (fn [field _] field))
 
-(defmulti head (fn [_ field] field))
+(defmulti head (fn [field _] field))
 
-(defn move [edit field]
-  (if-let [value (head edit field)]
-    (-> edit
-        (add (invert field) value)
-        (remove field))
+(defn move [field edit]
+  (if-let [value (head field edit)]
+    (->> edit
+         (insert value (invert field))
+         (delete field))
     edit))
 
-(defn end [edit field]
-  (let [edit' (move edit field)]
+(defn end [field edit]
+  (let [edit' (move field edit)]
     (if (identical? edit edit')
       edit
-      (recur edit' field))))
+      (recur field edit'))))
+
+(def left (partial move :lefts))
+
+(def right (partial move :rights))
+
+(defn append [char text]
+  (insert char :lefts text))
+
+(def backspace (partial delete :lefts))

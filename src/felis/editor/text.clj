@@ -1,28 +1,25 @@
 (ns felis.editor.text
   (:refer-clojure :exclude [replace])
   (:require [felis.text :as text]
-            [felis.editor.edit :as edit]))
+            [felis.edit :as edit]))
 
 (defn left [editor]
-  (update-in editor text/path edit/prev))
+  (update-in editor text/path edit/left))
 
 (defn right [editor]
-  (update-in editor text/path edit/next))
+  (update-in editor text/path edit/right))
 
 (defn start [editor]
-  (update-in editor text/path edit/start))
+  (update-in editor text/path (partial edit/end :lefts)))
 
 (defn end [editor]
-  (update-in editor text/path edit/end))
-
-(defn insert [editor char]
-  (update-in editor text/path (partial edit/insert char)))
+  (update-in editor text/path (partial edit/end :rights)))
 
 (defn append [editor char]
   (update-in editor text/path (partial edit/append char)))
 
 (defn delete [editor]
-  (update-in editor text/path edit/delete))
+  (update-in editor text/path (partial edit/delete :lefts)))
 
 (defn backspace [editor]
   (update-in editor text/path edit/backspace))

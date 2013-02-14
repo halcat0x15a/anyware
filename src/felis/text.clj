@@ -10,26 +10,26 @@
 
 (defmethod edit/invert :rights [side] :lefts)
 
-(defmethod edit/head :rights [text field]
+(defmethod edit/head :rights [field text]
   (-> text field first))
 
-(defmethod edit/head :lefts [text field]
+(defmethod edit/head :lefts [field text]
   (-> text field last))
 
-(defmethod edit/add :rights [text field char]
+(defmethod edit/insert :rights [char field text]
   (update-in text [field] (partial str char)))
 
-(defmethod edit/add :lefts [text field char]
+(defmethod edit/insert :lefts [char field text]
   (update-in text [field] #(str % char)))
 
-(defmethod edit/remove :rights [text field]
+(defmethod edit/delete :rights [field text]
   (let [string (field text)]
     (if (empty? string)
       text
       (assoc text
         field (subs string 1)))))
 
-(defmethod edit/remove :lefts [text field]
+(defmethod edit/delete :lefts [field text]
   (let [string (field text)]
     (if (empty? string)
       text

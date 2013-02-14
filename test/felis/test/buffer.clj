@@ -6,7 +6,7 @@
             [felis.buffer :as buffer]))
 
 (defn insert-newline [buffer]
-  (update-in buffer [:focus] #(edit/add % :lefts \newline)))
+  (update-in buffer [:focus] (partial edit/insert \newline :lefts)))
 
 (defspec break
   (fn [buffer] (-> buffer buffer/break serialization/write))

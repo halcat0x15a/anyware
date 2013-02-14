@@ -6,7 +6,7 @@
             [felis.lisp.environment :as environment]
             [felis.text :as text]
             [felis.editor :as editor]
-            [felis.editor.edit :as edit]))
+            [felis.edit :as edit]))
 
 (defn run [editor]
   (let [[command & args]
@@ -21,11 +21,11 @@
 (defn focus [editor]
   (update-in editor text/minibuffer text/focus))
 
-(defn prev [editor]
-  (update-in editor text/minibuffer edit/prev))
+(defn left [editor]
+  (update-in editor text/minibuffer edit/left))
 
-(defn next [editor]
-  (update-in editor text/minibuffer edit/next))
+(defn right [editor]
+  (update-in editor text/minibuffer edit/right))
 
 (defn append [editor char]
   (update-in editor text/minibuffer (partial edit/append char)))
@@ -36,8 +36,8 @@
 (def keymap
   {key/enter run
    key/backspace backspace
-   key/left prev
-   key/right next})
+   key/left left
+   key/right right})
 
 (defrecord Minibuffer [root]
   editor/Editor

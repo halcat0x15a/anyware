@@ -11,21 +11,25 @@
 
 (defmethod edit/invert :bottoms [side] :tops)
 
-(defmethod edit/head :default [buffer field]
+(defmethod edit/head :default [field buffer]
   (-> buffer field peek))
 
-(defmethod edit/add :default [{:keys [focus] :as buffer} field focus']
+(defmethod edit/insert :default [focus' field {:keys [focus] :as buffer}]
   (-> buffer
       (assoc :focus focus')
       (update-in [field] #(conj % focus))))
 
-(defmethod edit/remove :default [buffer field]
-  (if-let [focus' (edit/head buffer field)]
+(defmethod edit/delete :default [field buffer]
+  (if-let [focus' (edit/head field buffer)]
     (-> buffer
         (assoc :focus focus')
         (update-in [field] pop))
     (assoc buffer
       :focus text/default)))
+
+(defn break [{:keys [focus] :as buffer}]
+  (->> (update-in buffer [:focus] #(assoc % :rights ""))
+       (edit/insert (assoc focus :lefts "") :tops)))
 
 (defn- write [{:keys [tops focus bottoms]}]
   (->> (concat tops (list focus) bottoms)
@@ -55,8 +59,3 @@
     (assoc default
       :focus (first lines)
       :bottoms (->> lines rest (apply list)))))
-
-(defn break [{:keys [focus] :as buffer}]
-  (-> buffer
-      (update-in [:focus] #(assoc % :rights ""))
-      (edit/add :tops (assoc focus :lefts ""))))
