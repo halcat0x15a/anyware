@@ -9,6 +9,9 @@
 
 (defmulti head (fn [field _] field))
 
+(defn cursor [field edit]
+  (-> edit field count))
+
 (defn move [field edit]
   (if-let [value (head field edit)]
     (->> edit

@@ -1,7 +1,12 @@
 (ns felis.string
   (:refer-clojure :exclude [rest butlast])
-  (:require [clojure.core :as core]
-            [clojure.string :as string]))
+  (:require
+   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
+   [clojure.string :as string]))
+
+;*CLJSBUILD-REMOVE*;(comment
+(require '[clojure.core :as core])
+;*CLJSBUILD-REMOVE*;)
 
 (defn rest [string]
   (if (-> string count pos?)

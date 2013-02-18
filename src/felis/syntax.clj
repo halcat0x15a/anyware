@@ -3,7 +3,6 @@
             [felis.parser :as parser]))
 
 (defn highlight [parser source]
-  (let [{:keys [source destination]} (parser/parse parser source)]
-    [(persistent! destination) source]))
+  (-> source parser :result))
 
-(def default (parser/parser #".*"))
+(def default (parser/regex #".*"))

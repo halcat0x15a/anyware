@@ -4,6 +4,7 @@
             [felis.html :as html]
             [felis.lisp.environment :as environment]
             [felis.workspace :as workspace]
+            [felis.edit :as edit]
             [felis.text :as text]))
 
 (defn add [workspace' {:keys [workspace workspaces] :as root}]
@@ -21,7 +22,10 @@
 (defn render [{:keys [workspace minibuffer style]}]
   [(html/< :head {}
            (html/< :style {:type "text/css"}
-                   (html/css style)))
+                   (-> style
+                       (assoc-in [:.buffer :top]
+                                 (-> (->> workspace :buffer (edit/cursor :tops)) (* -17) (str "px")))
+                       html/css)))
    (html/< :body {}
            (html/< :div {:class :editor}
                    (workspace/render workspace)
@@ -38,6 +42,8 @@
   (render [buffer] (render buffer)))
 
 (def path [:root])
+
+(def environment (conj path :environment))
 
 (def default
   (Root. workspace/default

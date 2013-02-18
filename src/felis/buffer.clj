@@ -52,3 +52,6 @@
     (assoc default
       :focus (first lines)
       :bottoms (->> lines rest (apply list)))))
+
+(defn lines [{:keys [tops focus bottoms]}]
+  (concat tops (list focus) bottoms))

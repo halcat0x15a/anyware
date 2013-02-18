@@ -19,7 +19,7 @@
   (update-in editor text/path (partial edit/append char)))
 
 (defn delete [editor]
-  (update-in editor text/path (partial edit/delete :lefts)))
+  (update-in editor text/path (partial edit/delete :rights)))
 
 (defn backspace [editor]
   (update-in editor text/path edit/backspace))

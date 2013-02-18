@@ -1,56 +1,70 @@
 (ns felis.parser
-  (:refer-clojure :exclude [comp or repeat])
-  (:require [clojure.core :as core]
-            [clojure.string :as string]))
+  (:refer-clojure :exclude [map comp and or repeat])
+  (:require
+   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
+   [clojure.string :as string]
+   [felis.parser.result :as result]))
 
-(defrecord Input [source destination cursor])
-
-(defn parse [parser source]
-  (-> source (Input. (transient []) 0) parser))
-
-(defn parse' [parser source]
-  (->> source (parse parser) :destination persistent! first))
+;*CLJSBUILD-REMOVE*;(comment
+(require '[clojure.core :as core])
+;*CLJSBUILD-REMOVE*;)
 
 (defn extract [x]
   (cond (coll? x) (first x)
         (string? x) x))
 
-(defn parser
-  ([regex] (parser regex identity))
-  ([regex transform]
-     (fn [{:keys [cursor source destination] :as input}]
-       (if-let [result (re-find regex source)]
-         (let [length (-> result extract count)]
-           (Input. (subs source length)
-                   (->> result transform (conj! destination))
-                   (+ cursor length)))
-         input))))
+(defn regex [regex]
+  (fn [input]
+    (if-let [result (re-find regex input)]
+      (result/->Success result (subs input (-> result extract count)))
+      (result/->Failure (str "string matching regex "
+                             regex
+                             " expected but nil found")
+                        input))))
 
-(defn comp [parser & parsers]
-  (fn [initial]
-    (loop [{:keys [cursor] :as input} initial parsers (cons parser parsers)]
+(defn literal [literal]
+  (fn [input]
+    (let [size (count literal)]
+      (if (<= size (count input))
+        (let [result (subs input 0 size)]
+          (if (= literal result)
+            (result/->Success result (subs input size))
+            (result/->Failure (str literal " expected but " result " found") input)))
+        (result/->Failure (str "string index out of range " size) input)))))
+
+(defn map [parser f]
+  (if (fn? parser)
+    (fn [input] (result/map (parser input) f))
+    (result/map parser f)))
+
+(defn or [parser parser' & parsers]
+  (fn [input]
+    (loop [result (parser input)
+           parsers (cons parser' parsers)]
       (if (empty? parsers)
-        input
-        (let [[parser & parsers] parsers
-              result (parser input)]
-          (if (< cursor (:cursor result))
-            (recur result parsers)
-            initial))))))
+        result
+        (recur (result/or result ((first parsers) input))
+               (rest parsers))))))
 
-(defn or [parser & parsers]
-  (fn [{:keys [cursor] :as input}]
-    (loop [parsers (cons parser parsers)]
-      (if (empty? parsers)
-        input
-        (let [[parser & parsers] parsers
-              result (parser input)]
-          (if (< cursor (:cursor result))
-            result
-            (recur parsers)))))))
-
+(defn and [parser & parsers]
+  (fn [input]
+    (let [result (result/map (parser input) vector)]
+      (loop [result result
+             parsers parsers]
+        (if (empty? parsers)
+          result
+          (recur (result/mapcat result
+                                (fn [result input]
+                                  (result/map ((first parsers) input)
+                                              (partial conj result))))
+                 (rest parsers)))))))
+                     
 (defn repeat [parser]
-  (fn [{:keys [cursor] :as input}]
-    (let [result (parser input)]
-      (if (< cursor (:cursor result))
-        (recur result)
-        result))))
+  (fn [input]
+    (let [result (result/map (parser input) vector)]
+      (loop [result result]
+        (let [result' (result/map (parser (:next result))
+                                  (partial conj (:result result)))]
+          (if (result/success? result')
+            (recur result')
+            (result/or result (result/->Success [] input))))))))

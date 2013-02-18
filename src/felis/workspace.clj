@@ -1,12 +1,17 @@
 (ns felis.workspace
   (:refer-clojure :exclude [name])
-  (:require [clojure.core :as core]
+  (:require [felis.string :as string]
+            ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
             [felis.serialization :as serialization]
             [felis.html :as html]
             [felis.buffer :as buffer]
             [felis.text :as text]
             [felis.syntax :as syntax]
             [felis.history :as history]))
+
+;*CLJSBUILD-REMOVE*;(comment
+(require '[clojure.core :as core])
+;*CLJSBUILD-REMOVE*;)
 
 (defn render [{:keys [name buffer syntax]}]
   [(html/< :p {:class :status} (core/name name))
@@ -22,9 +27,9 @@
   html/Node
   (render [workspace] (render workspace)))
 
+(def default
+  (Workspace. :*scratch* buffer/default history/default syntax/default))
+
 (def path [:root :workspace])
 
 (def name (conj path :name))
-
-(def default
-  (Workspace. :*scratch* buffer/default history/default syntax/default))

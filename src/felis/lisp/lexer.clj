@@ -1,36 +1,65 @@
 (ns felis.lisp.lexer
-  (:refer-clojure :exclude [int keyword list])
-  (:require [clojure.core :as core]
-            [clojure.string :as string]
-            [felis.parser :as parser]))
+  (:refer-clojure :exclude [int keyword list vector])
+  (:require
+   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
+   [clojure.string :as string]
+   [felis.parser :as parser]))
 
-(declare lisp)
+;*CLJSBUILD-REMOVE*;(comment
+(require '[clojure.core :as core])
+;*CLJSBUILD-REMOVE*;)
 
-(def nil' (parser/parser #"^nil" (constantly nil)))
+(declare expression)
 
-(def true' (parser/parser #"^true" (constantly true)))
+(def number
+  (-> (parser/regex #"^\d+")
+      (parser/map (comp (partial reduce (fn [m n] (+ (* m 10) n)))
+                        (partial map #(- (core/int %) (core/int \0)))))))
 
-(def false' (parser/parser #"^false" (constantly false)))
+(def string (parser/regex #"^\".*\""))
 
-(def int
-  (parser/parser
-   #"^\d+"
-   (fn [number]
-     (reduce (fn [m n] (+ (* m 10) n))
-             (map #(- (core/int %) (core/int \0)) number)))))
+(def keyword
+  (-> (parser/regex #"^:([^\(\)\[\]\"\s]*)")
+      (parser/map (fn [[_ keyword]]
+                    (core/keyword keyword)))))
 
-(def string (parser/parser #"^\".*\""))
+(def identifier
+  (parser/map (parser/regex #"^[^\(\)\[\]\":\s]+") symbol))
 
-(def keyword (parser/parser #"^:.*" core/keyword))
-
-(def identifier (parser/parser #"^\S+" symbol))
+(def space (parser/regex #"^\s*"))
 
 (def list
-  (parser/parser
-   #"^\((.*)\)"
-   (fn [[_ list]]
-     (map (partial parser/parse' lisp)
-          (string/split list #"\s+")))))
+  (fn [input]
+    ((-> (parser/and (parser/literal "(")
+                     (parser/repeat expression)
+                     (parser/literal ")"))
+         (parser/map (fn [[_ list _]] (apply core/list list))))
+     input)))
+
+(def vector
+  (fn [input]
+    ((-> (parser/and (parser/literal "[")
+                     (parser/repeat expression)
+                     (parser/literal "]"))
+         (parser/map (fn [[_ vector _]] vector)))
+     input)))
+
+(def quotation
+  (fn [input]
+    ((-> (parser/and (parser/literal "'")
+                     expression)
+         (parser/map (fn [[_ expr]]
+                       (symbol (str expr)))))
+     input)))
+
+(def expression
+  (fn [input]
+    ((-> (parser/and space
+                     (parser/or string keyword number quotation list vector identifier)
+                     space)
+         (parser/map (fn [[_ expr _]] expr)))
+     input)))
 
 (def lisp
-  (parser/repeat (parser/or list string keyword int nil' true' false' identifier)))
+  (fn [input]
+    ((parser/repeat expression) input)))

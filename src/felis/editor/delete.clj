@@ -7,10 +7,10 @@
 
 (def keymap
   {key/escape history/commit
-   key/left text/backspace
+   key/left text/delete
    key/up buffer/delete
    key/down buffer/backspace
-   key/right text/delete
+   key/right text/backspace
    \h text/backspace
    \j buffer/delete
    \k buffer/backspace

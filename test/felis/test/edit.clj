@@ -54,11 +54,11 @@
   [^{:tag `edit*field} [edit field]]
   (is (= % edit)))
 
-(defspec move-move
+(defspec move-cursor
   (fn [[edit field]]
-    (->> edit (edit/move field) field count))
+    (->> edit (edit/move field) (edit/cursor field)))
   [^{:tag `edit*field} [edit field]]
-  (is (<= % (-> edit field count))))
+  (is (<= % (edit/cursor field edit))))
 
 (defspec end-head
   (fn [[edit field]]

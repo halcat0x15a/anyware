@@ -3,33 +3,37 @@
   (:require [felis.parser :as parser]
             [felis.html :as html]))
 
-(def identifier (parser/parser #"^[^\":;]"))
+(def identifier (parser/regex #"^[^\":;]"))
 
 (def definition
-  (parser/parser #"^\((def.*?)(\s+)(\S*)"
-                 (fn [[_ definition space name]]
-                   ["("
-                    (html/< :span {:class :special} definition)
-                    space
-                    (html/< :span {:class :name} name)])))
+  (-> #"^\((def.*?)(\s+)(\S*)"
+      parser/regex
+      (parser/map (fn [[_ definition space name]]
+                    ["("
+                     (html/< :span {:class :special} definition)
+                     space
+                     (html/< :span {:class :name} name)]))))
 
 (def special
-  (parser/parser
-   #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
-   (fn [[_ special space]]
-     ["(" (html/< :span {:class :special} special) space])))
+  (-> #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
+      parser/regex
+      (parser/map (fn [[_ special space]]
+                    ["(" (html/< :span {:class :special} special) space]))))
 
 (def string
-  (parser/parser #"^\".*\""
-                 (partial html/< :span {:class :string})))
+  (-> #"^\".*\""
+      parser/regex 
+      (parser/map (partial html/< :span {:class :string}))))
 
 (def keyword
-  (parser/parser #"^:[^\(\)\s]+"
-                 (partial html/< :span {:class :keyword})))
+  (-> #"^:[^\(\)\s]+"
+      parser/regex
+      (parser/map (partial html/< :span {:class :keyword}))))
 
 (def comment
-  (parser/parser #"^;.*"
-                 (partial html/< :span {:class :comment})))
+  (-> #"^;.*"
+      parser/regex
+      (parser/map (partial html/< :span {:class :comment}))))
 
 (def syntax
   (parser/repeat
