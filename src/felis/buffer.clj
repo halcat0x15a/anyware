@@ -36,9 +36,6 @@
        (map serialization/write)
        (string/make-string \newline)))
 
-(defn focus [{:keys [tops focus bottoms]}]
-  (concat tops (-> focus text/focus list) bottoms))
-
 (defrecord Buffer [focus tops bottoms]
   serialization/Serializable
   (write [buffer] (write buffer)))
@@ -52,6 +49,3 @@
     (assoc default
       :focus (first lines)
       :bottoms (->> lines rest (apply list)))))
-
-(defn lines [{:keys [tops focus bottoms]}]
-  (concat tops (list focus) bottoms))

@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [read])
   (:require [felis.string :as string]
             [felis.serialization :as serialization]
-            [felis.html :as html]
             [felis.edit :as edit]
             [felis.syntax :as syntax]))
 
@@ -39,20 +38,7 @@
 (defn- write [{:keys [lefts rights]}]
   (str lefts rights))
 
-(defn cursor [{:keys [lefts rights cursor]}]
-  [(html/< :span {:class :hidden} lefts)
-   (html/< :span {:class cursor} (-> rights (get 0 \space) str))])
-
-(defn tag [string]
-  (html/< :span {:class :text} string))
-
-(defn render [text]
-  [(-> text write tag)
-   (cursor text)])
-
-(defrecord Text [lefts rights cursor]
-  html/Node
-  (render [buffer] (render buffer))
+(defrecord Text [lefts rights]
   serialization/Serializable
   (write [text] (write text)))
 
@@ -64,12 +50,9 @@
 
 (def minibuffer [:root :minibuffer])
 
-(def default (Text. "" "" :pointer))
+(def default (Text. "" ""))
 
 (defn read [string]
   (assoc default
     :lefts ""
     :rights string))
-
-(defn focus [text]
-  (assoc text :cursor :focus))

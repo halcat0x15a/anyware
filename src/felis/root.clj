@@ -19,27 +19,12 @@
       :workspaces (disj workspaces workspace'))
     root))
 
-(defn render [{:keys [workspace minibuffer style]}]
-  [(html/< :head {}
-           (html/< :style {:type "text/css"}
-                   (-> style
-                       (assoc-in [:.buffer :top]
-                                 (-> (->> workspace :buffer (edit/cursor :tops)) (* -17) (str "px")))
-                       html/css)))
-   (html/< :body {}
-           (html/< :div {:class :editor}
-                   (workspace/render workspace)
-                   (html/< :pre {:class :minibuffer}
-                           (text/render minibuffer))))])
-
 (defrecord Root [workspace
                  workspaces
                  minibuffer
                  environment
                  style
-                 settings]
-  html/Node
-  (render [buffer] (render buffer)))
+                 settings])
 
 (def path [:root])
 

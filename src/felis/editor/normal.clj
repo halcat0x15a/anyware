@@ -30,7 +30,7 @@
    \X text/backspace
    \d delete/map->Delete
    \u history/undo
-   \: (comp minibuffer/map->Minibuffer minibuffer/focus)})
+   \: minibuffer/map->Minibuffer})
 
 (defrecord Normal [root]
   editor/Editor

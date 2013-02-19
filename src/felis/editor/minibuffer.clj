@@ -18,9 +18,6 @@
       (assoc-in (apply f editor args) text/minibuffer text/default)
       editor)))
 
-(defn focus [editor]
-  (update-in editor text/minibuffer text/focus))
-
 (defn left [editor]
   (update-in editor text/minibuffer edit/left))
 

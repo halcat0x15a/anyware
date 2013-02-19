@@ -1,7 +1,4 @@
-(ns felis.editor
-  (:require [felis.key :as key]
-            [felis.html :as html]
-            [felis.root :as root]))
+(ns felis.editor)
 
 (defprotocol Editor
   (keymap [editor])
@@ -9,6 +6,3 @@
 
 (defprotocol KeyCode
   (code [this event]))
-
-(defn render [{:keys [root]}]
-  (html/html (html/< :html {} (root/render root))))

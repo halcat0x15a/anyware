@@ -11,7 +11,7 @@
   (is (not (empty? %))))
 
 (defspec not-nil
-  #(%1 %2)
+  (fn [function string] (function string))
   [^{:tag (gen/rand-nth [string/rest string/butlast])} function
    ^string string]
   (is (not (nil? %))))

@@ -1,12 +1,6 @@
 (ns felis.string
   (:refer-clojure :exclude [rest butlast])
-  (:require
-   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
-   [clojure.string :as string]))
-
-;*CLJSBUILD-REMOVE*;(comment
-(require '[clojure.core :as core])
-;*CLJSBUILD-REMOVE*;)
+  (:require [clojure.string :as string]))
 
 (defn rest [string]
   (if (-> string count pos?)
@@ -25,7 +19,7 @@
 (defn split-lines [string]
   (loop [source string chunk "" strings (transient [])]
     (if-let [char (first source)]
-      (let [source' (core/rest source)]
+      (let [source' (subs source 1)]
         (if (identical? char \newline)
           (recur source' "" (conj! strings chunk))
           (recur source' (str chunk char) strings)))

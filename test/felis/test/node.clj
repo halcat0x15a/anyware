@@ -20,23 +20,7 @@
     text/path
     text/minibuffer]))
 
-(defn node []
-  ((gen/rand-nth
-    [test/root
-     test/workspace
-     test/text])))
-
-(defn node? [x]
-  (or (string? x)
-      (vector? x)
-      (instance? felis.html.Element x)))
-
 (defspec path-get-in-editor
   get-in
   [^test/editor editor ^{:tag `path} path]
   (is (not (nil? %))))
-
-(defspec render-node
-  html/render
-  [^{:tag `node} node]
-  (is (node? %)))

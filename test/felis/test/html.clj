@@ -8,16 +8,30 @@
   (:import [java.io ByteArrayInputStream]))
 
 (defn block []
-  (gen/hash-map gen/keyword gen/keyword))
+  (gen/hash-map gen/keyword gen/string))
 
 (defn css []
   (gen/hash-map gen/keyword block))
 
-(defspec not-contains-lt-and-rl
+(declare element node-seq)
+
+(defn node []
+  ((gen/weighted {gen/string 2
+                  element 1
+                  node-seq 1})))
+
+(defn element []
+  (html/->Element (gen/keyword) (block) (node)))
+
+(defn node-seq []
+  (html/->NodeSeq (node) (gen/list node (dec (partial gen/geometric 0.2)))))
+
+(defspec espace-string
   (comp set html/escape)
   [^string string]
   (is (and (not (contains? \< %))
-           (not (contains? \> %)))))
+           (not (contains? \> %))
+           (not (contains? \& %)))))
 
 (defspec css-is-string
   html/css
@@ -25,6 +39,6 @@
   (is (string? %)))
 
 (defspec valid-html
-  editor/render
+  (comp html/write html/html)
   [^test/editor editor]
   (is (-> % .getBytes ByteArrayInputStream. xml/parse)))

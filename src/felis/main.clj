@@ -3,14 +3,14 @@
             [felis.editor :as editor]
             [felis.editor.normal :as normal]))
 
-(def global
-  {})
-
 (defn run [editor keycode event]
   (let [key (editor/code keycode event)]
+    (prn key)
     (if-let [update
-             (-> (merge {key/escape identity} (editor/keymap editor))
-                 (update-in [key/escape] (partial comp normal/map->Normal))
+             (-> {key/escape identity}
+                 (merge (editor/keymap editor))
+                 (update-in [key/escape]
+                            (partial comp normal/map->Normal))
                  (get key))]
       (update editor)
       (editor/input editor key))))
