@@ -3,9 +3,7 @@
   (:require [felis.string :as string]
             [felis.serialization :as serialization]
             [felis.edit :as edit]
-            [felis.text :as text]
-            [felis.html :as html]
-            [felis.syntax :as syntax]))
+            [felis.text :as text]))
 
 (defmethod edit/invert :tops [side] :bottoms)
 
@@ -31,8 +29,12 @@
   (->> (update-in buffer [:focus] #(assoc % :rights ""))
        (edit/insert (assoc focus :lefts "") :tops)))
 
-(defn- write [{:keys [tops focus bottoms]}]
-  (->> (concat tops (list focus) bottoms)
+(defn texts [{:keys [tops focus bottoms]}]
+  (concat tops (list focus) bottoms))
+
+(defn- write [buffer]
+  (->> buffer
+       texts
        (map serialization/write)
        (string/make-string \newline)))
 

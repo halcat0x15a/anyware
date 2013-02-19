@@ -1,6 +1,7 @@
 (ns felis.html
   (:refer-clojure :exclude [<])
   (:require [clojure.string :as string]
+            [felis.buffer :as buffer]
             [felis.serialization :as serialization]))
 
 (defprotocol Node
@@ -47,6 +48,15 @@
   ([label attributes content & contents]
      (Element. label attributes (NodeSeq. content contents))))
 
+(defn pointer [{:keys [lefts rights]}]
+  (list (< :span {:class "hidden"} lefts)
+        (< :span {:class "pointer"} (-> rights (get 0 \space) str))
+        "\n"))
+
+(defn cursor [pointer]
+  (apply < :span {:class "cursor"}
+         pointer))
+
 (defn html [editor]
   (let [{:keys [workspace minibuffer style]} (:root editor)
         {:keys [buffer]} workspace]
@@ -56,10 +66,13 @@
           (< :style {:type "text/css"}
              (css style)))
        (< :body {}
-          (< :div {:class "buffer"}
-             (serialization/write buffer))
-          (< :div {:class "minibuffer"}
-             (serialization/write minibuffer))))))
+          (< :div {:class "editor"}
+             (< :pre {:class "buffer"}
+                (serialization/write buffer)
+                (cursor (->> buffer buffer/texts (mapcat pointer))))
+             (< :div {:class "minibuffer"}
+                (serialization/write minibuffer)
+                (cursor (pointer minibuffer))))))))
 
 (def style
   {:body {:margin "0px"}
@@ -67,23 +80,18 @@
              :background-color "white"
              :font-size "16px"
              :font-family "monospace"}
-   :.status {:color "black"
-             :background-color "silver"
-             :margin "0px"}
    :.buffer {:position "relative"
              :margin "0px"}
+   :.minibuffer {:position "fixed"
+                 :bottom "0px"
+                 :margin "0px"}
    :.text {:position "absolute"}
    :.cursor {:position "absolute"
              :top "0px"
              :left "0px"}
    :.hidden {:visibility "hidden"}
    :.pointer {:color "white"
-              :background-color "gray"}
-   :.focus {:color "white"
-            :background-color "black"}
-   :.minibuffer {:position "fixed"
-                 :bottom "0px"
-                 :margin "0px"}
+              :background-color "black"}
    :.name {:color "blue"}
    :.special {:color "fuchsia"}
    :.string {:color "red"}

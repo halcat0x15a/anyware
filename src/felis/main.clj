@@ -5,7 +5,6 @@
 
 (defn run [editor keycode event]
   (let [key (editor/code keycode event)]
-    (prn key)
     (if-let [update
              (-> {key/escape identity}
                  (merge (editor/keymap editor))
