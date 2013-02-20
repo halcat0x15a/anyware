@@ -1,13 +1,7 @@
 (ns felis.parser
   (:refer-clojure :exclude [map comp and or repeat])
-  (:require
-   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
-   [clojure.string :as string]
-   [felis.parser.result :as result]))
-
-;*CLJSBUILD-REMOVE*;(comment
-(require '[clojure.core :as core])
-;*CLJSBUILD-REMOVE*;)
+  (:require [clojure.string :as string]
+            [felis.parser.result :as result]))
 
 (defn extract [x]
   (cond (coll? x) (first x)

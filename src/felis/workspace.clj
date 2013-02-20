@@ -1,9 +1,6 @@
 (ns felis.workspace
   (:refer-clojure :exclude [name])
-  (:require [felis.string :as string]
-            [felis.serialization :as serialization]
-            [felis.buffer :as buffer]
-            [felis.text :as text]
+  (:require [felis.buffer :as buffer]
             [felis.syntax :as syntax]
             [felis.history :as history]))
 

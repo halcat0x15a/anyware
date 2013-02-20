@@ -4,10 +4,6 @@
    ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
    [felis.lisp.environment :as environment]))
 
-;*CLJSBUILD-REMOVE*;(comment
-(require '[clojure.core :as core])
-;*CLJSBUILD-REMOVE*;)
-
 (deftype Lambda [environment parameters body])
 
 (defrecord Failure [message object])
@@ -47,17 +43,17 @@
   ([env exp]
      ((analyze exp) env)))
 
-(defmulti apply (fn [procedure arguments] (type procedure)))
+(defmulti apply' (fn [procedure arguments] (type procedure)))
 
-(defmethod apply Lambda [lambda arguments]
+(defmethod apply' Lambda [lambda arguments]
   ((.body lambda)
    (atom (merge @(.environment lambda)
                 (zipmap (.parameters lambda) arguments)))))
 
-(defmethod apply Failure [failure arguments] failure)
+(defmethod apply' Failure [failure arguments] failure)
 
-(defmethod apply :default [procedure arguments]
-  (cond (fn? procedure) (core/apply procedure arguments)
+(defmethod apply' :default [procedure arguments]
+  (cond (fn? procedure) (apply procedure arguments)
         :else (Failure. "Unknown procedure type" procedure)))
 
 (defmethod analyze-form 'quote [[_ quotation]]
@@ -157,8 +153,7 @@
              (let [operands (operands env)]
                (maybe (first (filter fail? operands))
                       (fn [_]
-                        ;(prn operator operands)
-                        (apply operator operands))))))))
+                        (apply' operator operands))))))))
 
 (defmethod analyze-form 'apply [[_ operator operands]]
   (let [operator-eval (analyze operator)
@@ -168,7 +163,5 @@
 (defmethod analyze-form :default [[operator & operands]]
   (let [operator-eval (analyze operator)
         operand-evals (map analyze operands)
-        operands-eval (fn [env]
-                        ;(prn operator operands)
-                        (map #(% env) operand-evals))]
+        operands-eval (fn [env] (map #(% env) operand-evals))]
     (eval-apply operator-eval operands-eval)))

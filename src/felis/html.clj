@@ -59,7 +59,8 @@
 
 (defn html [editor]
   (let [{:keys [workspace minibuffer style]} (:root editor)
-        {:keys [buffer]} workspace]
+        {:keys [buffer]} workspace
+        {:keys [tops focus bottoms]} buffer]
     (< :html {}
        (< :head {}
           (< :title {} "felis")
@@ -69,7 +70,10 @@
           (< :div {:class "editor"}
              (< :pre {:class "buffer"}
                 (serialization/write buffer)
-                (cursor (->> buffer buffer/texts (mapcat pointer))))
+                (cursor (concat (mapcat pointer tops)
+                                (list (apply < :span {:class "focus"}
+                                             (pointer focus)))
+                                (mapcat pointer bottoms))))
              (< :div {:class "minibuffer"}
                 (serialization/write minibuffer)
                 (cursor (pointer minibuffer))))))))
@@ -82,16 +86,20 @@
              :font-family "monospace"}
    :.buffer {:position "relative"
              :margin "0px"}
+   ".buffer .cursor" {:position "absolute"
+                      :top "0px"
+                      :left "0px"}
    :.minibuffer {:position "fixed"
                  :bottom "0px"
                  :margin "0px"}
-   :.text {:position "absolute"}
-   :.cursor {:position "absolute"
-             :top "0px"
-             :left "0px"}
+   ".minibuffer .cursor" {:position "fixed"
+                          :bottom "0px"
+                          :left "0px"}
    :.hidden {:visibility "hidden"}
    :.pointer {:color "white"
-              :background-color "black"}
+              :background-color "gray"}
+   ".focus .pointer" {:color "white"
+                      :background-color "black"}
    :.name {:color "blue"}
    :.special {:color "fuchsia"}
    :.string {:color "red"}
