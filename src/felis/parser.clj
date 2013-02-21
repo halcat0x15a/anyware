@@ -62,3 +62,7 @@
           (if (result/success? result')
             (recur result')
             (result/or result (result/->Success [] input))))))))
+
+(def success
+  (fn [input]
+    (result/->Success "" input)))
