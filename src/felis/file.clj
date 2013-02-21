@@ -8,7 +8,7 @@
             [felis.buffer :as buffer]))
 
 (def syntaxes
-  {#".clj$" clojure/syntax})
+  {#".clj$" clojure/expressions})
 
 (defn syntax [name]
   (let [syntaxes (filter (fn [[regex _]] (re-find regex name)) syntaxes)]

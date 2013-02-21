@@ -1,40 +1,84 @@
 (ns felis.syntax.clojure
-  (:refer-clojure :exclude [keyword comment])
+  (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [felis.parser :as parser]
-            [felis.html :as html]))
+            [felis.parser.html :as html]))
 
-(def identifier (parser/regex #"^[^\":;]"))
+(declare expressions)
+
+(def identifier (parser/regex #"^[^:;\(\)\[\]\{\}\"]+"))
+
+(def space (parser/regex #"^\s+"))
 
 (def definition
-  (-> #"^\((def.*?)(\s+)(\S*)"
-      parser/regex
-      (parser/map (fn [[_ definition space name]]
-                    ["("
-                     (html/< :span {:class :special} definition)
-                     space
-                     (html/< :span {:class :name} name)]))))
+  (->> #"^def\w*" parser/regex (html/< "special")))
+
+(def symbol (html/< "symbol" identifier))
+
+(defn definition-form [input]
+  ((-> (parser/and definition
+                   space
+                   name
+                   (parser/maybe expressions))
+       html/seq)
+   input))
 
 (def special
-  (-> #"^\((if|do|let|quote|var|fn|loop|recur|throw|try)(\s+)"
-      parser/regex
-      (parser/map (fn [[_ special space]]
-                    ["(" (html/< :span {:class :special} special) space]))))
+  (->> #"^(if|do|let|quote|var|fn|loop|recur|throw|try)"
+       parser/regex
+       (html/< "special")))
+
+(defn special-form [input]
+  ((-> (parser/and special (parser/maybe expressions)) html/seq)
+   input))
+
+(def number
+  (->> #"^\d+|\d+\.\d*"
+       parser/regex 
+       (html/< "number")))
 
 (def string
-  (-> #"^\".*\""
-      parser/regex 
-      (parser/map (partial html/< :span {:class :string}))))
+  (->> #"^\"[\s\S]*\""
+       parser/regex 
+       (html/< "string")))
 
 (def keyword
-  (-> #"^:[^\(\)\s]+"
-      parser/regex
-      (parser/map (partial html/< :span {:class :keyword}))))
+  (->> #"^:[^\(\)\[\]\{\}\s]+"
+       parser/regex 
+       (html/< "keyword")))
 
 (def comment
-  (-> #"^;.*"
-      parser/regex
-      (parser/map (partial html/< :span {:class :comment}))))
+  (->> #"^;.*"
+       parser/regex 
+       (html/< "comment")))
 
-(def syntax
-  (parser/repeat
-   (parser/or comment string keyword definition special identifier)))
+(defn parenthesis [class left parser right]
+  (->> (parser/and (parser/literal left) parser (parser/literal right))
+       (html/< class)))
+
+(defn list [input]
+  ((parenthesis "list" "(" (parser/or definition expressions) ")")
+   input))
+
+(defn vector [input]
+  ((parenthesis "vector" "[" expressions "]") input))
+
+(defn map [input]
+  ((parenthesis "map" "{" expressions "}") input))
+
+(def expression
+  (-> (parser/and (parser/maybe space)
+                  (parser/or number
+                             identifier
+                             keyword
+                             comment
+                             string
+                             list
+                             vector
+                             map)
+                  (parser/maybe space))
+      html/seq))
+
+(def expressions
+  (-> expression
+      parser/repeat
+      html/seq))

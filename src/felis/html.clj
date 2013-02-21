@@ -1,5 +1,5 @@
 (ns felis.html
-  (:refer-clojure :exclude [<])
+  (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [felis.buffer :as buffer]
             [felis.serialization :as serialization]))
@@ -41,6 +41,15 @@
     (->> next
          (map write)
          (reduce str (write first)))))
+
+(deftype EmptyNode []
+  Node
+  (render [_] ""))
+
+(defn seq
+  ([] (EmptyNode.))
+  ([x & xs]
+     (NodeSeq. x xs)))
 
 (defn <
   ([label attributes content]

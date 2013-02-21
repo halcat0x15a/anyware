@@ -7,12 +7,18 @@
   (cond (coll? x) (first x)
         (string? x) x))
 
-(defn regex [regex]
+(defn map [f parser]
+  (if (fn? parser)
+    (fn [input] (result/map (parser input) f))
+    (result/map parser f)))
+
+(defn regex [regex']
   (fn [input]
-    (if-let [result (re-find regex input)]
-      (result/->Success result (subs input (-> result extract count)))
+    (if-let [result (re-find regex' input)]
+      (result/->Success result
+                        (subs input (-> result extract count)))
       (result/->Failure (str "string matching regex "
-                             regex
+                             regex'
                              " expected but nil found")
                         input))))
 
@@ -25,11 +31,6 @@
             (result/->Success result (subs input size))
             (result/->Failure (str literal " expected but " result " found") input)))
         (result/->Failure (str "string index out of range " size) input)))))
-
-(defn map [parser f]
-  (if (fn? parser)
-    (fn [input] (result/map (parser input) f))
-    (result/map parser f)))
 
 (defn or [parser parser' & parsers]
   (fn [input]
@@ -66,3 +67,6 @@
 (def success
   (fn [input]
     (result/->Success "" input)))
+
+(defn maybe [parser]
+  (or parser success))
