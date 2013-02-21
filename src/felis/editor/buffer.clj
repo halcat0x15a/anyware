@@ -1,31 +1,32 @@
 (ns felis.editor.buffer
-  (:require [felis.buffer :as buffer]
+  (:require [felis.path :as path]
+            [felis.buffer :as buffer]
             [felis.text :as text]
             [felis.edit :as edit]))
 
 (defn top [editor]
-  (update-in editor buffer/path (partial edit/move :tops)))
+  (update-in editor path/buffer (partial edit/move :tops)))
 
 (defn bottom [editor]
-  (update-in editor buffer/path (partial edit/move :bottoms)))
+  (update-in editor path/buffer (partial edit/move :bottoms)))
 
 (defn start [editor]
-  (update-in editor buffer/path (partial edit/end :tops)))
+  (update-in editor path/buffer (partial edit/end :tops)))
 
 (defn end [editor]
-  (update-in editor buffer/path (partial edit/end :bottoms)))
+  (update-in editor path/buffer (partial edit/end :bottoms)))
 
 (defn insert-newline [editor]
-  (update-in editor buffer/path (partial edit/insert text/default :bottoms)))
+  (update-in editor path/buffer (partial edit/insert text/default :bottoms)))
 
 (defn append-newline [editor]
-  (update-in editor buffer/path (partial edit/insert text/default :tops)))
+  (update-in editor path/buffer (partial edit/insert text/default :tops)))
 
 (defn break [editor]
-  (update-in editor buffer/path buffer/break))
+  (update-in editor path/buffer buffer/break))
 
 (defn delete [editor]
-  (update-in editor buffer/path (partial edit/delete :bottoms)))
+  (update-in editor path/buffer (partial edit/delete :bottoms)))
 
 (defn backspace [editor]
-  (update-in editor buffer/path (partial edit/delete :tops)))
+  (update-in editor path/buffer (partial edit/delete :tops)))

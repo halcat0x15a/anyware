@@ -28,16 +28,11 @@
       :workspaces (conj workspaces current))
     root))
 
-(defrecord Root [current workspaces minibuffer environment style settings])
-
-(def path [:root])
-
-(def environment (conj path :environment))
+(defrecord Root [current workspaces minibuffer style environment])
 
 (def default
   (Root. workspace/default
          #{}
          text/default
-         environment/global
          html/style
          {}))

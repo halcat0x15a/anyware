@@ -42,8 +42,6 @@
   serialization/Serializable
   (write [buffer] (write buffer)))
 
-(def path [:root :workspace :buffer])
-
 (def default (Buffer. text/default [] '()))
 
 (defn read [string]

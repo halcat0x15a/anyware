@@ -1,8 +1,6 @@
 (ns felis.lisp.parser
-  (:refer-clojure :exclude [eval apply])
-  (:require
-   ;*CLJSBUILD-REMOVE*;[cljs.core :as core]
-   [felis.lisp.environment :as environment]))
+  (:refer-clojure :exclude [eval])
+  (:require [felis.lisp.environment :as environment]))
 
 (deftype Lambda [environment parameters body])
 

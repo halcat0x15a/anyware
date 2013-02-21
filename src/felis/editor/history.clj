@@ -1,18 +1,17 @@
 (ns felis.editor.history
-  (:require [felis.history :as history]
-            [felis.buffer :as buffer]))
+  (:require [felis.path :as path]
+            [felis.history :as history]))
 
 (defn commit [editor]
-  (update-in
-   editor
-   history/path
-   (partial history/commit
-            (get-in editor buffer/path))))
+  (update-in editor
+             path/history
+             (partial history/commit
+                      (get-in editor path/buffer))))
 
 (defn undo [editor]
   (if-let [history
-           (-> editor (get-in history/path) history/undo)]
+           (-> editor (get-in path/history) history/undo)]
     (-> editor
-        (assoc-in history/path history)
-        (assoc-in buffer/path (:present history)))
+        (assoc-in path/history history)
+        (assoc-in path/buffer (:present history)))
     editor))

@@ -1,5 +1,6 @@
 (ns felis.file
-  (:require [felis.serialization :as serialization]
+  (:require [felis.path :as path]
+            [felis.serialization :as serialization]
             [felis.syntax :as syntax]
             [felis.syntax.clojure :as clojure]
             [felis.root :as root]
@@ -17,7 +18,7 @@
 
 (defn open [editor path content]
   (update-in editor
-             root/path
+             path/root
              (partial root/add
                       (assoc workspace/default
                         :name path
@@ -26,8 +27,8 @@
 
 (defn save [editor save]
   (save (-> editor
-            (get-in workspace/name)
+            (get-in path/name)
             name)
         (-> editor
-            (get-in buffer/path)
+            (get-in path/buffer)
             serialization/write)))

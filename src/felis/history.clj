@@ -5,8 +5,6 @@
 
 (def default (History. buffer/default nil []))
 
-(def path [:root :workspace :history])
-
 (defn undo [history]
   (if-let [past (:past history)]
     (assoc past

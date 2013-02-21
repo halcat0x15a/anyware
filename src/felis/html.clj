@@ -58,8 +58,8 @@
          pointer))
 
 (defn html [editor]
-  (let [{:keys [workspace minibuffer style]} (:root editor)
-        {:keys [buffer]} workspace
+  (let [{:keys [current minibuffer style]} (:root editor)
+        {:keys [buffer]} current
         {:keys [tops focus bottoms]} buffer]
     (< :html {}
        (< :head {}

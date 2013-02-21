@@ -1,6 +1,7 @@
 (ns felis.test.editor
   (:require [clojure.test :refer :all]
             [felis.key :as key]
+            [felis.path :as path]
             [felis.main :as main]
             [felis.editor :as editor]
             [felis.editor.normal :as normal]
@@ -36,10 +37,10 @@
   (testing "type 'hello world'"
     (is (= (-> normal/default
                (emulate \i "helloworld" key/escape \0)
-               (get-in buffer/path))
+               (get-in path/buffer))
            (buffer/read "helloworld"))))
   (testing "move on all sides"
     (is (= (-> normal/default
-               (assoc-in buffer/path (buffer/read "hello\nworld"))
+               (assoc-in path/buffer (buffer/read "hello\nworld"))
                (emulate \l \j \k \h))
-           (assoc-in normal/default buffer/path (buffer/read "hello\nworld"))))))
+           (assoc-in normal/default path/buffer (buffer/read "hello\nworld"))))))

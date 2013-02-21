@@ -1,36 +1,35 @@
 (ns felis.lisp.lexer
-  (:refer-clojure :exclude [int keyword list vector])
   (:require [clojure.string :as string]
             [felis.parser :as parser]))
 
 (declare expression)
 
-(def number
+(def numbers
   (-> (parser/regex #"^\d+")
       (parser/map (comp (partial reduce (fn [m n] (+ (* m 10) n)))
                         (partial map #(- (int %) (int \0)))))))
 
-(def string (parser/regex #"^\".*\""))
+(def strings (parser/regex #"^\".*\""))
 
 (def keywords
   (-> (parser/regex #"^:([^\(\)\[\]\"\s]*)")
       (parser/map (fn [[_ string]]
                     (keyword string)))))
 
-(def identifier
+(def identifiers
   (parser/map (parser/regex #"^[^\(\)\[\]\":\s]+") symbol))
 
 (def space (parser/regex #"^\s*"))
 
-(def list
+(def lists
   (fn [input]
     ((-> (parser/and (parser/literal "(")
                      (parser/repeat expression)
                      (parser/literal ")"))
-         (parser/map (fn [[_ list _]] (apply core/list list))))
+         (parser/map (fn [[_ lists _]] (apply list lists))))
      input)))
 
-(def vector
+(def vectors
   (fn [input]
     ((-> (parser/and (parser/literal "[")
                      (parser/repeat expression)
@@ -42,7 +41,7 @@
   (fn [input]
     ((-> (parser/and
           space
-          (parser/or string keywords number list vector identifier)
+          (parser/or strings keywords numbers lists vectors identifiers)
           space)
          (parser/map (fn [[_ expr _]] expr)))
      input)))

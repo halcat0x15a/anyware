@@ -45,7 +45,7 @@
 
 (defn root []
   (assoc root/default
-    :workspace (workspace)
+    :current (workspace)
     :minibuffer (text)))
 
 (defn editor []

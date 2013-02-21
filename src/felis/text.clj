@@ -42,14 +42,6 @@
   serialization/Serializable
   (write [text] (write text)))
 
-(def path [:root :workspace :buffer :focus])
-
-(def lefts (conj path :lefts))
-
-(def rights (conj path :rights))
-
-(def minibuffer [:root :minibuffer])
-
 (def default (Text. "" ""))
 
 (defn read [string]
