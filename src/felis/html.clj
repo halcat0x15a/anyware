@@ -1,6 +1,7 @@
 (ns felis.html
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
+            [felis.language :as language]
             [felis.buffer :as buffer]
             [felis.serialization :as serialization]))
 
@@ -68,7 +69,7 @@
 
 (defn html [editor]
   (let [{:keys [current minibuffer style]} (:root editor)
-        {:keys [buffer]} current
+        {:keys [buffer language]} current
         {:keys [tops focus bottoms]} buffer]
     (< :html {}
        (< :head {}
@@ -78,7 +79,9 @@
        (< :body {}
           (< :div {:class "editor"}
              (< :pre {:class "buffer"}
-                (serialization/write buffer)
+                (->>  buffer
+                      serialization/write
+                      (language/highlight language))
                 (cursor (concat (mapcat pointer tops)
                                 (list (apply < :span {:class "focus"}
                                              (pointer focus)))

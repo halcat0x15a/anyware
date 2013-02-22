@@ -31,8 +31,4 @@
 (defrecord Root [current workspaces minibuffer style environment])
 
 (def default
-  (Root. workspace/default
-         #{}
-         text/default
-         html/style
-         {}))
+  (Root. workspace/default #{} text/default html/style {}))

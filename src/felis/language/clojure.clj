@@ -1,7 +1,8 @@
-(ns felis.syntax.clojure
+(ns felis.language.clojure
   (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [felis.parser :as parser]
-            [felis.parser.html :as html]))
+            [felis.parser.html :as html]
+            [felis.language :as language]))
 
 (declare expressions)
 
@@ -82,3 +83,5 @@
   (-> expression
       parser/repeat
       html/seq))
+
+(defmethod language/extension "clj" expressions)

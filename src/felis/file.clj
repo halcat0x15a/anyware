@@ -1,20 +1,10 @@
 (ns felis.file
   (:require [felis.path :as path]
             [felis.serialization :as serialization]
-            [felis.syntax :as syntax]
-            [felis.syntax.clojure :as clojure]
+            [felis.language :as language]
             [felis.root :as root]
             [felis.workspace :as workspace]
             [felis.buffer :as buffer]))
-
-(def syntaxes
-  {#".clj$" clojure/expressions})
-
-(defn syntax [name]
-  (let [syntaxes (filter (fn [[regex _]] (re-find regex name)) syntaxes)]
-    (if (empty? syntaxes)
-      syntax/default
-      (-> syntaxes first second))))
 
 (defn open [editor path content]
   (update-in editor
@@ -23,7 +13,7 @@
                       (assoc workspace/default
                         :name path
                         :buffer (buffer/read content)
-                        :syntax (syntax path)))))
+                        :language (language/extension path)))))
 
 (defn save [editor save]
   (save (-> editor

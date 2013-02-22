@@ -43,4 +43,6 @@
     (is (= (-> normal/default
                (assoc-in path/buffer (buffer/read "hello\nworld"))
                (emulate \l \j \k \h))
-           (assoc-in normal/default path/buffer (buffer/read "hello\nworld"))))))
+           (assoc-in normal/default
+                     path/buffer
+                     (buffer/read "hello\nworld"))))))

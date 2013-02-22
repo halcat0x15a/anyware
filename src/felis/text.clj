@@ -2,8 +2,7 @@
   (:refer-clojure :exclude [read])
   (:require [felis.string :as string]
             [felis.serialization :as serialization]
-            [felis.edit :as edit]
-            [felis.syntax :as syntax]))
+            [felis.edit :as edit]))
 
 (defmethod edit/invert :lefts [side] :rights)
 
