@@ -34,7 +34,7 @@
            (not (contains? \& %)))))
 
 (defspec css-is-string
-  html/css
+  (comp html/write html/css)
   [^{:tag `css} css]
   (is (string? %)))
 

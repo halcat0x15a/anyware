@@ -5,10 +5,14 @@
 
 (def default (History. buffer/default nil []))
 
-(defn undo [history]
-  (if-let [past (:past history)]
+(defn undo [{:keys [past futures] :as history}]
+  (if-not (nil? past)
     (assoc past
-      :futures (conj (:futures past) history))))
+      :futures (conj futures history))))
+
+(defn redo [{:keys [past futures] :as history}]
+  (if-not (empty? futures)
+    (peek futures)))
 
 (defn commit [buffer history]
   (History. buffer history []))

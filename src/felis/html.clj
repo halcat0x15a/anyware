@@ -12,7 +12,7 @@
   (string/escape string {\< "&lt;"
                          \> "&gt;"
                          \& "&amp;"
-                         \space "&nbsp;"}))
+                         \space "&#160;"}))
 
 (defn write [node]
   (cond (string? node) (escape node)

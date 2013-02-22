@@ -6,7 +6,7 @@
 
 (defmulti extension
   (let [extension #"\.(\w+)$"]
-    (fn [name] (doto (second (re-find extension name)) prn))))
+    (fn [name] (second (re-find extension name)))))
 
 (defmethod extension "clj" [_] clojure/expressions)
 

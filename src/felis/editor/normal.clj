@@ -30,6 +30,7 @@
    \X text/backspace
    \d delete/map->Delete
    \u history/undo
+   \r history/redo
    \: minibuffer/map->Minibuffer})
 
 (defrecord Normal [root]

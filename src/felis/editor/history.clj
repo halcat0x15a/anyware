@@ -15,3 +15,11 @@
         (assoc-in path/history history)
         (assoc-in path/buffer (:present history)))
     editor))
+
+(defn redo [editor]
+  (if-let [history
+           (-> editor (get-in path/history) history/redo)]
+    (-> editor
+        (assoc-in path/history history)
+        (assoc-in path/buffer (:present history)))
+    editor))
