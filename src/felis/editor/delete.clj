@@ -2,15 +2,15 @@
   (:require [felis.key :as key]
             [felis.editor :as editor]
             [felis.editor.history :as history]
-            [felis.editor.buffer :as buffer]
+            [felis.buffer :as buffer]
             [felis.editor.text :as text]))
 
 (def keymap
   {key/escape history/commit
-   key/left text/delete
-   key/up buffer/delete
-   key/down buffer/backspace
-   key/right text/backspace
+   key/left text/left
+   key/up buffer/top
+   key/down buffer/bottom
+   key/right text/right
    \h text/backspace
    \j buffer/delete
    \k buffer/backspace

@@ -2,8 +2,9 @@
   (:require [felis.key :as key]
             [felis.editor :as editor]
             [felis.editor.history :as history]
-            [felis.editor.buffer :as buffer]
-            [felis.editor.text :as text]))
+            [felis.buffer :as buffer]
+            [felis.editor.text :as text]
+            [felis.path :as path]))
 
 (def keymap
   {key/escape history/commit
@@ -12,7 +13,7 @@
    key/up buffer/top
    key/down buffer/bottom
    key/backspace text/backspace
-   key/enter buffer/break})
+   key/enter #(update-in % path/buffer buffer/break)})
 
 (defrecord Insert [root]
   editor/Editor

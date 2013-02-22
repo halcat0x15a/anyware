@@ -8,10 +8,10 @@
 
 (defmethod edit/invert :rights [side] :lefts)
 
-(defmethod edit/head :rights [field text]
+(defmethod edit/first :rights [field text]
   (-> text field first))
 
-(defmethod edit/head :lefts [field text]
+(defmethod edit/first :lefts [field text]
   (-> text field last))
 
 (defmethod edit/insert :rights [char field text]
@@ -47,3 +47,12 @@
   (assoc default
     :lefts ""
     :rights string))
+
+(def left (partial edit/move :lefts))
+
+(def right (partial edit/move :rights))
+
+(defn append [char text]
+  (edit/insert char :lefts text))
+
+(def backspace (partial edit/delete :lefts))

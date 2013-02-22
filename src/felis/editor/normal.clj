@@ -3,7 +3,7 @@
             [felis.root :as root]
             [felis.editor :as editor]
             [felis.editor.history :as history]
-            [felis.editor.buffer :as buffer]
+            [felis.buffer :as buffer]
             [felis.editor.text :as text]
             [felis.editor.insert :as insert]
             [felis.editor.delete :as delete]

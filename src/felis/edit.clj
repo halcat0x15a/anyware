@@ -1,5 +1,5 @@
 (ns felis.edit
-  (:refer-clojure :exclude [remove]))
+  (:refer-clojure :exclude [first]))
 
 (defmulti invert identity)
 
@@ -7,13 +7,13 @@
 
 (defmulti delete (fn [field _] field))
 
-(defmulti head (fn [field _] field))
+(defmulti first (fn [field _] field))
 
 (defn cursor [field edit]
   (-> edit field count))
 
 (defn move [field edit]
-  (if-let [value (head field edit)]
+  (if-let [value (first field edit)]
     (->> edit
          (insert value (invert field))
          (delete field))
@@ -24,12 +24,3 @@
     (if (identical? edit edit')
       edit
       (recur field edit'))))
-
-(def left (partial move :lefts))
-
-(def right (partial move :rights))
-
-(defn append [char text]
-  (insert char :lefts text))
-
-(def backspace (partial delete :lefts))

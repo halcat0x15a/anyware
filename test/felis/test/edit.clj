@@ -60,10 +60,10 @@
   [^{:tag `edit*field} [edit field]]
   (is (<= % (edit/cursor field edit))))
 
-(defspec end-head
+(defspec end-first
   (fn [[edit field]]
     (->> edit
          (edit/end field)
-         (edit/head field)))
+         (edit/first field)))
   [^{:tag `edit*field} [edit field]]
   (is (nil? %)))

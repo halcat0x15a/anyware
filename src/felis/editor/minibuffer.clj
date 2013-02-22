@@ -20,16 +20,16 @@
       editor)))
 
 (defn left [editor]
-  (update-in editor path/minibuffer edit/left))
+  (update-in editor path/minibuffer text/left))
 
 (defn right [editor]
-  (update-in editor path/minibuffer edit/right))
+  (update-in editor path/minibuffer text/right))
 
 (defn append [editor char]
-  (update-in editor path/minibuffer (partial edit/append char)))
+  (update-in editor path/minibuffer (partial text/append char)))
 
 (defn backspace [editor]
-  (update-in editor path/minibuffer edit/backspace))
+  (update-in editor path/minibuffer text/backspace))
 
 (def keymap
   {key/enter run
