@@ -1,12 +1,11 @@
 (ns felis.language.clojure
   (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [felis.parser :as parser]
-            [felis.parser.html :as html]
-            [felis.language :as language]))
+            [felis.parser.html :as html]))
 
 (declare expressions)
 
-(def identifier (parser/regex #"^[^:;\(\)\[\]\{\}\"]+"))
+(def identifier (parser/regex #"^[^:;\(\)\[\]\{\}\"\s]+"))
 
 (def space (parser/regex #"^\s+"))
 
@@ -18,8 +17,9 @@
 (defn definition-form [input]
   ((-> (parser/and definition
                    space
-                   name
-                   (parser/maybe expressions))
+                   symbol
+                   space
+                   expressions)
        html/seq)
    input))
 
@@ -33,12 +33,12 @@
    input))
 
 (def number
-  (->> #"^\d+|\d+\.\d*"
+  (->> #"^\d+\.\d*|^\d+"
        parser/regex 
        (html/< "number")))
 
 (def string
-  (->> #"^\"[\s\S]*\""
+  (->> #"^\"[\s\S]*?\""
        parser/regex 
        (html/< "string")))
 
@@ -54,10 +54,16 @@
 
 (defn parenthesis [class left parser right]
   (->> (parser/and (parser/literal left) parser (parser/literal right))
+       html/seq
        (html/< class)))
 
 (defn list [input]
-  ((parenthesis "list" "(" (parser/or definition expressions) ")")
+  ((parenthesis "list"
+                "("
+                (parser/or definition-form
+                           special-form
+                           expressions)
+                ")")
    input))
 
 (defn vector [input]
@@ -83,5 +89,3 @@
   (-> expression
       parser/repeat
       html/seq))
-
-(defmethod language/extension "clj" expressions)

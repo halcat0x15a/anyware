@@ -1,7 +1,7 @@
 (ns felis.html
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
-            [felis.language :as language]
+            [felis.parser :as parser]
             [felis.buffer :as buffer]
             [felis.serialization :as serialization]))
 
@@ -9,21 +9,14 @@
   (render [node]))
 
 (defn escape [string]
-  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
+  (string/escape string {\< "&lt;"
+                         \> "&gt;"
+                         \& "&amp;"
+                         \space "&nbsp;"}))
 
 (defn write [node]
   (cond (string? node) (escape node)
         :else (render node)))
-
-(defn- declaration [declarations property value]
-  (str declarations \space (name property) \: \space value \;))
-
-(defn- rule [rules selector block]
-  (let [selector (name selector)
-        block (reduce-kv declaration "" block)]
-    (str rules \space selector \space \{ block \space \})))
-
-(def css (partial reduce-kv rule ""))
 
 (defn- attribute [attributes key value]
   (str attributes \space (name key) \= \" value \"))
@@ -47,6 +40,10 @@
   Node
   (render [_] ""))
 
+(deftype Escape [string]
+  Node
+  (render [_] string))
+
 (defn seq
   ([] (EmptyNode.))
   ([x & xs]
@@ -57,6 +54,17 @@
      (Element. label attributes content))
   ([label attributes content & contents]
      (Element. label attributes (NodeSeq. content contents))))
+
+(defn- declaration [declarations property value]
+  (str declarations \space (name property) \: \space value \;))
+
+(defn- rule [rules selector block]
+  (let [selector (name selector)
+        block (reduce-kv declaration "" block)]
+    (str rules \space selector \space \{ block \space \})))
+
+(defn css [style]
+  (->> style (reduce-kv rule "") Escape.))
 
 (defn pointer [{:keys [lefts rights]}]
   (list (< :span {:class "hidden"} lefts)
@@ -81,7 +89,7 @@
              (< :pre {:class "buffer"}
                 (->>  buffer
                       serialization/write
-                      (language/highlight language))
+                      (parser/parse language))
                 (cursor (concat (mapcat pointer tops)
                                 (list (apply < :span {:class "focus"}
                                              (pointer focus)))
@@ -112,8 +120,11 @@
               :background-color "gray"}
    ".focus .pointer" {:color "white"
                       :background-color "black"}
-   :.name {:color "blue"}
+   :.symbol {:color "blue"}
    :.special {:color "fuchsia"}
    :.string {:color "red"}
    :.keyword {:color "aqua"}
-   :.comment {:color "maroon"}})
+   :.comment {:color "maroon"}
+   :.list {:background-color "rgba(255, 0, 0, 0.1)"}
+   :.vector {:background-color "rgba(0, 255, 0, 0.1)"}
+   :.map {:background-color "rgba(0, 0, 255, 0.1)"}})

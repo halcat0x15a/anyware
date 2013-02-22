@@ -70,3 +70,6 @@
 
 (defn maybe [parser]
   (or parser success))
+
+(defn parse [parser source]
+  (-> source parser :result))

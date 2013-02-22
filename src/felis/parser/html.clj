@@ -4,6 +4,6 @@
             [felis.html :as html]))
 
 (defn < [class parser]
-  (parser/map (partial apply html/< :span {:class class}) parser))
+  (parser/map (partial html/< :span {:class class}) parser))
 
 (def seq (partial parser/map (partial apply html/seq)))

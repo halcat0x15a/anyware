@@ -1,13 +1,13 @@
 (ns felis.language
-  (:require [felis.parser :as parser]))
+  (:require [felis.parser :as parser]
+            [felis.language.clojure :as clojure]))
 
 (def text (parser/regex #"[\s\S]*"))
 
 (defmulti extension
   (let [extension #"\.(\w+)$"]
-    (fn [name] (re-find extension name))))
+    (fn [name] (doto (second (re-find extension name)) prn))))
+
+(defmethod extension "clj" [_] clojure/expressions)
 
 (defmethod extension :default [_] text)
-
-(defn highlight [parser source]
-  (-> source parser :result))
