@@ -6,12 +6,10 @@
 
 (defn path []
   (gen/rand-nth
-   [path/root
-    path/current
+   [path/current
     path/name
     path/history
     path/buffer
-    path/focus
     path/minibuffer]))
 
 (defspec path-get-in-editor

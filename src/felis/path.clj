@@ -1,18 +1,14 @@
 (ns felis.path
   (:refer-clojure :exclude (name)))
 
-(def root [:root])
-
-(def current (conj root :current))
+(def current [:current])
 
 (def name (conj current :name))
 
 (def buffer (conj current :buffer))
 
-(def focus (conj buffer :focus))
-
 (def history (conj current :history))
 
-(def minibuffer (conj root :minibuffer))
+(def minibuffer [:minibuffer])
 
-(def environment (conj root :environment))
+(def environment [:environment])

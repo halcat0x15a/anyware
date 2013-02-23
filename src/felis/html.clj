@@ -2,8 +2,38 @@
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [felis.parser :as parser]
-            [felis.buffer :as buffer]
-            [felis.serialization :as serialization]))
+            [felis.buffer :as buffer]))
+
+(def style
+  (atom {:body {:margin "0px"}
+         :.editor {:color "black"
+                   :background-color "white"
+                   :font-size "16px"
+                   :font-family "monospace"}
+         :.buffer {:position "relative"
+                   :margin "0px"}
+         ".buffer .cursor" {:position "absolute"
+                            :top "0px"
+                            :left "0px"}
+         :.minibuffer {:position "fixed"
+                       :bottom "0px"
+                       :margin "0px"}
+         ".minibuffer .cursor" {:position "fixed"
+                                :bottom "0px"
+                                :left "0px"}
+         :.hidden {:visibility "hidden"}
+         :.pointer {:color "white"
+                    :background-color "gray"}
+         ".focus .pointer" {:color "white"
+                            :background-color "black"}
+         :.symbol {:color "blue"}
+         :.special {:color "fuchsia"}
+         :.string {:color "red"}
+         :.keyword {:color "aqua"}
+         :.comment {:color "maroon"}
+         :.list {:background-color "rgba(255, 0, 0, 0.1)"}
+         :.vector {:background-color "rgba(0, 255, 0, 0.1)"}
+         :.map {:background-color "rgba(0, 0, 255, 0.1)"}}))
 
 (defprotocol Node
   (render [node]))
@@ -76,55 +106,16 @@
          pointer))
 
 (defn html [editor]
-  (let [{:keys [current minibuffer style]} (:root editor)
-        {:keys [buffer language]} current
-        {:keys [tops focus bottoms]} buffer]
+  (let [{:keys [current minibuffer]} (:root editor)
+        {:keys [buffer language]} current]
     (< :html {}
        (< :head {}
           (< :title {} "felis")
           (< :style {:type "text/css"}
-             (css style)))
+             (css @style)))
        (< :body {}
           (< :div {:class "editor"}
              (< :pre {:class "buffer"}
-                (->>  buffer
-                      serialization/write
-                      (parser/parse language))
-                (cursor (concat (mapcat pointer tops)
-                                (list (apply < :span {:class "focus"}
-                                             (pointer focus)))
-                                (mapcat pointer bottoms))))
+                (buffer/write buffer))
              (< :div {:class "minibuffer"}
-                (serialization/write minibuffer)
-                (cursor (pointer minibuffer))))))))
-
-(def style
-  {:body {:margin "0px"}
-   :.editor {:color "black"
-             :background-color "white"
-             :font-size "16px"
-             :font-family "monospace"}
-   :.buffer {:position "relative"
-             :margin "0px"}
-   ".buffer .cursor" {:position "absolute"
-                      :top "0px"
-                      :left "0px"}
-   :.minibuffer {:position "fixed"
-                 :bottom "0px"
-                 :margin "0px"}
-   ".minibuffer .cursor" {:position "fixed"
-                          :bottom "0px"
-                          :left "0px"}
-   :.hidden {:visibility "hidden"}
-   :.pointer {:color "white"
-              :background-color "gray"}
-   ".focus .pointer" {:color "white"
-                      :background-color "black"}
-   :.symbol {:color "blue"}
-   :.special {:color "fuchsia"}
-   :.string {:color "red"}
-   :.keyword {:color "aqua"}
-   :.comment {:color "maroon"}
-   :.list {:background-color "rgba(255, 0, 0, 0.1)"}
-   :.vector {:background-color "rgba(0, 255, 0, 0.1)"}
-   :.map {:background-color "rgba(0, 0, 255, 0.1)"}})
+                (buffer/write minibuffer)))))))

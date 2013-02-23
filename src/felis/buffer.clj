@@ -1,73 +1,91 @@
 (ns felis.buffer
-  (:refer-clojure :exclude [read])
-  (:require [felis.string :as string]
-            [felis.serialization :as serialization]
-            [felis.path :as path]
-            [felis.edit :as edit]
-            [felis.text :as text]))
+  (:refer-clojure :exclude [read peek conj drop pop newline]))
 
-(defmethod edit/invert :tops [side] :bottoms)
+(defrecord Buffer [lefts rights])
 
-(defmethod edit/invert :bottoms [side] :tops)
+(def default (Buffer. "" ""))
 
-(defmethod edit/first :default [field buffer]
-  (-> buffer field peek))
-
-(defmethod edit/insert :default [focus' field {:keys [focus] :as buffer}]
-  (-> buffer
-      (assoc :focus focus')
-      (update-in [field] #(conj % focus))))
-
-(defmethod edit/delete :default [field buffer]
-  (if-let [focus' (edit/first field buffer)]
-    (-> buffer
-        (assoc :focus focus')
-        (update-in [field] pop))
-    (assoc buffer
-      :focus text/default)))
-
-(defn texts [{:keys [tops focus bottoms]}]
-  (concat tops (list focus) bottoms))
-
-(defn- write [buffer]
-  (->> buffer
-       texts
-       (map serialization/write)
-       (string/make-string \newline)))
-
-(defrecord Buffer [focus tops bottoms]
-  serialization/Serializable
-  (write [buffer] (write buffer)))
-
-(def default (Buffer. text/default [] '()))
+(defn write [{:keys [lefts rights]}]
+  (str lefts rights))
 
 (defn read [string]
-  (let [lines (->> string string/split-lines (map text/read))]
-    (assoc default
-      :focus (first lines)
-      :bottoms (->> lines rest (apply list)))))
+  (Buffer. "" string))
 
-(defn update [f editor]
-  (update-in editor path/buffer f))
+(defmulti invert identity)
+(defmethod invert :rights [_] :lefts)
+(defmethod invert :lefts [_] :rights)
 
-(defn break [{:keys [focus] :as buffer}]
-  (->> (assoc buffer :focus (assoc focus :rights ""))
-       (edit/insert (assoc focus :lefts "") :tops)))
+(defmulti peek (fn [field _] field))
+(defmethod peek :rights [field buffer]
+  (-> buffer field first))
+(defmethod peek :lefts [field buffer]
+  (-> buffer field last))
 
-(def top (partial update (partial edit/move :tops)))
+(defmulti conj (fn [field _ _] field))
+(defmethod conj :rights [field value buffer]
+  (update-in buffer [field] (partial str value)))
+(defmethod conj :lefts [field value buffer]
+  (update-in buffer [field] #(str % value)))
 
-(def bottom (partial update (partial edit/move :bottoms)))
+(defmulti drop (fn [_ field _] field))
+(defmethod drop :rights [n field buffer]
+  (update-in buffer [field] #(subs % n)))
+(defmethod drop :lefts [n field buffer]
+  (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
 
-(def start (partial update (partial edit/end :tops)))
+(def pop (partial drop 1))
 
-(def end (partial update (partial edit/end :bottoms)))
+(defmulti extract (fn [field _] field))
+(defmethod extract :rights [_ [_ _ rights]] rights)
+(defmethod extract :lefts [_ [_ lefts _]] lefts)
 
-(def insert-newline
-  (partial update (partial edit/insert text/default :bottoms)))
+(defn move [field buffer]
+  (if-let [char (peek field buffer)]
+    (->> buffer
+         (conj (invert field) char)
+         (pop field))
+    buffer))
 
-(def append-newline
-  (partial update (partial edit/insert text/default :tops)))
+(def right (partial move :rights))
 
-(def delete (partial update (partial edit/delete :bottoms)))
+(def left (partial move :lefts))
 
-(def backspace (partial update (partial edit/delete :tops)))
+(defn skip [regex field buffer]
+  (if-let [result (->> buffer field (re-find regex))]
+    (let [field' (invert field)]
+      (->> (assoc buffer field (extract field result))
+           (conj field' (extract field' result))))
+    buffer))
+
+(def down (partial skip #"^(.*\n)([\s\S]*)" :rights))
+
+(def up (partial skip #"([\s\S]*)(\n.*)$" :lefts))
+
+(def tail (partial skip #"^(.*)([\s\S]*)" :rights))
+
+(def head (partial skip #"([\s\S]*?)(.*)$" :lefts))
+
+(defn most [field buffer]
+  (->> (assoc buffer field "")
+       (conj (invert field) (field buffer))))
+
+(def begin (partial most :lefts))
+
+(def end (partial most :rights))
+
+(defn cursor [field buffer]
+  (-> buffer field count))
+
+(def append (partial conj :lefts))
+
+(def break (partial conj :lefts \newline))
+
+(def backspace (partial pop :lefts))
+
+(def delete (partial pop :rights))
+
+(def newline (partial conj :lefts \newline))
+
+(def return (partial conj :rights \newline))
+
+(head (tail (read "hell")))

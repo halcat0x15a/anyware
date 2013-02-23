@@ -1,37 +1,13 @@
 (ns felis.test
   (:refer-clojure :exclude [list])
-  (:require [clojure.core :as core]
-            [clojure.data.generators :as gen]
-            [felis.edit :as edit]
-            [felis.text :as text]
+  (:require [clojure.data.generators :as gen]
             [felis.buffer :as buffer]
             [felis.history :as history]
             [felis.workspace :as workspace]
-            [felis.root :as root]
-            [felis.editor.normal :as normal]
-            [felis.editor.insert :as insert]
-            [felis.editor.delete :as delete]))
-
-(defn list [f]
-  (apply core/list (gen/list f)))
-
-(defn text []
-  (assoc text/default
-    :lefts (gen/string)
-    :rights (gen/string)))
-
-(defn tops []
-  (gen/vec text))
-
-(defn bottoms []
-  (list text))
+            [felis.editor :as editor]))
 
 (defn buffer []
-  (assoc buffer/default
-    :name (gen/keyword)
-    :focus (text)
-    :tops (tops)
-    :bottoms (bottoms)))
+  (buffer/->Buffer (gen/string) (gen/string)))
 
 (defn history []
   (assoc history/default
@@ -41,15 +17,10 @@
 
 (defn workspace []
   (assoc workspace/default
+    :name (gen/keyword)
     :buffer (buffer)))
 
-(defn root []
-  (assoc root/default
-    :current (workspace)
-    :minibuffer (text)))
-
 (defn editor []
-  ((gen/rand-nth [normal/->Normal
-                  insert/->Insert
-                  delete/->Delete])
-   (root)))
+  (assoc editor/default
+    :current (workspace)
+    :minibuffer (buffer)))
