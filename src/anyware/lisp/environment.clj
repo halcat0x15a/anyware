@@ -1,10 +1,5 @@
 (ns anyware.lisp.environment)
 
-(def path [:root :environment])
-
-(defn add [editor key function]
-  (update-in editor path #(assoc % key function)))
-
 (def global
   {(symbol "nil") nil
    (symbol "true") true

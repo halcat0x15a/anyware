@@ -4,6 +4,12 @@
             [anyware.test :as test]
             [anyware.buffer :as buffer]))
 
+(defn move []
+  (gen/rand-nth [buffer/right buffer/left
+                 buffer/down buffer/up
+                 buffer/head buffer/tail
+                 buffer/begin buffer/end]))
+
 (defn field []
   (gen/rand-nth [:lefts :rights]))
 
@@ -24,6 +30,12 @@
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
   (is (= % (buffer/begin buffer))))
+
+(defspec constant
+  #(% %2)
+  [^{:tag `move} move ^test/buffer buffer]
+  (is (= (buffer/write %)
+         (buffer/write buffer))))
 
 (defspec conj-pop
   (fn [buffer field char]

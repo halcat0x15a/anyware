@@ -1,18 +1,26 @@
 (ns anyware.history
-  (:require [anyware.buffer :as buffer]))
+  (:require [clojure.zip :as zip]
+            [anyware.buffer :as buffer]))
 
-(defrecord History [present past futures])
+(defn create [buffer]
+  (-> buffer
+      vector
+      zip/vector-zip
+      zip/down))
 
-(def default (History. buffer/default nil []))
+(def default (create buffer/default))
 
-(defn undo [{:keys [past futures] :as history}]
-  (if-not (nil? past)
-    (assoc past
-      :futures (conj futures history))))
+(defn undo [history]
+  (-> history
+      zip/up
+      zip/left))
 
-(defn redo [{:keys [past futures] :as history}]
-  (if-not (empty? futures)
-    (peek futures)))
+(defn redo [history]
+  (-> history
+      zip/right
+      zip/down))
 
 (defn commit [buffer history]
-  (History. buffer history []))
+  (-> history
+      (zip/insert-right [buffer])
+      redo))

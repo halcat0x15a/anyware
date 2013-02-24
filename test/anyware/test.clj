@@ -3,24 +3,18 @@
   (:require [clojure.data.generators :as gen]
             [anyware.buffer :as buffer]
             [anyware.history :as history]
-            [anyware.workspace :as workspace]
             [anyware.editor :as editor]))
 
 (defn buffer []
   (buffer/->Buffer (gen/string) (gen/string)))
 
 (defn history []
-  (assoc history/default
-    :present (buffer)
-    :past ((gen/rand-nth [(constantly nil) history]))
-    :futures ((gen/rand-nth [(constantly []) (comp vector history)]))))
+  (history/create (buffer)))
 
-(defn workspace []
-  (assoc workspace/default
-    :name (gen/keyword)
-    :buffer (buffer)))
+(defn buffers []
+  (gen/hash-map gen/keyword history))
 
 (defn editor []
   (assoc editor/default
-    :current (workspace)
+    :buffers (buffers)
     :minibuffer (buffer)))

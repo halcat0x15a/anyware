@@ -87,5 +87,3 @@
 (def newline (partial conj :lefts \newline))
 
 (def return (partial conj :rights \newline))
-
-(head (tail (read "hell")))

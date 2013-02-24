@@ -1,16 +1,13 @@
 (ns anyware.file
-  (:require [anyware.path :as path]
-            [anyware.language :as language]
+  (:require [anyware.lens :as lens]
             [anyware.editor :as editor]
-            [anyware.workspace :as workspace]
-            [anyware.buffer :as buffer]))
+            [anyware.buffer :as buffer]
+            [anyware.history :as history]))
 
 (defn open [editor path content]
-  (editor/add (workspace/create path
-                                (buffer/read content)
-                                (language/extension path))
-              editor))
+  (editor/add path (-> content buffer/read history/create) editor))
 
 (defn save [editor save]
-  (save (-> editor (get-in path/name) name)
-        (-> editor (get-in path/buffer) buffer/write)))
+  (save (->> editor (lens/get lens/name) name)
+        (->> editor (lens/get lens/buffer) buffer/write)))
+

@@ -3,44 +3,34 @@
   (:require [clojure.string :as string]
             [clojure.set :as set]
             [anyware.html :as html]
-            [anyware.lisp.environment :as environment]
-            [anyware.workspace :as workspace]
-            [anyware.buffer :as buffer]))
+            [anyware.lens :as lens]
+            [anyware.buffer :as buffer]
+            [anyware.history :as history]
+            [anyware.mode :as mode]))
 
-(def environment (atom {}))
+(defn add [name' history' {:keys [name history] :as editor}]
+  (->> editor
+       (lens/set lens/name name')
+       (lens/set lens/history history')
+       (lens/modify lens/buffers #(assoc % name history))))
 
-(defn add [workspace {:keys [current workspaces] :as editor}]
-  (assoc editor
-    :current workspace
-    :workspaces (conj workspaces current)))
+(def environment
+  (atom {}))
 
-(defn remove [{:keys [current workspaces] :as editor}]
-  (if-let [workspace (first workspaces)]
-    (assoc editor
-      :current workspace
-      :workspaces (disj workspaces workspace))
-    (assoc editor
-      :current workspace/default)))
+(defn run
+  ([editor] (run @environment editor))
+  ([environment editor]
+     (let [[command & args]
+           (-> editor
+               :minibuffer
+               buffer/write
+               (string/split #" "))]
+       (if-let [f (get environment command)]
+         (assoc (apply f editor args)
+           :minibuffer buffer/default)
+         editor))))
 
-(defn change [name {:keys [current workspaces] :as editor}]
-  (if-let [workspace (some #(= (:name %) name) workspaces)]
-    (assoc editor
-      :current workspace
-      :workspaces (conj workspaces current))
-    editor))
-
-(defn run [editor]
-  (let [[command & args]
-        (-> editor
-            :minibuffer
-            buffer/write
-            (string/split #" "))]
-    (if-let [f (get @environment (symbol command))]
-      (assoc (apply f editor args)
-        :minibuffer buffer/default)
-      editor)))
-
-(defrecord Editor [current workspaces minibuffer mode])
+(defrecord Editor [name history buffers minibuffer mode])
 
 (def default
-  (Editor. workspace/default #{} buffer/default :normal))
+  (Editor. :*scratch* history/default {} buffer/default mode/normal))
