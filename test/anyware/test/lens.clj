@@ -7,6 +7,7 @@
 (defn lens []
   (gen/rand-nth [lens/name
                  lens/history
+                 lens/buffers
                  lens/buffer
                  lens/minibuffer
                  lens/mode]))
@@ -15,3 +16,17 @@
   lens/get
   [^{:tag `lens} lens ^test/editor editor]
   (is (not (nil? %))))
+
+(defspec set-get
+  (fn [editor lens value]
+    (->> editor
+         (lens/set lens value)
+         (lens/get lens)))
+  [^test/editor editor ^{:tag `lens} lens ^anything value]
+  (is (= % value)))
+
+(defspec identity-modify
+  (fn [editor lens]
+    (lens/modify lens identity editor))
+  [^test/editor editor ^{:tag `lens} lens]
+  (is (= % editor)))

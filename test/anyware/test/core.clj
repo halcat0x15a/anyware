@@ -23,7 +23,6 @@
       editor))
   java.lang.Character
   (input [this editor]
-    (prn this)
     (core/run anyware this editor))
   clojure.lang.Keyword
   (input [this editor]

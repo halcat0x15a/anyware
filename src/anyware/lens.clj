@@ -4,8 +4,6 @@
 
 (defrecord Lens [get set])
 
-(def zip (Lens. zip/node zip/replace))
-
 (defmulti get (fn [lens _] (type lens)))
 (defmethod get Lens [lens obj] ((:get lens) obj))
 (defmethod get :default [lens obj] (lens obj))
@@ -25,13 +23,20 @@
          (fn [obj value]
            (modify lens (partial set lens' value) obj))))
 
+(def zip
+  (Lens. zip/node
+         (fn [zip value]
+           (-> zip
+               (zip/replace value)
+               (update-in [1] #(dissoc % :changed?))))))
+
 (def name :name)
 
 (def history :history)
 
-(def buffers :buffers)
-
 (def buffer (comp zip history))
+
+(def buffers :buffers)
 
 (def minibuffer :minibuffer)
 

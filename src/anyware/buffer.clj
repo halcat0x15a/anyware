@@ -78,6 +78,8 @@
 
 (def append (partial conj :lefts))
 
+(def insert (partial conj :rights))
+
 (def break (partial conj :lefts \newline))
 
 (def backspace (partial pop :lefts))

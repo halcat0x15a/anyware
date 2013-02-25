@@ -20,3 +20,8 @@
          zip/node))
   [^test/history history ^test/buffer buffer]
   (is (= % buffer)))
+
+(defspec not-branch
+  history/create
+  [^test/buffer buffer]
+  (is (= (zip/node %) buffer)))
