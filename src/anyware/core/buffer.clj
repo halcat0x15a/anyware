@@ -1,5 +1,5 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [read peek conj drop pop newline])
+  (:refer-clojure :exclude [read peek conj drop pop remove newline])
   (:require [anyware.core.parser :as parser]))
 
 (defn write [{:keys [lefts rights]}]
@@ -82,9 +82,14 @@
 
 (def break (partial conj :lefts \newline))
 
-(def backspace (partial pop :lefts))
+(defn- remove [field buffer]
+  (if-not (empty? (field buffer))
+    (pop field buffer)
+    buffer))
 
-(def delete (partial pop :rights))
+(def backspace (partial remove :lefts))
+
+(def delete (partial remove :rights))
 
 (def newline (partial conj :lefts \newline))
 

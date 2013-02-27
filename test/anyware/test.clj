@@ -21,7 +21,7 @@
 
 (defn editor []
   (assoc editor/default
-    :name (gen/keyword)
+    :name (gen/string)
     :history (history)
     :buffers (buffers)
     :minibuffer (buffer)))

@@ -16,7 +16,14 @@
        (lens/set lens/history history')
        (lens/modify lens/buffers #(assoc % name history))))
 
+(defn change [name' {:keys [name history buffers] :as editor}]
+  (if-let [history' (get buffers name')]
+    (dissoc (add name' history' editor) name)
+    editor))
+
+(defmethod command/exec "buffer" [[_ name] editor] (change name editor))
+
 (defrecord Editor [name history buffers minibuffer mode])
 
 (def default
-  (Editor. :*scratch* history/default {} buffer/default mode/normal))
+  (Editor. "*scratch*" history/default {} buffer/default mode/normal))
