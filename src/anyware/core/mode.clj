@@ -2,7 +2,8 @@
   (:require [clojure.walk :as walk]
             [anyware.core.lens :as lens]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]))
+            [anyware.core.history :as history]
+            [anyware.core.command :as command]))
 
 (declare normal)
 
@@ -51,6 +52,7 @@
         :left buffer/left
         :right buffer/right}
        (modify-values lens/minibuffer)
+       (merge {:enter command/run})
        (append lens/minibuffer)))
 
 (def buffer

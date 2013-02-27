@@ -4,7 +4,7 @@
             [anyware.jvm.file :as file])
   (:gen-class
    :extends javafx.application.Application)
-  (:import [javafx.application Application]
+  (:import [javafx.application Application Platform]
            [javafx.event EventHandler]
            [javafx.scene Scene]
            [javafx.scene.web WebView]
@@ -28,8 +28,7 @@
   (render [this html]
     (.. view getEngine (loadContent html))))
 
-(defmethod command/exec "open" file/open)
-(defmethod command/exec "save" file/save)
+(defmethod command/exec "quit" [_ _] (Platform/exit))
 
 (defn -start [this stage]
   (let [view (WebView.)

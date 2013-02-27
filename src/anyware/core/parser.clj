@@ -60,6 +60,7 @@
   (or parser success))
 
 (defn parse [parser source]
-  (-> source parser :result))
+  (let [{:keys [result next]} (parser source)]
+    (str result next)))
     
 (def text (regex #"[\s\S]*"))

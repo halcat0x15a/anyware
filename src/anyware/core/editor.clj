@@ -16,15 +16,6 @@
        (lens/set lens/history history')
        (lens/modify lens/buffers #(assoc % name history))))
 
-(defn exec [editor]
-  (if-let [editor' (command/exec (-> editor
-                                     :minibuffer
-                                     buffer/write
-                                     (string/split #" "))
-                                 editor)]
-    (assoc editor :minibuffer buffer/default)
-    editor))
-
 (defrecord Editor [name history buffers minibuffer mode])
 
 (def default

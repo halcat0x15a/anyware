@@ -2,31 +2,30 @@
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
+            [anyware.core.parser :as parser]
             [anyware.core.parser.ast :as ast]
             [anyware.core.buffer :as buffer]))
 
 (def style
   (atom {"body" {:margin "0px"}
          ".editor" {:color "black"
-                   :background-color "white"
-                   :font-size "16px"
-                   :font-family "monospace"}
+                    :background-color "white"
+                    :font-size "16px"
+                    :font-family "monospace"}
          ".buffer" {:position "relative"
-                   :margin "0px"}
+                    :margin "0px"}
          ".buffer .cursor" {:position "absolute"
                             :top "0px"
                             :left "0px"}
          ".minibuffer" {:position "fixed"
-                       :bottom "0px"
-                       :margin "0px"}
+                        :bottom "0px"
+                        :margin "0px"}
          ".minibuffer .cursor" {:position "fixed"
                                 :bottom "0px"
                                 :left "0px"}
          ".hidden" {:visibility "hidden"}
          ".pointer" {:color "white"
-                    :background-color "gray"}
-         ".focus .pointer" {:color "white"
-                            :background-color "black"}
+                     :background-color "black"}
          ".symbol" {:color "blue"}
          ".special" {:color "fuchsia"}
          ".string" {:color "red"}
@@ -57,7 +56,8 @@
 (defn escape [string]
   (string/escape string {\< "&lt;"
                          \> "&gt;"
-                         \& "&amp;"}))
+                         \& "&amp;"
+                         \space "&#160;"}))
 
 (defn write [node]
   (cond (string? node) (escape node)
@@ -84,12 +84,12 @@
   anyware.core.buffer.Buffer
   (render [{:keys [lefts rights parser] :as buffer}]
     (let [string (buffer/write buffer)]
-      (write [string
-              (get (parser string) :result "")
+      (write [(< :span {:class "highlight"}
+                 (parser/parse parser string))
               (< :span {:class "cursor"}
                  (< :span {:class "hidden"} lefts)
                  (< :span {:class "pointer"}
-                    (-> rights (get 0 \space) str)))])))
+                    (-> rights (get 0 \space) str (string/replace-first #"\s" " "))))])))
   anyware.core.parser.ast.Node
   (render [{:keys [label value]}]
     (write (< :span {:class (name label)} value))))
@@ -102,4 +102,4 @@
      (< :body {}
         (< :div {:class "editor"}
            (< :pre {:class "buffer"} (zip/node history))
-           (< :div {:class "minibuffer"} minibuffer)))))
+           (< :pre {:class "minibuffer"} minibuffer)))))
