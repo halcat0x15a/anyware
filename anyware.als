@@ -1,11 +1,12 @@
-one sig Editor {
+sig Editor {
   name: String,
   history: History,
   buffers: set (String - name) one -> one (History - history)
 }
 
 sig History {
-  buffer: Buffer
+  buffer: Buffer,
+  pasts, futures: set History - this
 }
 
 sig Buffer {

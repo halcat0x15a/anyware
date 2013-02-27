@@ -1,6 +1,6 @@
-(ns anyware.lisp.lexer
+(ns anyware.core.lisp.lexer
   (:require [clojure.string :as string]
-            [anyware.parser :as parser]))
+            [anyware.core.parser :as parser]))
 
 (declare expression)
 

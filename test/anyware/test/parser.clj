@@ -1,6 +1,6 @@
 (ns anyware.test.parser
   (:require [clojure.test.generative :refer (defspec is)]
-            [anyware.parser :as parser]))
+            [anyware.core.parser :as parser]))
 
 (defspec literal-parser
   parser/literal

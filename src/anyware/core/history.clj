@@ -1,6 +1,6 @@
-(ns anyware.history
+(ns anyware.core.history
   (:require [clojure.zip :as zip]
-            [anyware.buffer :as buffer]))
+            [anyware.core.buffer :as buffer]))
 
 (defn create [buffer]
   (-> buffer
@@ -13,14 +13,14 @@
 (defn undo [history]
   (-> history
       zip/up
-      zip/left))
+      zip/right))
 
 (defn redo [history]
   (-> history
-      zip/right
+      zip/left
       zip/down))
 
 (defn commit [buffer history]
   (-> history
-      (zip/insert-right [buffer])
+      (zip/insert-left [buffer])
       redo))

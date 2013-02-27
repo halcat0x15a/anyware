@@ -1,8 +1,8 @@
-(ns anyware.mode
+(ns anyware.core.mode
   (:require [clojure.walk :as walk]
-            [anyware.lens :as lens]
-            [anyware.buffer :as buffer]
-            [anyware.history :as history]))
+            [anyware.core.lens :as lens]
+            [anyware.core.buffer :as buffer]
+            [anyware.core.history :as history]))
 
 (declare normal)
 

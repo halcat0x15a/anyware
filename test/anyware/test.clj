@@ -1,12 +1,17 @@
 (ns anyware.test
   (:refer-clojure :exclude [list])
   (:require [clojure.data.generators :as gen]
-            [anyware.buffer :as buffer]
-            [anyware.history :as history]
-            [anyware.editor :as editor]))
+            [anyware.core.buffer :as buffer]
+            [anyware.core.history :as history]
+            [anyware.core.editor :as editor]
+            [anyware.core.parser :as parser]
+            [anyware.core.parser.clojure :as clj]))
+
+(defn parser []
+  (gen/rand-nth [parser/text clj/expressions]))
 
 (defn buffer []
-  (buffer/->Buffer (gen/string) (gen/string)))
+  (buffer/->Buffer (gen/string) (gen/string) (parser)))
 
 (defn history []
   (history/create (buffer)))
@@ -16,5 +21,7 @@
 
 (defn editor []
   (assoc editor/default
+    :name (gen/keyword)
+    :history (history)
     :buffers (buffers)
     :minibuffer (buffer)))

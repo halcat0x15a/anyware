@@ -1,6 +1,6 @@
-(ns anyware.lisp.parser
+(ns anyware.core.lisp.parser
   (:refer-clojure :exclude [eval])
-  (:require [anyware.lisp.environment :as environment]))
+  (:require [anyware.core.lisp.environment :as environment]))
 
 (deftype Lambda [environment parameters body])
 

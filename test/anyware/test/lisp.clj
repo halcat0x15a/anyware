@@ -2,9 +2,9 @@
   (:require [clojure.test.generative :refer (defspec)]
             [clojure.data.generators :as gen]
             [clojure.test :refer (deftest testing with-test is are)]
-            [anyware.lisp :as lisp]
-            [anyware.lisp.parser :as parser]
-            [anyware.lisp.environment :as environment]))
+            [anyware.core.lisp :as lisp]
+            [anyware.core.lisp.parser :as parser]
+            [anyware.core.lisp.environment :as environment]))
 
 (defn literal []
   (gen/rand-nth

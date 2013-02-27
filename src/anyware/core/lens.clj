@@ -1,4 +1,4 @@
-(ns anyware.lens
+(ns anyware.core.lens
   (:refer-clojure :exclude [get set comp name])
   (:require [clojure.zip :as zip]))
 

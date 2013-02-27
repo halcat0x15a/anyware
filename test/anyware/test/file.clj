@@ -1,8 +1,8 @@
 (ns anyware.test.file
   (:require [clojure.test.generative :refer :all]
             [clojure.test :refer (are)]
-            [anyware.file :as file]
-            [anyware.test :as test]))
+            [anyware.test :as test]
+            [anyware.core.file :as file]))
 
 (defspec open-save
   (fn [editor path content]

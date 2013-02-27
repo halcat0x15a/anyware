@@ -1,14 +1,15 @@
 (ns anyware.test.core
   (:require [clojure.test :refer (deftest is testing)]
             [anyware.test :as test]
-            [anyware.lens :as lens]
             [anyware.core :as core]
-            [anyware.editor :as editor]
-            [anyware.buffer :as buffer]))
+            [anyware.core.lens :as lens]
+            [anyware.core.editor :as editor]
+            [anyware.core.buffer :as buffer]))
 
 (def anyware
   (reify core/Anyware
-    (code [this event] event)))
+    (keycode [this event] event)
+    (render [this html] (prn html))))
 
 (defprotocol Input
   (input [this editor]))

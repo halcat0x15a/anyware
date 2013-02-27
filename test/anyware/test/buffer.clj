@@ -2,7 +2,7 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.data.generators :as gen]
             [anyware.test :as test]
-            [anyware.buffer :as buffer]))
+            [anyware.core.buffer :as buffer]))
 
 (defn move []
   (gen/rand-nth [buffer/right buffer/left
@@ -19,17 +19,18 @@
   [^{:tag `field} field]
   (is (= % field)))
 
-(defspec write-read
+(defspec read-write
   (fn [string]
     (->> string buffer/read buffer/write))
   [^string string]
   (is (= % string)))
 
-(defspec read-write
+(defspec write-read-write
   (fn [buffer]
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
-  (is (= % (buffer/begin buffer))))
+  (is (= (assoc % :parser (:parser buffer))
+         (-> buffer buffer/begin))))
 
 (defspec constant
   #(% %2)

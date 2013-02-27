@@ -1,4 +1,4 @@
-(ns anyware.lisp.environment)
+(ns anyware.core.lisp.environment)
 
 (def global
   {(symbol "nil") nil

@@ -1,4 +1,4 @@
-(ns anyware.functor
+(ns anyware.core.functor
   (:refer-clojure :exclude [map]))
 
 (defprotocol Functor

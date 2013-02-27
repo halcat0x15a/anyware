@@ -2,8 +2,8 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.zip :as zip]
             [anyware.test :as test]
-            [anyware.buffer :as buffer]
-            [anyware.history :as history]))
+            [anyware.core.buffer :as buffer]
+            [anyware.core.history :as history]))
 
 (defspec commit-undo
   (fn [history buffer]

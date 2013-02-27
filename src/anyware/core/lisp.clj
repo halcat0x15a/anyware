@@ -1,8 +1,8 @@
-(ns anyware.lisp
+(ns anyware.core.lisp
   (:refer-clojure :exclude [read-string])
-  (:require [anyware.lisp.lexer :as lexer]
-            [anyware.lisp.parser :as parser]
-            [anyware.lisp.environment :as environment]))
+  (:require [anyware.core.lisp.lexer :as lexer]
+            [anyware.core.lisp.parser :as parser]
+            [anyware.core.lisp.environment :as environment]))
 
 (defn read-string
   ([string] (read-string (atom environment/global) string))
