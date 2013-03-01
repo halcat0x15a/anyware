@@ -13,6 +13,10 @@
 (defn modify-values [lens keymap]
   (map-values (partial partial lens/modify lens) keymap))
 
+(defn safe [f]
+  (fn [x]
+    (if-let [y (f x)] y x)))
+
 (defn escape [editor]
   (lens/set lens/mode normal editor))
 
@@ -64,14 +68,16 @@
     \l buffer/right
     \0 buffer/head
     \9 buffer/tail
-    \x buffer/delete
-    \X buffer/backspace}))
+    \w buffer/forword
+    \b buffer/backword
+    \x (safe buffer/delete)
+    \X (safe buffer/backspace)}))
 
 (def history
-  (modify-values
-   lens/history
-   {\u history/undo
-    \r history/redo}))
+  (->> {\u history/undo
+        \r history/redo}
+       (map-values safe)
+       (modify-values lens/history)))
 
 (def ->insert
   (->> {\a buffer/right

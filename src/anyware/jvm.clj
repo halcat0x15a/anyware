@@ -33,6 +33,7 @@
 (defn -start [this stage]
   (let [view (WebView.)
         anyware (Anyware. view)]
+    (swap! core/editor with-meta {:stage stage})
     (doto stage
       (.setTitle "Anyware")
       (.setScene (doto (Scene. view)

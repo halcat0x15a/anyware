@@ -7,16 +7,14 @@
 
 (defn open
   ([editor]
-     (open (.. chooser (showOpenDialog nil) getPath) editor))
+     (if-let [file (.showOpenDialog chooser (-> editor meta :stage))]
+       (open (.getPath file) editor)
+       editor))
   ([path editor]
      (file/open editor path (slurp path))))
 
-(defmethod command/exec "open"
-  [[_ & files] editor]
-  (if (empty? files)
-    (open editor)
-    (doseq [file files]
-      (open file editor))))
+(defmethod command/exec "open" [[_ file] editor]
+  (if file (open editor) editor))
 
 (defn save [editor]
   (doto editor

@@ -23,12 +23,7 @@
          (fn [obj value]
            (modify lens (partial set lens' value) obj))))
 
-(def zip
-  (Lens. zip/node
-         (fn [zip value]
-           (-> zip
-               (zip/replace value)
-               (update-in [1] #(dissoc % :changed?))))))
+(def zip (Lens. zip/node zip/replace))
 
 (def name :name)
 

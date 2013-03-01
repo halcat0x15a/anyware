@@ -8,6 +8,7 @@
                  [org.clojure/test.generative "0.4.0"]]
   :plugins [[lein-cljsbuild "0.3.0"]]
   :resource-paths ["/usr/lib/jvm/javafx-sdk/rt/lib/jfxrt.jar"]
-  :cljsbuild {:crossovers [anyware.core]}
+  :cljsbuild {:builds []
+              :crossovers [anyware.core]}
   :aot [anyware.jvm]
   :main anyware.jvm)

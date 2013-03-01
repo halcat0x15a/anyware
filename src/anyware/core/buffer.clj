@@ -33,7 +33,9 @@
 (defmethod drop :lefts [n field buffer]
   (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
 
-(def pop (partial drop 1))
+(defn pop [field buffer]
+  (if-not (-> buffer field empty?)
+    (drop 1 field buffer)))
 
 (defmulti extract (fn [field _] field))
 (defmethod extract :rights [_ [_ _ rights]] rights)
@@ -65,6 +67,10 @@
 
 (def head (partial skip #"([\s\S]*?)(.*)$" :lefts))
 
+(def forword (partial skip #"^(\s*\w+)([\s\S]*)" :rights))
+
+(def backword (partial skip #"([\s\S]*?)(\w+\s*)$" :lefts))
+
 (defn most [field buffer]
   (->> (assoc buffer field "")
        (conj (invert field) (field buffer))))
@@ -82,14 +88,9 @@
 
 (def break (partial conj :lefts \newline))
 
-(defn- remove [field buffer]
-  (if-not (empty? (field buffer))
-    (pop field buffer)
-    buffer))
+(def backspace (partial pop :lefts))
 
-(def backspace (partial remove :lefts))
-
-(def delete (partial remove :rights))
+(def delete (partial pop :rights))
 
 (def newline (partial conj :lefts \newline))
 
