@@ -7,7 +7,7 @@
             [anyware.core.command :as command]
             [anyware.core.lens :as lens]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]
+            [anyware.core.buffer.history :as history]
             [anyware.core.mode :as mode]))
 
 (defn add [name' history' {:keys [name history] :as editor}]

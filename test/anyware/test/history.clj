@@ -3,7 +3,7 @@
             [clojure.zip :as zip]
             [anyware.test :as test]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]))
+            [anyware.core.buffer.history :as history]))
 
 (defspec commit-undo
   (fn [history buffer]

@@ -24,9 +24,3 @@
          (lens/get lens)))
   [^test/editor editor ^{:tag `lens} lens ^anything value]
   (is (= % value)))
-
-(defspec identity-modify
-  (fn [editor lens]
-    (lens/modify lens identity editor))
-  [^test/editor editor ^{:tag `lens} lens]
-  (is (= % editor)))

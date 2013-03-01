@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [list])
   (:require [clojure.data.generators :as gen]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]
+            [anyware.core.buffer.history :as history]
             [anyware.core.editor :as editor]
             [anyware.core.parser :as parser]
             [anyware.core.parser.clojure :as clj]))

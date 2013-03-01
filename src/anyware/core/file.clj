@@ -2,7 +2,7 @@
   (:require [anyware.core.lens :as lens]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]
+            [anyware.core.buffer.history :as history]
             [anyware.core.parser :as parser]
             [anyware.core.parser.clojure :as clj]))
 

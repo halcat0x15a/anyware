@@ -2,7 +2,7 @@
   (:require [clojure.walk :as walk]
             [anyware.core.lens :as lens]
             [anyware.core.buffer :as buffer]
-            [anyware.core.history :as history]
+            [anyware.core.buffer.history :as history]
             [anyware.core.command :as command]))
 
 (declare normal)
