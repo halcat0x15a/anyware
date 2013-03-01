@@ -1,5 +1,6 @@
 (ns anyware.core.mode
-  (:require [clojure.walk :as walk]
+  (:require [clojure.zip :as zip]
+            [clojure.walk :as walk]
             [anyware.core.lens :as lens]
             [anyware.core.buffer :as buffer]
             [anyware.core.buffer.history :as history]
@@ -74,8 +75,8 @@
     \X (safe buffer/backspace)}))
 
 (def history
-  (->> {\u history/undo
-        \r history/redo}
+  (->> {\u zip/up
+        \r zip/down}
        (map-values safe)
        (modify-values lens/history)))
 

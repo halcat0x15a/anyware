@@ -29,7 +29,9 @@
 
 (def history :history)
 
-(def buffer (comp zip history))
+(def change (comp zip history))
+
+(def buffer (comp :buffer change))
 
 (def buffers :buffers)
 

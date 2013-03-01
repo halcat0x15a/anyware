@@ -7,21 +7,17 @@
 
 (defspec commit-undo
   (fn [history buffer]
-    (->> history (history/commit buffer) history/undo zip/node))
+    (->> history (history/commit buffer) zip/up zip/node :buffer))
   [^test/history history ^test/buffer buffer]
-  (is (= % (zip/node history))))
+  (is (= % (-> history zip/node :buffer))))
 
 (defspec commit-undo-redo
   (fn [history buffer]
     (->> history
          (history/commit buffer)
-         history/undo
-         history/redo
-         zip/node))
+         zip/up
+         zip/down
+         zip/node
+         :buffer))
   [^test/history history ^test/buffer buffer]
   (is (= % buffer)))
-
-(defspec not-branch
-  history/create
-  [^test/buffer buffer]
-  (is (= (zip/node %) buffer)))

@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
+            [anyware.core.lens :as lens]
             [anyware.core.parser :as parser]
             [anyware.core.parser.ast :as ast]
             [anyware.core.buffer :as buffer]))
@@ -94,12 +95,12 @@
   (render [{:keys [label value]}]
     (write (< :span {:class (name label)} value))))
 
-(defn html [{:keys [history minibuffer]}]
+(defn html [editor]
   (< :html {}
      (< :head {}
         (< :title {} "Anyware")
         (< :style {:type "text/css"} (css @style)))
      (< :body {}
         (< :div {:class "editor"}
-           (< :pre {:class "buffer"} (zip/node history))
-           (< :pre {:class "minibuffer"} minibuffer)))))
+           (< :pre {:class "buffer"} (lens/get lens/buffer editor))
+           (< :pre {:class "minibuffer"} (lens/get lens/minibuffer editor))))))
