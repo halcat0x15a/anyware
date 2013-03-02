@@ -23,11 +23,9 @@
   (html/->Element (gen/keyword) (block) (node)))
 
 (defspec espace-string
-  (comp set html/escape)
+  html/escape
   [^string string]
-  (is (and (not (contains? \< %))
-           (not (contains? \> %))
-           (not (contains? \& %)))))
+  (is (nil? (some #{\< \>} %))))
 
 (defspec css-is-string
   (comp html/write html/css)
