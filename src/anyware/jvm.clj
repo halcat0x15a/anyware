@@ -22,7 +22,7 @@
 (defrecord Anyware [view]
   core/Anyware
   (keycode [this event]
-    (if-let [key (special (.getCode event))]
+    (if-let [key (-> event .getCode special)]
       key
       (-> event .getText first)))
   (render [this html]
