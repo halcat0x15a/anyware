@@ -11,5 +11,5 @@
                              buffer/write
                              (string/split #" "))
                          editor)]
-    (assoc editor' :minibuffer buffer/default)
+    (assoc editor' :minibuffer buffer/empty)
     editor))

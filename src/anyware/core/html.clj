@@ -83,10 +83,10 @@
 
 (extend-protocol Node
   anyware.core.buffer.Buffer
-  (render [{:keys [lefts rights parser] :as buffer}]
+  (render [{:keys [lefts rights] :as buffer}]
     (let [string (buffer/write buffer)]
       (write [(< :span {:class "highlight"}
-                 (parser/parse parser string))
+                 string)
               (< :span {:class "cursor"}
                  (< :span {:class "hidden"} lefts)
                  (< :span {:class "pointer"}
@@ -103,4 +103,4 @@
      (< :body {}
         (< :div {:class "editor"}
            (< :pre {:class "buffer"} (lens/get lens/buffer editor))
-           (< :pre {:class "minibuffer"} (lens/get lens/minibuffer editor))))))
+           (< :pre {:class "minibuffer"} (lens/get :minibuffer editor))))))

@@ -19,7 +19,7 @@
     (if-let [y (f x)] y x)))
 
 (defn escape [editor]
-  (lens/set lens/mode normal editor))
+  (lens/set :mode normal editor))
 
 (defn input
   ([keymap] (input (fn [key editor] editor) keymap))
@@ -56,9 +56,9 @@
   (->> {:backspace buffer/backspace
         :left buffer/left
         :right buffer/right}
-       (modify-values lens/minibuffer)
+       (modify-values :minibuffer)
        (merge {:enter command/run})
-       (append lens/minibuffer)))
+       (append :minibuffer)))
 
 (def buffer
   (modify-values
@@ -88,7 +88,7 @@
         \O buffer/return
         \i identity}
        (modify-values lens/buffer)
-       (map-values (partial comp (partial lens/set lens/mode insert)))))
+       (map-values (partial comp (partial lens/set :mode insert)))))
 
 (def mode
   (->> {\d delete

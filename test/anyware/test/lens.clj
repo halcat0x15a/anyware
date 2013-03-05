@@ -5,12 +5,14 @@
             [anyware.core.lens :as lens]))
 
 (defn lens []
-  (gen/rand-nth [lens/name
+  (gen/rand-nth [:list
+                 :minibuffer
+                 :mode
+                 lens/entry
+                 lens/name
                  lens/history
-                 lens/buffers
-                 lens/buffer
-                 lens/minibuffer
-                 lens/mode]))
+                 lens/change
+                 lens/buffer]))
 
 (defspec get-lens
   lens/get

@@ -29,8 +29,7 @@
   (fn [buffer]
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
-  (is (= (assoc % :parser (:parser buffer))
-         (-> buffer buffer/begin))))
+  (is (= % (-> buffer buffer/begin))))
 
 (defspec constant
   #(% %2)

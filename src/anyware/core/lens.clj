@@ -25,16 +25,12 @@
 
 (def zip (Lens. zip/node zip/replace))
 
-(def name :name)
+(def entry (comp zip :list))
 
-(def history :history)
+(def name (comp :name entry))
+
+(def history (comp :history entry))
 
 (def change (comp zip history))
 
 (def buffer (comp :buffer change))
-
-(def buffers :buffers)
-
-(def minibuffer :minibuffer)
-
-(def mode :mode)

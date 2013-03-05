@@ -1,15 +1,14 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [read peek conj drop pop remove newline])
-  (:require [anyware.core.parser :as parser]))
+  (:refer-clojure :exclude [empty read peek conj drop pop newline]))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
 
-(defrecord Buffer [lefts rights parser])
+(defrecord Buffer [lefts rights])
 
-(def default (Buffer. "" "" parser/text))
+(def empty (Buffer. "" ""))
 
-(def read (partial assoc default :rights))
+(def read (partial assoc empty :rights))
 
 (defmulti invert identity)
 (defmethod invert :rights [_] :lefts)
