@@ -1,37 +1,66 @@
-(ns anyware.core.lisp.environment)
+(ns anyware.core.lisp.environment
+  (:refer-clojure :exclude [compare test map]))
 
-(def global
+(def literal
   {(symbol "nil") nil
    (symbol "true") true
-   (symbol "false") false
-   '+ +
+   (symbol "false") false})
+
+(def arithmetic
+  {'+ +
    '- -
    '* *
-   '= =
-   '<= <=
+   '/ /
    'mod mod
+   'inc inc
    'dec dec
-   'not not
-   'zero? zero?
-   'nil? nil?
-   'atom atom
-   'deref deref
-   'reset! reset!
+   'not not})
+
+(def compare
+  {'= =
+   '< <
+   '> >
+   '<= <=
+   '>= >=})
+
+(def test
+  {'nil? nil?
    'number? number?
    'string? string?
    'symbol? symbol?
-   'seq? seq?
-   'str str
-   'symbol symbol
-   'list list
+   'seq? seq?})
+
+(def reference
+  {'atom atom
+   'deref deref
+   'reset! reset!})
+
+(def collection 
+  {'list list
    'cons cons
-   'empty? empty?
    'first first
-   'rest rest
    'next next
    'ffirst ffirst
    'fnext fnext
    'nnext nnext
+   'empty? empty?
    'reverse reverse
-   'count count
-   'prn prn})
+   'count count})
+
+(def create
+  {'str str
+   'symbol symbol})
+
+(def io
+  {'prn prn})
+
+(def global
+  (merge
+   literal
+   arithmetic
+   compare
+   test
+   reference
+   collection
+   create
+   io))

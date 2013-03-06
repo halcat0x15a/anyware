@@ -1,18 +1,11 @@
 (ns anyware.core.lisp.parser
-  (:refer-clojure :exclude [eval])
-  (:require [anyware.core.lisp.environment :as environment]))
-
-(deftype Lambda [environment parameters body])
+  (:refer-clojure :exclude [constantly eval])
+  (:require [anyware.core.lisp.environment :as environment]
+            [anyware.core.lisp.derived :as derived]))
 
 (defrecord Failure [message object])
 
-(def fail? (partial instance? Failure))
-
-(defmulti maybe (fn [value function] (type value)))
-
-(defmethod maybe Failure [failure function] failure)
-
-(defmethod maybe :default [value function] (function value))
+(defmulti analyze-form (fn [[tag]] tag))
 
 (defn literal? [exp]
   (or (true? exp)
@@ -22,12 +15,13 @@
       (keyword? exp)
       (nil? exp)))
 
-(defmulti analyze-form (fn [[tag]] tag))
+(defn- constantly [value]
+  (fn [_ k] (k value)))
 
 (defn- lookup [variable]
-  (fn [env]
-    (if (contains? @env variable)
-      (get @env variable)
+  (fn [env k]
+    (if (contains? env variable)
+      (k (get env variable))
       (Failure. "Unable to resolve symbol" variable))))
 
 (defn analyze [exp]
@@ -37,129 +31,104 @@
         :else (Failure. "Unknown expression type" exp)))
 
 (defn eval
-  ([exp] (eval (atom environment/global) exp))
-  ([env exp]
-     ((analyze exp) env)))
+  ([exp] (eval environment/global exp))
+  ([env exp] ((analyze exp) env identity)))
 
-(defmulti apply' (fn [procedure arguments] (type procedure)))
+(defprotocol Function
+  (call [function arguments k]))
 
-(defmethod apply' Lambda [lambda arguments]
-  ((.body lambda)
-   (atom (merge @(.environment lambda)
-                (zipmap (.parameters lambda) arguments)))))
-
-(defmethod apply' Failure [failure arguments] failure)
-
-(defmethod apply' :default [procedure arguments]
-  (cond (fn? procedure) (apply procedure arguments)
-        :else (Failure. "Unknown procedure type" procedure)))
+(deftype Lambda [environment name parameters body]
+  Function
+  (call [lambda arguments k]
+    (body (assoc (merge environment (zipmap parameters arguments))
+            name lambda)
+          k)))
 
 (defmethod analyze-form 'quote [[_ quotation]]
   (constantly quotation))
 
-(defmethod analyze-form 'def [[_ variable value]]
-  (let [eval-value (analyze value)]
-    (fn [env]
-      (swap! env assoc variable (eval-value env)))))
+(defn- eval-if [predicate consequent alternative]
+  (fn [env k]
+    (predicate env
+     (fn [pred]
+       (if pred
+         (consequent env k)
+         (alternative env k))))))
 
 (defmethod analyze-form 'if [[_ predicate consequent alternative]]
-  (let [eval-predicate (analyze predicate)
-        eval-consequent (analyze consequent)
-        eval-alternative (analyze alternative)]
-    (fn [env]
-      (maybe (eval-predicate env)
-             #(if %
-                (eval-consequent env)
-                (eval-alternative env))))))
+  (eval-if (analyze predicate)
+           (analyze consequent)
+           (analyze alternative)))
+
+(defn- make-procedure
+  ([parameters body] (make-procedure '*anonymous* parameters body))
+  ([name parameters body]
+     (fn [env k]
+       (k (Lambda. env name parameters body)))))
 
 (defmethod analyze-form 'fn [[_ parameters body]]
-  (let [eval-body (analyze body)]
-    (fn [env]
-      (Lambda. env parameters eval-body))))
+  (make-procedure parameters (analyze body)))
 
-(defmethod analyze-form 'do [[_ & exps]]
-  (letfn [(sequentially [f g]
-            (fn [env]
-              (maybe (f env)
-                     (fn [_]
-                       (g env)))))
-          (eval-sequence [proc [proc' & procs' :as procs]]
-            (if (empty? procs)
-              proc
-              (recur (sequentially proc proc') procs')))]
-    (let [[proc & procs] (map analyze exps)]
-      (if (empty? exps)
-        (constantly nil)
-        (eval-sequence proc procs)))))
+(defmethod analyze-form 'fn* [[_ name parameters body]]
+  (make-procedure name parameters (analyze body)))
 
-(defn cond->if [[predicate value & clauses]]
-  `(if ~predicate ~value
-       ~(if (not-empty clauses)
-         (cond->if clauses))))
+(defn- sequentially [f g]
+  (fn [env k]
+    (f env (fn [_] (g env k)))))
+
+(defn- eval-sequence [proc [proc' & procs' :as procs]]
+  (if proc'
+    (recur (sequentially proc proc') procs')
+    proc))
+
+(defmethod analyze-form 'do [[_ exp & exps]]
+  (eval-sequence (analyze exp) (map analyze exps)))
 
 (defmethod analyze-form 'cond [[_ & clauses]]
-  (-> clauses cond->if analyze))
-
-(defn and->if [[predicate & predicates' :as predicates]]
-  (if (empty? predicates)
-    true
-    `(if ~predicate ~(and->if predicates') false)))
-
-(defmethod analyze-form 'and [[_ & predicates]]
-  (-> predicates and->if analyze))
-
-(defn or->if [[predicate & predicates' :as predicates]]
-  (if (empty? predicates)
-    false
-    `(if ~predicate true ~(or->if predicates'))))
-
-(defmethod analyze-form 'or [[_ & predicates]]
-  (-> predicates or->if analyze))
-
-(defn let->fn [[variable value & bindings' :as bindings] body]
-  (if (empty? bindings)
-    (list (list 'fn [] body))
-    (list (list 'fn [variable]
-                (if (empty? bindings')
-                  body
-                  (let->fn bindings' body)))
-          value)))
+  (-> clauses derived/cond->if analyze))
 
 (defmethod analyze-form 'let [[_ bindings body]]
-  (analyze (let->fn bindings body)))
+  (analyze (derived/let->fn bindings body)))
 
-(defn defn->def [name parameters body]
-  (list 'def name
-        (list 'fn parameters body)))
+(defmethod analyze-form 'letfn [[_ bindings body]]
+  (analyze (derived/letfn->let bindings body)))
 
-(defmethod analyze-form 'defn [[_ name parameters body]]
-  (analyze (defn->def name parameters body)))
+(defmethod analyze-form 'and [[_ & predicates]]
+  (-> predicates derived/and->if analyze))
 
-(defmethod analyze-form 'comment [[_ & exps]]
-  (fn [env] nil))
+(defmethod analyze-form 'or [[_ & predicates]]
+  (-> predicates derived/or->if analyze))
+
+(defn- eval-error [message object]
+  (fn [env k]
+    (message env
+     (fn [message]
+       (object env
+        (fn [object]
+          (Failure. message object)))))))
 
 (defmethod analyze-form 'error [[_ message object]]
-  (let [eval-message (analyze message)
-        eval-object (analyze object)]
-    (fn [env]
-      (Failure. (eval-message env) (eval-object env)))))
+  (eval-error (analyze message) (analyze object)))
 
-(defn eval-apply [operator operands]
-  (fn [env]
-    (maybe (operator env)
-           (fn [operator]
-             (let [operands (operands env)]
-               (maybe (first (filter fail? operands))
-                      (fn [_]
-                        (apply' operator operands))))))))
+(defn appl [procedure arguments]
+  (fn [env k]
+    (procedure env
+     (fn [operator]
+       (arguments env
+        (fn [operands]
+          (if (fn? operator)
+            (k (apply operator operands))
+            (call operator operands k))))))))
 
 (defmethod analyze-form 'apply [[_ operator operands]]
-  (let [operator-eval (analyze operator)
-        operands-eval (analyze operands)]
-    (eval-apply operator-eval operands-eval)))
+  (appl (analyze operator) (analyze operands)))
+
+(defn- construct [args [proc & procs] env k]
+  (if proc
+    (proc env (fn [value] (construct (conj args value) procs env k)))
+    (k args)))
+
+(def eval-operands (partial partial construct []))
 
 (defmethod analyze-form :default [[operator & operands]]
-  (let [operator-eval (analyze operator)
-        operand-evals (map analyze operands)
-        operands-eval (fn [env] (map #(% env) operand-evals))]
-    (eval-apply operator-eval operands-eval)))
+  (appl (analyze operator) (->> operands (map analyze) eval-operands)))

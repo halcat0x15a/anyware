@@ -4,52 +4,49 @@
 
 (declare expression)
 
-(def numbers
-  (->> #"^\d+"
-       parser/regex
-       (parser/map (comp (partial reduce (fn [m n] (+ (* m 10) n)))
-                         (partial map #(- (int %) (int \0)))))))
+(defn- char->number [char]
+  (- (int char) (int \0)))
+
+(defn- string->number [string]
+  (reduce (fn [m n] (+ (* m 10) n)) 0 (map char->number string)))
+
+(def numbers (->> #"^\d+" parser/regex (parser/map string->number)))
 
 (def strings (parser/regex #"^\".*\""))
 
 (def keywords
   (->> #"^:([^\(\)\[\]\"\s]*)"
        parser/regex
-       (parser/map (fn [[_ string]]
-                     (keyword string)))))
+       (parser/map (comp keyword second))))
 
 (def identifiers
-  (->> #"^[^\(\)\[\]\":\s]+"
-       parser/regex
-       (parser/map symbol)))
+  (->> #"^[^\(\)\[\]\":\s]+" parser/regex (parser/map symbol)))
 
 (def space (parser/regex #"^\s*"))
 
-(def lists
+(defn- collection [left right f]
   (fn [input]
-    ((->> (parser/and (parser/literal "(")
+    ((->> (parser/and (parser/literal left)
                       (parser/repeat expression)
-                      (parser/literal ")"))
-          (parser/map (fn [[_ lists _]] (apply list lists))))
+                      (parser/literal right))
+          (parser/map f))
      input)))
 
-(def vectors
-  (fn [input]
-    ((->> (parser/and (parser/literal "[")
-                      (parser/repeat expression)
-                      (parser/literal "]"))
-          (parser/map (fn [[_ vector _]] vector)))
-     input)))
+(def lists (collection "(" ")" (comp (partial apply list) second)))
+
+(def vectors (collection "[" "]" second))
 
 (def expression
   (fn [input]
-    ((->> (parser/and
-           space
-           (parser/or strings keywords numbers lists vectors identifiers)
-           space)
-          (parser/map (fn [[_ expr _]] expr)))
+    ((->> (parser/and space
+                      (parser/or strings
+                                 keywords
+                                 numbers
+                                 lists
+                                 vectors
+                                 identifiers)
+                      space)
+          (parser/map second))
      input)))
 
-(def lisp
-  (fn [input]
-    ((parser/repeat expression) input)))
+(def lisp (fn [input] ((parser/repeat expression) input)))

@@ -5,7 +5,7 @@
             [anyware.core.lisp.environment :as environment]))
 
 (defn read-string
-  ([string] (read-string (atom environment/global) string))
+  ([string] (read-string environment/global string))
   ([env string]
      (->> string
           lexer/lisp

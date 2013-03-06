@@ -10,7 +10,6 @@
   (gen/rand-nth
    [nil
     (gen/long)
-    (gen/double)
     (gen/boolean)
     (gen/string)
     (gen/keyword)]))
@@ -30,12 +29,6 @@
     (parser/eval (cons 'do sequence)))
   [^{:tag (list `literal)} sequence]
   (is (= % (last sequence))))
-
-(defspec definiton-and-get
-  (fn [symbol value]
-    (parser/eval (list 'do (list 'def symbol value) symbol)))
-  [^symbol symbol ^{:tag `literal} value]
-  (is (= % value)))
 
 (defspec constant-lambda
   (fn [value]
@@ -63,11 +56,10 @@
   (are [x] (= x 24)
        (factorial 4)
        (parser/eval
-        '(do
-           (defn factorial [n]
-             (cond (zero? n) 1
-                   (= n 1) 1
-                   :else (* n (factorial (dec n)))))
+        '(letfn [(factorial [n]
+                   (if (< n 2)
+                     1
+                     (* n (factorial (dec n)))))]
            (factorial 4)))))
 
 (with-test
@@ -78,16 +70,8 @@
   (are [x] (= x 13)
        (fib 7)
        (parser/eval
-        '(do
-           (defn fib [n]
-             (cond (zero? n) 0
-                   (= n 1) 1
-                   :else (+ (fib (- n 2)) (fib (dec n)))))
+        '(letfn [(fib [n]
+                   (if (< n 2)
+                     n
+                     (+ (fib (- n 2)) (fib (dec n)))))]
            (fib 7)))))
-
-(def env (atom environment/global))
-
-(deftest register-machine
-  (testing "load file"
-    (is (lisp/read-string env (slurp "resources/scheme.clj")))
-    (is (lisp/read-string env (slurp "resources/register_machine.clj")))))
