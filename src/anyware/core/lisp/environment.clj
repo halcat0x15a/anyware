@@ -21,10 +21,13 @@
    '< <
    '> >
    '<= <=
-   '>= >=})
+   '>= >=
+   'identical? identical?})
 
 (def test
   {'nil? nil?
+   'true? true?
+   'false? false?
    'number? number?
    'string? string?
    'symbol? symbol?
@@ -44,6 +47,7 @@
    'fnext fnext
    'nnext nnext
    'empty? empty?
+   'concat concat
    'reverse reverse
    'count count})
 

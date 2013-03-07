@@ -1,7 +1,14 @@
-(ns anyware.core.lisp.parser
+(ns anyware.core.lisp.evaluator
   (:refer-clojure :exclude [constantly eval])
   (:require [anyware.core.lisp.environment :as environment]
             [anyware.core.lisp.derived :as derived]))
+
+(deftype Cont [k value])
+
+(defn run [cont]
+  (if (instance? Cont cont)
+    (recur ((.k cont) (.value cont)))
+    cont))
 
 (defrecord Failure [message object])
 
@@ -16,12 +23,12 @@
       (nil? exp)))
 
 (defn- constantly [value]
-  (fn [_ k] (k value)))
+  (fn [_ k] (Cont. k value)))
 
 (defn- lookup [variable]
   (fn [env k]
     (if (contains? env variable)
-      (k (get env variable))
+      (Cont. k (get env variable))
       (Failure. "Unable to resolve symbol" variable))))
 
 (defn analyze [exp]
@@ -32,7 +39,7 @@
 
 (defn eval
   ([exp] (eval environment/global exp))
-  ([env exp] ((analyze exp) env identity)))
+  ([env exp] (run ((analyze exp) env identity))))
 
 (defprotocol Function
   (call [function arguments k]))
@@ -64,7 +71,7 @@
   ([parameters body] (make-procedure '*anonymous* parameters body))
   ([name parameters body]
      (fn [env k]
-       (k (Lambda. env name parameters body)))))
+       (Cont. k (Lambda. env name parameters body)))))
 
 (defmethod analyze-form 'fn [[_ parameters body]]
   (make-procedure parameters (analyze body)))
@@ -117,7 +124,7 @@
        (arguments env
         (fn [operands]
           (if (fn? operator)
-            (k (apply operator operands))
+            (Cont. k (apply operator operands))
             (call operator operands k))))))))
 
 (defmethod analyze-form 'apply [[_ operator operands]]
@@ -126,7 +133,7 @@
 (defn- construct [args [proc & procs] env k]
   (if proc
     (proc env (fn [value] (construct (conj args value) procs env k)))
-    (k args)))
+    (Cont. k args)))
 
 (def eval-operands (partial partial construct []))
 

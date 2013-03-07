@@ -3,7 +3,7 @@
             [clojure.data.generators :as gen]
             [clojure.test :refer (deftest testing with-test is are)]
             [anyware.core.lisp :as lisp]
-            [anyware.core.lisp.parser :as parser]
+            [anyware.core.lisp.evaluator :as evaluator]
             [anyware.core.lisp.environment :as environment]))
 
 (defn literal []
@@ -16,7 +16,7 @@
 
 (defspec if-then-else
   (fn [predicate consequent alternative]
-    (parser/eval `(if ~predicate ~consequent ~alternative)))
+    (evaluator/eval `(if ~predicate ~consequent ~alternative)))
   [^boolean predicate
    ^{:tag `literal} consequent
    ^{:tag `literal} alternative]
@@ -26,25 +26,25 @@
 
 (defspec do-sequence
   (fn [sequence]
-    (parser/eval (cons 'do sequence)))
+    (evaluator/eval (cons 'do sequence)))
   [^{:tag (list `literal)} sequence]
   (is (= % (last sequence))))
 
 (defspec constant-lambda
   (fn [value]
-    (parser/eval (list (list 'fn [] value))))
+    (evaluator/eval (list (list 'fn [] value))))
   [^{:tag `literal} value]
   (is (= % value)))
 
 (defspec conjunction
   (fn [predicates]
-    (parser/eval (cons 'and predicates)))
+    (evaluator/eval (cons 'and predicates)))
   [^{:tag (list boolean)} predicates]
   (is (= % (reduce #(and % %2) true predicates))))
 
 (defspec disjunction
   (fn [predicates]
-    (parser/eval (cons 'or predicates)))
+    (evaluator/eval (cons 'or predicates)))
   [^{:tag (list boolean)} predicates]
   (is (= % (reduce #(or % %2) false predicates))))
 
@@ -55,7 +55,7 @@
           :else (* n (factorial (dec n)))))
   (are [x] (= x 24)
        (factorial 4)
-       (parser/eval
+       (evaluator/eval
         '(letfn [(factorial [n]
                    (if (< n 2)
                      1
@@ -69,7 +69,7 @@
           :else (+ (fib (- n 2)) (fib (dec n)))))
   (are [x] (= x 13)
        (fib 7)
-       (parser/eval
+       (evaluator/eval
         '(letfn [(fib [n]
                    (if (< n 2)
                      n

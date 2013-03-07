@@ -1,12 +1,29 @@
 (let [eval-function (atom nil)
-      primitive-procedures (list (list (quote car) first)
+      primitive-procedures (list (list (quote list) list)
+                                 (list (quote car) first)
+                                 (list (quote caar) ffirst)
                                  (list (quote cdr) next)
+                                 (list (quote cadr) fnext)
+                                 (list (quote cddr) nnext)
                                  (list (quote cons) cons)
-                                 (list (quote nil?) nil?)
+                                 (list (quote null?) nil?)
+                                 (list (quote symbol?) symbol?)
+                                 (list (quote +) +)
                                  (list (quote -) -)
                                  (list (quote *) *)
-                                 (list (quote =) =))
-      the-empty-environment (list)]
+                                 (list (quote remainder) mod)
+                                 (list (quote =) identical?)
+                                 (list (quote eq?) =)
+                                 (list (quote append) concat) 
+                                 (list (quote pair?)
+                                       (fn [xs]
+                                         (and (seq? xs)
+                                              (not (nil? (first xs)))
+                                              (not (nil? (next xs))))))
+                                 (list (quote not) not)
+                                 (list (quote display) prn)
+                                 (list (quote error) prn))
+      the-empty-environment nil]
   (letfn [(map [f xs]
             (if (nil? xs)
               xs
@@ -16,6 +33,8 @@
           (self-evaluating? [exp]
             (cond (number? exp) true
                   (string? exp) true
+                  (identical? exp true) true
+                  (identical? exp false) true
                   :else false))
           (tagged-list? [exp tag]
             (= (first exp) tag))
@@ -59,12 +78,12 @@
           (last-exp? [seq] (nil? (next seq)))
           (first-exp [seq] (first seq))
           (rest-exps [seq] (next seq))
+          (make-begin [seq]
+            (cons (quote begin) seq))
           (sequence->exp [seq]
             (cond (nil? seq) seq
                   (last-exp? seq) (first-exp seq)
                   :else (make-begin seq)))
-          (make-begin [seq]
-            (cons (quote begin) seq))
           (application? [exp] (not (nil? exp)))
           (operator [exp] (first exp))
           (operands [exp] (next exp))
@@ -73,12 +92,10 @@
           (rest-operands [ops] (next ops))
           (cond? [exp] (tagged-list? exp (quote cond)))
           (cond-clauses [exp] (next exp))
-          (cond-else-clause? [clause]
-            (= (cond-predicate clause) (quote else)))
           (cond-predicate [clause] (first clause))
           (cond-actions [clause] (next clause))
-          (cond->if [exp]
-            (expand-clauses (cond-clauses exp)))
+          (cond-else-clause? [clause]
+            (= (cond-predicate clause) (quote else)))
           (expand-clauses [clauses]
             (if (nil? clauses)
               false
@@ -92,14 +109,39 @@
                   (make-if (cond-predicate first)
                            (sequence->exp (cond-actions first))
                            (expand-clauses rest))))))
+          (cond->if [exp]
+            (expand-clauses (cond-clauses exp)))
+          (let? [exp] (tagged-list? exp (quote let)))
+          (let-assignment [exp] (fnext exp))
+          (let-body [exp] (nnext exp))
+          (transform-let [assignment body]
+            (cons (make-lambda (map first assignment) body)
+                  (map fnext assignment)))
+          (let->combination [exp]
+            (transform-let (let-assignment exp)
+                           (let-body exp)))
+          (and? [exp] (tagged-list? exp (quote and)))
+          (or? [exp] (tagged-list? exp (quote or)))
+          (eval-and [exp env]
+            (letfn [(iter [operands]
+                      (cond (nil? operands) true
+                            (true? (eval (first-operand operands) env))
+                            (iter (rest-operands operands))
+                            :else false))]
+              (iter (operands exp))))
+          (eval-or [exp env]
+            (letfn [(iter [operors]
+                      (cond (nil? operors) false
+                            (true? (eval (first-operor operors) env))
+                            true
+                            :else (iter (rest-operors operors))))]
+              (iter (operors exp))))
           (true? [x]
             (not (= x false)))
           (false? [x]
             (= x false))
           (make-procedure [parameters body env]
             (list (quote procedure) parameters body env))
-          (compound-procedure? [p]
-            (tagged-list? p (quote procedure)))
           (procedure-parameters [p] (fnext p))
           (procedure-body [p] (fnext (next p)))
           (procedure-environment [p] (fnext (nnext p)))
@@ -122,8 +164,12 @@
           (first-frame [env] (first env))
           (make-frame [variables values]
             (atom (cons variables (map atom values))))
-          (frame-variables [frame] (first (deref frame)))
-          (frame-values [frame] (next (deref frame)))
+          (frame-variables [frame]
+            (if frame
+              (first (deref frame))))
+          (frame-values [frame]
+            (if frame
+              (next (deref frame))))
           (set-variable-value! [var val env]
             (letfn [(env-loop [env]
                       (letfn [(scan [vars vals]
@@ -147,8 +193,9 @@
                                    env)
               (quote ok)))
           (add-binding-to-frame! [var val frame]
-            (reset! frame (cons (cons var (first (deref frame)))
-                      (cons (atom val) (next (deref frame))))))
+            (reset! frame
+                    (cons (cons var (first (deref frame)))
+                          (cons (atom val) (next (deref frame))))))
           (define-variable! [var val env]
             (let [frame (first-frame env)]
               (letfn [(scan [vars vals]
@@ -165,6 +212,20 @@
                 (eval (definition-value exp) env)
                 env)
               (quote ok)))
+          (primitive-procedure? [proc]
+            (tagged-list? proc (quote primitive)))
+          (primitive-implementation [proc] (fnext proc))
+          (apply-primitive-procedure [proc args]
+            (apply
+             (primitive-implementation proc) args))
+          (compound-procedure? [p]
+            (tagged-list? p (quote procedure)))
+          (extend-environment [vars vals base-env]
+            (if (= (count vars) (count vals))
+              (cons (make-frame vars vals) base-env)
+              (if (< (count vars) (count vals))
+                (error "Too many arguments supplied" vars vals)
+                (error "Too few arguments supplied" vars vals))))
           (evaluator-apply [procedure arguments]
             (cond (primitive-procedure? procedure)
                   (apply-primitive-procedure procedure arguments)
@@ -177,12 +238,6 @@
                     (procedure-environment procedure)))
                   :else
                   (error "Unknown procedure type -- APPLY" procedure)))
-          (extend-environment [vars vals base-env]
-            (if (= (count vars) (count vals))
-              (cons (make-frame vars vals) base-env)
-              (if (< (count vars) (count vals))
-                (error "Too many arguments supplied" vars vals)
-                (error "Too few arguments supplied" vars vals))))
           (lookup-variable-value [var env]
             (letfn [(env-loop [env]
                       (letfn [(scan [vars vals]
@@ -212,13 +267,7 @@
               (do
                 (define-variable! (quote true) true initial-env)
                 (define-variable! (quote false) false initial-env)
-                initial-env)))
-          (primitive-procedure? [proc]
-            (tagged-list? proc (quote primitive)))
-          (primitive-implementation [proc] (fnext proc))
-          (apply-primitive-procedure [proc args]
-            (apply
-             (primitive-implementation proc) args))]
+                initial-env)))]
     (do
       (reset!
        eval-function
@@ -236,6 +285,9 @@
                (begin? exp)
                (eval-sequence (begin-actions exp) env)
                (cond? exp) (eval (cond->if exp) env)
+               (and? exp) (eval-and exp env)
+               (or? exp) (eval-or exp env)
+               (let? exp) (eval (let->combination exp) env)
                (application? exp)
                (evaluator-apply (eval (operator exp) env)
                                 (list-of-values (operands exp) env))

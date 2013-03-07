@@ -1,8 +1,33 @@
 (begin
+(define (set-cdr! list value)
+  (set! list (cons (car list) value)))
+(define (equal? a b)
+  (if (not (pair? a))
+    (if (not (pair? b))
+      (eq? a b)
+      (equal? a (car b)))
+    (if (not (pair? b))
+      (equal? (car a) b)
+      (equal? (car a) (car b)))))
+(define (assoc key records)
+  (cond ((null? records) false)
+        ((equal? key (caar records)) (car records))
+        (else (assoc key (cdr records)))))
+(define (for-each proc list)
+  (if (null? list)
+      (quote done)
+      (begin
+	(proc (car list))
+	(for-each proc (cdr list)))))
+(define (map f xs)
+  (if (null? xs)
+      xs
+      (cons (f (car xs)) (map f (cdr xs)))))
 (define (make-machine register-names ops controller-text)
   (let ((machine (make-new-machine)))
     (for-each (lambda (register-name)
-      ((machine (quote allocate-register)) register-name))
+		(display register-name)
+		((machine (quote allocate-register)) register-name))
               register-names)
     ((machine (quote install-operations)) ops)
     ((machine (quote install-instruction-sequence))
@@ -46,8 +71,8 @@
       (quote done))
     (define (print-statistics)
       (newline)
-      (display (list (quote total-pushes (quote = number-pushes))
-                     (quote maximum-depth (quote = max-depth)))))
+      (display (list (quote total-pushes) (quote =) number-pushes
+                     (quote maximum-depth) (quote =) max-depth)))
     (define (show) s)
     (define (dispatch message)
       (cond ((eq? message (quote push)) push)
@@ -87,7 +112,6 @@
           (if val
             (cadr val)
             (error "Unknown register:" name))))
-
       (define (execute)
         (let ((insts (get-contents pc)))
           (if (null? insts)
@@ -149,7 +173,8 @@
           (make-execution-procedure
             (instruction-text inst) labels machine
             pc flag stack ops)))
-      insts)))
+      insts)
+    (display insts)))
 (define (make-instruction text)
   (cons text (quote ())))
 (define (instruction-text inst)
@@ -282,19 +307,14 @@
 (define (perform-action inst) (cdr inst))
 (define (make-primitive-exp exp machine labels)
   (cond ((constant-exp? exp)
-         
          (let ((c (constant-exp-value exp))) 
            (lambda () c)))
         ((label-exp? exp)
-         
-         
          (let ((insts
                  (lookup-label labels
                                (label-exp-label exp))))
            (lambda () insts)))
         ((register-exp? exp)
-         
-         
          (let ((r (get-register machine
                                 (register-exp-reg exp))))
            (lambda () (get-contents r))))
@@ -329,18 +349,20 @@
     (if val
       (cadr val)
       (error "Unknown operation -- ASSEMBLE" symbol))))
+(define gcd-text
+  (quote (test-b
+	  (test (op =) (reg b) (const 0))
+	  (branch (label gcd-done))
+	  (assign t (op rem) (reg a) (reg b))
+	  (assign a (reg b))
+	  (assign b (reg t))
+	  (goto (label test-b))
+	  gcd-done)))
 (define gcd-machine
   (make-machine
    (quote (a b t))
    (list (list (quote rem) remainder) (list (quote =) =))
-   (quote (test-b
-           (test (op =) (reg b) (const 0))
-           (branch (label gcd-done))
-           (assign t (op rem) (reg a) (reg b))
-           (assign a (reg b))
-           (assign b (reg t))
-           (goto (label test-b)))
-          gcd-done)))
+   gcd-text))
 (set-register-contents! gcd-machine (quote a) 206)
 (set-register-contents! gcd-machine (quote b) 40)
 (start gcd-machine)
