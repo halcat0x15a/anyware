@@ -1,5 +1,6 @@
 (ns anyware.web
   (:require [anyware.core :as core]
+            [anyware.core.lisp :as lisp]
             [goog.dom :as dom]
             [goog.events.KeyCodes :as key]))
 

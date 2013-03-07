@@ -3,11 +3,11 @@
   (:require [anyware.core.lisp.environment :as environment]
             [anyware.core.lisp.derived :as derived]))
 
-(deftype Cont [k value])
+(defrecord Cont [k value])
 
 (defn run [cont]
   (if (instance? Cont cont)
-    (recur ((.k cont) (.value cont)))
+    (recur ((:k cont) (:value cont)))
     cont))
 
 (defrecord Failure [message object])
@@ -117,11 +117,11 @@
 (defmethod analyze-form 'error [[_ message object]]
   (eval-error (analyze message) (analyze object)))
 
-(defn appl [procedure arguments]
+(defn appl [proc args]
   (fn [env k]
-    (procedure env
+    (proc env
      (fn [operator]
-       (arguments env
+       (args env
         (fn [operands]
           (if (fn? operator)
             (Cont. k (apply operator operands))
