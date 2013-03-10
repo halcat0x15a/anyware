@@ -10,5 +10,4 @@
   :resource-paths ["/usr/lib/jvm/javafx-sdk/rt/lib/jfxrt.jar"]
   :cljsbuild {:builds [{}]
               :crossovers [anyware.core]}
-  :aot [anyware.jvm]
   :main anyware.jvm)
