@@ -1,5 +1,4 @@
 (ns anyware.core.format.html
-  (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [anyware.core.lens :as lens]
