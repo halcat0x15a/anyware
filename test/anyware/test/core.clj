@@ -3,6 +3,7 @@
             [anyware.test :as test]
             [anyware.core :as core]
             [anyware.core.lens :as lens]
+            [anyware.core.lens.record :as record]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]))
 
@@ -35,5 +36,5 @@
 (deftest editor
   (testing "type 'hello world'"
     (is (= (->> (emulate editor/default \i "helloworld" :escape \0)
-                (lens/get lens/buffer))
+                (lens/get record/buffer))
            (buffer/read "helloworld")))))

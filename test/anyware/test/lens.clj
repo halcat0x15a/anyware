@@ -2,17 +2,18 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.data.generators :as gen]
             [anyware.test :as test]
-            [anyware.core.lens :as lens]))
+            [anyware.core.lens :as lens]
+            [anyware.core.lens.record :as record]))
 
 (defn lens []
   (gen/rand-nth [:list
                  :minibuffer
                  :mode
-                 lens/entry
-                 lens/name
-                 lens/history
-                 lens/change
-                 lens/buffer]))
+                 record/entry
+                 record/name
+                 record/history
+                 record/change
+                 record/buffer]))
 
 (defspec get-lens
   lens/get

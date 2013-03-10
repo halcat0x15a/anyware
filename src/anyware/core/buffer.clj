@@ -1,6 +1,7 @@
 (ns anyware.core.buffer
   (:refer-clojure :exclude [empty read peek conj drop pop newline])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [anyware.core.lens.record :as record]))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
@@ -48,9 +49,9 @@
          (pop field))
     buffer))
 
-(def right (partial move :rights))
+(def right (record/with record/buffer (partial move :rights)))
 
-(def left (partial move :lefts))
+(def left (record/with record/buffer (partial move :lefts)))
 
 (defn skip [regex field ^Buffer buffer]
   (if-let [result (->> buffer field (re-find regex))]
@@ -59,39 +60,47 @@
            (conj field' (extract field' result))))
     buffer))
 
-(def down (partial skip #"^(.*\n)([\s\S]*)" :rights))
+(def down
+  (record/with record/buffer (partial skip #"^(.*\n)([\s\S]*)" :rights)))
 
-(def up (partial skip #"([\s\S]*)(\n.*)$" :lefts))
+(def up
+  (record/with record/buffer (partial skip #"([\s\S]*)(\n.*)$" :lefts)))
 
-(def tail (partial skip #"^(.*)([\s\S]*)" :rights))
+(def tail
+  (record/with record/buffer (partial skip #"^(.*)([\s\S]*)" :rights)))
 
-(def head (partial skip #"([\s\S]*?)(.*)$" :lefts))
+(def head
+  (record/with record/buffer (partial skip #"([\s\S]*?)(.*)$" :lefts)))
 
-(def forword (partial skip #"^(\s*\w+)([\s\S]*)" :rights))
+(def forword
+  (record/with record/buffer (partial skip #"^(\s*\w+)([\s\S]*)" :rights)))
 
-(def backword (partial skip #"([\s\S]*?)(\w+\s*)$" :lefts))
+(def backword
+  (record/with record/buffer (partial skip #"([\s\S]*?)(\w+\s*)$" :lefts)))
 
 (defn most [field ^Buffer buffer]
   (->> (assoc buffer field "")
        (conj (invert field) (field buffer))))
 
-(def begin (partial most :lefts))
+(def begin (record/with record/buffer (partial most :lefts)))
 
-(def end (partial most :rights))
+(def end (record/with record/buffer (partial most :rights)))
 
-(def append (partial conj :lefts))
+(def append (record/with record/buffer (partial conj :lefts)))
 
-(def insert (partial conj :rights))
+(def insert (record/with record/buffer (partial conj :rights)))
 
-(def break (partial conj :lefts \newline))
+(def break (record/with record/buffer (partial conj :lefts \newline)))
 
-(def backspace (partial pop :lefts))
+(def backspace
+  (record/with record/buffer (partial (record/safe pop) :lefts)))
 
-(def delete (partial pop :rights))
+(def delete
+  (record/with record/buffer (partial (record/safe pop) :rights)))
 
-(def newline (partial conj :lefts \newline))
+(def newline (record/with record/buffer (partial conj :lefts \newline)))
 
-(def return (partial conj :rights \newline))
+(def return (record/with record/buffer (partial conj :rights \newline)))
 
 (defn cursor [field ^Buffer buffer]
   (-> buffer field count))
@@ -99,7 +108,7 @@
 (defn line [field ^Buffer buffer]
   (->> buffer field (filter (partial identical? \newline)) count))
 
-(defn center [height line string]
+(defn center [^long height ^long line ^String string]
   (let [n (- line (/ height 2))
         lines (string/split-lines string)]
     (string/join

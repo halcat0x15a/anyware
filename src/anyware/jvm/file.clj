@@ -1,6 +1,7 @@
 (ns anyware.jvm.file
   (:require [anyware.core.buffer.list :as list]
             [anyware.core.lens :as lens]
+            [anyware.core.lens.record :as record]
             [anyware.core.command :as command])
   (:import [javafx.stage FileChooser]))
 
@@ -19,7 +20,7 @@
 
 (defn save [editor]
   (doto editor
-    (->> (lens/get lens/buffer) spit)))
+    (->> (lens/get record/buffer) spit)))
 
 (defmethod command/exec "save" [_ editor]
   (save editor))

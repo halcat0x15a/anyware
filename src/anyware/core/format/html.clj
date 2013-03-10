@@ -3,6 +3,7 @@
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [anyware.core.lens :as lens]
+            [anyware.core.lens.record :as record]
             [anyware.core.parser :as parser]
             [anyware.core.parser.ast :as ast]
             [anyware.core.buffer :as buffer]
@@ -39,7 +40,7 @@
 (extend-protocol Node
   anyware.core.editor.Editor
   (render [{:keys [minibuffer] :as editor}]
-    (let [buffer (lens/get lens/buffer editor)]
+    (let [buffer (lens/get record/buffer editor)]
       (element :pre {:class "editor" :style (style @global)}
                (str (buffer/center (dec (get (meta editor) :height))
                                    (buffer/line :lefts buffer)

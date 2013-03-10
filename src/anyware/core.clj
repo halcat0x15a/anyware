@@ -8,7 +8,7 @@
   (render [this html]))
 
 (defn run
-  ([anyware event {:keys [mode] :as editor}]
-     ((mode (keycode anyware event)) editor))
+  ([anyware event editor]
+     (editor/run (keycode anyware event) editor))
   ([anyware event]
      (swap! editor (partial run anyware event))))
