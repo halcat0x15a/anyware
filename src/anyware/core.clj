@@ -1,6 +1,5 @@
 (ns anyware.core
-  (:require [anyware.core.html :as html]
-            [anyware.core.editor :as editor]))
+  (:require [anyware.core.editor :as editor]))
 
 (def editor (atom editor/default))
 
@@ -12,5 +11,4 @@
   ([anyware event {:keys [mode] :as editor}]
      ((mode (keycode anyware event)) editor))
   ([anyware event]
-     (doto (swap! editor (partial run anyware event))
-       (->> html/html html/write (render anyware)))))
+     (swap! editor (partial run anyware event))))

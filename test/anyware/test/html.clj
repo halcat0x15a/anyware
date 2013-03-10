@@ -3,7 +3,7 @@
             [clojure.data.generators :as gen]
             [clojure.xml :as xml]
             [anyware.test :as test]
-            [anyware.core.html :as html]
+            [anyware.core.format.html :as html]
             [anyware.core.editor :as editor])
   (:import [java.io ByteArrayInputStream]))
 
@@ -33,6 +33,6 @@
   (is (string? %)))
 
 (defspec valid-html
-  (comp html/write html/html)
+  (comp html/write html/render)
   [^test/editor editor]
   (is (-> % .getBytes ByteArrayInputStream. xml/parse)))

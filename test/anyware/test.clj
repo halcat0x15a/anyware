@@ -16,6 +16,8 @@
   (list/create (gen/keyword) (history)))
 
 (defn editor []
-  (assoc editor/default
-    :list (list)
-    :minibuffer (buffer)))
+  (with-meta
+    (assoc editor/default
+      :list (list)
+      :minibuffer (buffer))
+    {:height (gen/byte)}))

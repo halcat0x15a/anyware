@@ -1,10 +1,11 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [empty read peek conj drop pop newline]))
+  (:refer-clojure :exclude [empty read peek conj drop pop newline])
+  (:require [clojure.string :as string]))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
 
-(defrecord Buffer [lefts rights])
+(defrecord Buffer [^String lefts ^String rights])
 
 (def empty (Buffer. "" ""))
 
@@ -15,24 +16,24 @@
 (defmethod invert :lefts [_] :rights)
 
 (defmulti peek (fn [field _] field))
-(defmethod peek :rights [field buffer]
+(defmethod peek :rights [field ^Buffer buffer]
   (-> buffer field first))
-(defmethod peek :lefts [field buffer]
+(defmethod peek :lefts [field ^Buffer buffer]
   (-> buffer field last))
 
 (defmulti conj (fn [field _ _] field))
-(defmethod conj :rights [field value buffer]
+(defmethod conj :rights [field value ^Buffer buffer]
   (update-in buffer [field] (partial str value)))
-(defmethod conj :lefts [field value buffer]
+(defmethod conj :lefts [field value ^Buffer buffer]
   (update-in buffer [field] #(str % value)))
 
 (defmulti drop (fn [_ field _] field))
-(defmethod drop :rights [n field buffer]
+(defmethod drop :rights [^long n field ^Buffer buffer]
   (update-in buffer [field] #(subs % n)))
-(defmethod drop :lefts [n field buffer]
+(defmethod drop :lefts [^long n field ^Buffer buffer]
   (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
 
-(defn pop [field buffer]
+(defn pop [field ^Buffer buffer]
   (if-not (-> buffer field empty?)
     (drop 1 field buffer)))
 
@@ -40,7 +41,7 @@
 (defmethod extract :rights [_ [_ _ rights]] rights)
 (defmethod extract :lefts [_ [_ lefts _]] lefts)
 
-(defn move [field buffer]
+(defn move [field ^Buffer buffer]
   (if-let [char (peek field buffer)]
     (->> buffer
          (conj (invert field) char)
@@ -51,7 +52,7 @@
 
 (def left (partial move :lefts))
 
-(defn skip [regex field buffer]
+(defn skip [regex field ^Buffer buffer]
   (if-let [result (->> buffer field (re-find regex))]
     (let [field' (invert field)]
       (->> (assoc buffer field (extract field result))
@@ -70,16 +71,13 @@
 
 (def backword (partial skip #"([\s\S]*?)(\w+\s*)$" :lefts))
 
-(defn most [field buffer]
+(defn most [field ^Buffer buffer]
   (->> (assoc buffer field "")
        (conj (invert field) (field buffer))))
 
 (def begin (partial most :lefts))
 
 (def end (partial most :rights))
-
-(defn cursor [field buffer]
-  (-> buffer field count))
 
 (def append (partial conj :lefts))
 
@@ -94,3 +92,18 @@
 (def newline (partial conj :lefts \newline))
 
 (def return (partial conj :rights \newline))
+
+(defn cursor [field ^Buffer buffer]
+  (-> buffer field count))
+
+(defn line [field ^Buffer buffer]
+  (->> buffer field (filter (partial identical? \newline)) count))
+
+(defn center [height line string]
+  (let [n (- line (/ height 2))
+        lines (string/split-lines string)]
+    (string/join
+     (take height
+           (if (pos? n)
+             (clojure.core/drop n lines)
+             lines)))))

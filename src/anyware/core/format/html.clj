@@ -1,4 +1,4 @@
-(ns anyware.core.html
+(ns anyware.core.format.html
   (:refer-clojure :exclude [< seq])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
@@ -57,8 +57,7 @@
 (defn escape [string]
   (string/escape string {\< "&lt;"
                          \> "&gt;"
-                         \& "&amp;"
-                         \space "&#160;"}))
+                         \& "&amp;"}))
 
 (defn write [node]
   (cond (string? node) (escape node)
@@ -82,25 +81,25 @@
      (Element. label attributes (apply vector content contents))))
 
 (extend-protocol Node
+  anyware.core.editor.Editor
+  (render [{:keys [minibuffer] :as editor}]
+    (let [buffer (lens/get lens/buffer editor)]
+      (< :pre {:class "editor"}
+         (buffer/center (dec (get (meta editor) :height))
+                        (buffer/line :lefts buffer)
+                        (buffer/write buffer))
+         (buffer/write minibuffer))))
   anyware.core.buffer.Buffer
-  (render [{:keys [lefts rights] :as buffer}]
-    (let [string (buffer/write buffer)]
-      (write [(< :span {:class "highlight"}
-                 string)
-              (< :span {:class "cursor"}
-                 (< :span {:class "hidden"} lefts)
-                 (< :span {:class "pointer"}
-                    (-> rights (get 0 \space) str (string/replace-first #"\s" " "))))])))
+  (render [{:keys [lefts] :as buffer}]
+    (if-let [parser (-> buffer meta (get :parser))]
+      (-> (->> buffer
+               buffer/write
+               parser
+               ast/zip
+               (ast/cursor (count lefts)))
+          (zip/insert-left "<span>")
+          (zip/insert-right "</span>"))
+      (buffer/write buffer)))
   anyware.core.parser.ast.Node
   (render [{:keys [label value]}]
     (write (< :span {:class (name label)} value))))
-
-(defn html [editor]
-  (< :html {}
-     (< :head {}
-        (< :title {} "Anyware")
-        (< :style {:type "text/css"} (css @style)))
-     (< :body {}
-        (< :div {:class "editor"}
-           (< :pre {:class "buffer"} (lens/get lens/buffer editor))
-           (< :pre {:class "minibuffer"} (lens/get :minibuffer editor))))))
