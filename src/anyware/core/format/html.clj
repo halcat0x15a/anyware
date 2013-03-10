@@ -58,4 +58,6 @@
       (buffer/write buffer)))
   anyware.core.parser.ast.Node
   (render [{:keys [label value]}]
-    (element :span {:style (-> label color/get name)} value)))
+    (element :span
+             {:style (style {:color (-> label color/read name)})}
+             value)))

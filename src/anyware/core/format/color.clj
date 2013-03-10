@@ -1,18 +1,13 @@
-(ns anyware.core.format.color)
+(ns anyware.core.format.color
+  (:refer-clojure :exclude [read]))
 
-(def default
-  (atom {:foreground :black
-         :backgraund :white}))
+(def default (atom :black))
 
 (def color
-  (atom {:foreground
-         {:special :magenta
-          :symbol :blue
-          :string :red
-          :keyword :cyan}
-         :background {}}))
+  (atom {:special :magenta
+         :symbol :blue
+         :string :red
+         :keyword :cyan}))
 
-(defn get [part key]
-  (if-let [color (get-in [part key] @color)]
-    color
-    (@default part)))
+(defn read [key]
+  (get @color key @default))
