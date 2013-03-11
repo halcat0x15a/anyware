@@ -5,16 +5,20 @@
 
 (defrecord Node [label value])
 
+(defn map [label parser]
+  (parser/map (partial ->Node label) parser))
+
 (defn extract [{:keys [value] :as node}]
   (if value value node))
 
 (defn- branch? [node]
-  (let [node' (extract node)]
-    (or (vector? node')
-        (> (-> node' str count) 1))))
+  (let [node (extract node)]
+    (or (vector? node)
+        (and (string? node)
+             (< 1 (count node))))))
 
-(defn- children [{:keys [value] :as node}]
-  (if value (seq value) node))
+(defn- children [node]
+  (-> node extract seq))
 
 (defn- make-node [_ children] children)
 
@@ -25,6 +29,3 @@
     (cond (branch? node) (recur n (zip/next zipper))
           (not (pos? n)) zipper
           :else (recur (dec n) (zip/next zipper)))))
-
-(defn map [label parser]
-  (parser/map (partial ->Node label) parser))

@@ -15,11 +15,11 @@
 (def symbol (ast/map :symbol identifier))
 
 (defn definition-form [input]
-  ((-> (parser/and definition
-                   space
-                   symbol
-                   space
-                   expressions))
+  ((parser/and definition
+               space
+               symbol
+               space
+               expressions)
    input))
 
 (def special
@@ -28,7 +28,7 @@
        (ast/map :special)))
 
 (defn special-form [input]
-  ((-> (parser/and special (parser/maybe expressions))) input))
+  ((parser/and special (parser/maybe expressions)) input))
 
 (def number
   (->> #"^\d+\.\d*|^\d+" parser/regex (ast/map :number)))
@@ -47,9 +47,10 @@
        (ast/map label)))
 
 (defn list [input]
-  ((parenthesis
-    :list
-    "(" (parser/or definition-form special-form expressions) ")")
+  ((parenthesis :list
+                "("
+                (parser/or definition-form special-form expressions)
+                ")")
    input))
 
 (defn vector [input]
@@ -59,19 +60,15 @@
   ((parenthesis :map "{" expressions "}") input))
 
 (def expression
-  (-> (parser/and
-       (parser/maybe space)
-       (parser/or
-        number
-        identifier
-        keyword
-        comment
-        string
-        list
-        vector
-        map)
-       (parser/maybe space))))
+  (parser/and (parser/maybe space)
+              (parser/or number
+                         identifier
+                         keyword
+                         comment
+                         string
+                         list
+                         vector
+                         map)
+              (parser/maybe space)))
 
-(def expressions
-  (-> expression
-      parser/repeat))
+(def expressions (parser/repeat expression))

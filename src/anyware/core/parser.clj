@@ -25,24 +25,22 @@
 
 (defn or [parser & parsers]
   (fn [input]
-    (loop [result (parser input) [parser & parsers] parsers]
-      (if parser
-        (recur (result/or result (parser input)) parsers)
-        result))))
+    (reduce (fn [result parser]
+                 (result/or result (parser input)))
+            (parser input)
+            parsers)))
 
 (defn and [parser & parsers]
   (fn [input]
-    (loop [result (result/map (parser input) vector)
-           [parser & parsers] parsers]
-      (if parser
-        (recur (result/mapcat
-                result
-                (fn [result input]
-                  (result/map (parser input)
-                              (partial conj result))))
-               parsers)
-        result))))
-                     
+    (reduce (fn [result parser]
+              (result/mapcat
+               result
+               (fn [result input]
+                 (result/map (parser input)
+                             (partial conj result)))))
+            (result/map (parser input) vector)
+            parsers)))
+
 (defn repeat [parser]
   (fn [input]
     (loop [result (result/map (parser input) vector)]
@@ -52,15 +50,9 @@
           (recur result')
           (result/or result (result/->Success [] input)))))))
 
-(def success
-  (fn [input]
-    (result/->Success "" input)))
+(def success (partial result/->Success []))
 
 (defn maybe [parser]
   (or parser success))
-
-(defn parse [parser source]
-  (let [{:keys [result next]} (parser source)]
-    (str result next)))
     
 (def text (regex #"[\s\S]*"))

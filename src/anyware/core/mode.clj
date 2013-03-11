@@ -1,5 +1,4 @@
 (ns anyware.core.mode
-  (:refer-clojure :exclude [set])
   (:require [anyware.core.lens :as lens]
             [anyware.core.lens.record :as record]
             [anyware.core.buffer :as buffer]

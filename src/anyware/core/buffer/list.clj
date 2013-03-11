@@ -1,10 +1,9 @@
 (ns anyware.core.buffer.list
   (:refer-clojure :exclude [name read])
   (:require [clojure.zip :as zip]
-            [anyware.core.buffer.history :as history])
-  (:import anyware.core.buffer.history.History))
+            [anyware.core.buffer.history :as history]))
 
-(defrecord Entry [name ^History history])
+(defrecord Entry [name history])
 
 (def name (atom "*scratch*"))
 
@@ -12,7 +11,7 @@
 
 (def read (comp (partial create @name) history/read))
 
-(defn add [^String name ^History history list]
+(defn add [name history list]
   (-> list
       (zip/insert-right (Entry. name history))
       zip/right))
