@@ -21,5 +21,5 @@
 (defmethod default :insert [_ key editor]
   (append record/buffer key editor))
 (defmethod default :minibuffer [_ key editor]
-  (append :minibuffer key editor))
+  (append record/minibuffer key editor))
 (defmethod default :default [_ _ editor] editor)

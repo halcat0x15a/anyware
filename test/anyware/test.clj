@@ -19,5 +19,5 @@
   (with-meta
     (assoc editor/default
       :list (list)
-      :minibuffer (buffer))
+      :minibuffer (history))
     {:height (gen/byte)}))

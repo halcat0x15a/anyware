@@ -13,7 +13,8 @@
                  record/name
                  record/history
                  record/change
-                 record/buffer]))
+                 record/buffer
+                 record/minibuffer]))
 
 (defspec get-lens
   lens/get

@@ -11,3 +11,5 @@
 (def change (lens/comp lens/zip history))
 
 (def buffer (lens/comp :buffer change))
+
+(def minibuffer (lens/comp lens/zip :minibuffer))

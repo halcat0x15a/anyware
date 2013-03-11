@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.history
-  (:refer-clojure :exclude [read])
+  (:refer-clojure :exclude [read empty])
   (:require [clojure.zip :as zip]
             [anyware.core.function :as function]
             [anyware.core.buffer :as buffer]))
@@ -22,6 +22,8 @@
   (comp (partial zip/zipper branch? children make-node) change))
 
 (def read (comp create buffer/read))
+
+(def empty (read ""))
 
 (def undo (function/safe zip/up))
 

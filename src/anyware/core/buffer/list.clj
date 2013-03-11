@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.list
-  (:refer-clojure :exclude [name read])
+  (:refer-clojure :exclude [name read empty])
   (:require [clojure.zip :as zip]
             [anyware.core.buffer.history :as history]))
 
@@ -10,6 +10,8 @@
 (def create (comp zip/down zip/vector-zip vector ->Entry))
 
 (def read (comp (partial create @name) history/read))
+
+(def empty (read ""))
 
 (defn add [name history list]
   (-> list
