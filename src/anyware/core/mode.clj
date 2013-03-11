@@ -1,7 +1,7 @@
 (ns anyware.core.mode
   (:require [anyware.core.lens :as lens]
             [anyware.core.lens.record :as record]
-            [anyware.core.buffer :as buffer]
+            [anyware.core.buffer.character :as character]
             [anyware.core.mode.insert :as insert]
             [anyware.core.mode.delete :as delete]
             [anyware.core.mode.minibuffer :as minibuffer]
@@ -15,7 +15,7 @@
 (defmethod keymap :default [_] {})
 
 (defn append [lens key editor]
-  (lens/modify lens (partial buffer/append key) editor))
+  (lens/modify lens (partial character/append key) editor))
 
 (defmulti default (fn [mode _ _] mode))
 (defmethod default :insert [_ key editor]

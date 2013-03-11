@@ -2,13 +2,16 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.data.generators :as gen]
             [anyware.test :as test]
-            [anyware.core.buffer :as buffer]))
+            [anyware.core.buffer :as buffer]
+            [anyware.core.buffer.character :as character]
+            [anyware.core.buffer.line :as line]
+            [anyware.core.buffer.word :as word]))
 
 (defn move []
-  (gen/rand-nth [buffer/right buffer/left
-                 buffer/down buffer/up
-                 buffer/head buffer/tail
-                 buffer/begin buffer/end]))
+  (gen/rand-nth [character/forward character/backward
+                 line/forward line/backward
+                 line/end buffer/begin
+                 buffer/end buffer/begin]))
 
 (defn field []
   (gen/rand-nth [:lefts :rights]))
@@ -47,14 +50,14 @@
 
 (defspec move-cursor
   (fn [buffer field]
-    (->> buffer (buffer/move field) (buffer/cursor field)))
+    (->> buffer (character/move field) (buffer/cursor field)))
   [^test/buffer buffer ^{:tag `field} field]
   (is (<= % (buffer/cursor field buffer))))
 
 (defspec most-peek
   (fn [buffer field]
     (->> buffer
-         (buffer/most field)
+         (buffer/move field)
          (buffer/peek field)))
   [^test/buffer buffer ^{:tag `field} field]
   (is (nil? %)))

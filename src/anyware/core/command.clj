@@ -6,10 +6,7 @@
 (defmethod exec :default [_ editor] editor)
 
 (defn run [editor]
-  (if-let [editor' (exec (-> editor
-                             :minibuffer
-                             buffer/write
-                             (string/split #" "))
+  (if-let [editor' (exec (-> editor :minibuffer buffer/command)
                          editor)]
     (assoc editor' :minibuffer buffer/empty)
     editor))

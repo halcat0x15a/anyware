@@ -1,7 +1,6 @@
 (ns anyware.core.buffer
   (:refer-clojure :exclude [empty read peek conj drop pop newline])
-  (:require [clojure.string :as string]
-            [anyware.core.function :as function]))
+  (:require [clojure.string :as string]))
 
 (defn write [{:keys [lefts rights]}]
   (str lefts rights))
@@ -38,65 +37,18 @@
   (if-not (-> buffer field empty?)
     (drop 1 field buffer)))
 
-(defmulti extract (fn [field _] field))
-(defmethod extract :rights [_ [_ _ rights]] rights)
-(defmethod extract :lefts [_ [_ lefts _]] lefts)
-
 (defn move
   ([field] (partial move field))
-  ([field buffer]
-     (if-let [char (peek field buffer)]
-       (->> buffer
-            (conj (invert field) char)
-            (pop field))
-       buffer)))
-
-(def right (move :rights))
-
-(def left (move :lefts))
-
-(defn skip [regex field buffer]
-  (if-let [result (->> buffer field (re-find regex))]
-    (let [field' (invert field)]
-      (->> (assoc buffer field (extract field result))
-           (conj field' (extract field' result))))
-    buffer))
-
-(def down (partial skip #"^(.*\n)([\s\S]*)" :rights))
-
-(def up (partial skip #"([\s\S]*)(\n.*)$" :lefts))
-
-(def tail (partial skip #"^(.*)([\s\S]*)" :rights))
-
-(def head (partial skip #"([\s\S]*?)(.*)$" :lefts))
-
-(def forword (partial skip #"^(\s*\w+)([\s\S]*)" :rights))
-
-(def backword (partial skip #"([\s\S]*?)(\w+\s*)$" :lefts))
-
-(defn most
-  ([field] (partial most field))
   ([field buffer]
      (->> (assoc buffer field "")
           (conj (invert field) (field buffer)))))
 
-(def begin (most :lefts))
+(def begin (move :lefts))
 
-(def end (most :rights))
+(def end (move :rights))
 
-(def append (partial conj :lefts))
-
-(def insert (partial conj :rights))
-
-(def break (partial conj :lefts \newline))
-
-(def backspace (partial (function/safe pop) :lefts))
-
-(def delete (partial (function/safe pop) :rights))
-
-(def newline (partial conj :lefts \newline))
-
-(def return (partial conj :rights \newline))
+(defn command [buffer]
+  (-> buffer write (string/split #"\s+")))
 
 (defn cursor [field buffer]
   (-> buffer field count))
