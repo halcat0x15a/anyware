@@ -16,4 +16,5 @@
                  (alter-var-root orig (constantly @new)))]
   :cljsbuild {:builds [{}]
               :crossovers [anyware.core]}
+  :warn-on-reflection true
   :main anyware.jvm)

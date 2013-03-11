@@ -5,7 +5,7 @@
             [anyware.core.command :as command])
   (:import [javafx.stage FileChooser]))
 
-(def chooser (FileChooser.))
+(def ^FileChooser chooser (FileChooser.))
 
 (defn open
   ([editor]

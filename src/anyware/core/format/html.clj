@@ -5,6 +5,7 @@
             [anyware.core.lens.record :as record]
             [anyware.core.parser :as parser]
             [anyware.core.parser.ast :as ast]
+            [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
             [anyware.core.format.color :as color]))
 

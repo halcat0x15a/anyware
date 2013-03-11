@@ -6,9 +6,10 @@
    :extends javafx.application.Application)
   (:import [javafx.application Application Platform]
            [javafx.event EventHandler]
+           [javafx.stage Stage]
            [javafx.scene Scene]
            [javafx.scene.web WebView]
-           [javafx.scene.input KeyCode]))
+           [javafx.scene.input KeyCode KeyEvent]))
 
 (def special
   {KeyCode/ESCAPE :escape
@@ -19,18 +20,19 @@
    KeyCode/BACK_SPACE :backspace
    KeyCode/ENTER :enter})
 
-(defrecord Anyware [view]
+(defrecord Anyware [^WebView view]
   core/Anyware
   (keycode [this event]
-    (if-let [key (-> event .getCode special)]
-      key
-      (-> event .getText first)))
+    (let [event ^KeyEvent event]
+      (if-let [key (-> event .getCode special)]
+        key
+        (-> event .getText first))))
   (render [this html]
     (.. view getEngine (loadContent html))))
 
 (defmethod command/exec "quit" [_ _] (Platform/exit))
 
-(defn -start [this stage]
+(defn -start [this ^Stage stage]
   (let [view (WebView.)
         anyware (Anyware. view)]
     (swap! core/editor with-meta {:stage stage})
