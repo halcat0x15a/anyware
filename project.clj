@@ -3,7 +3,7 @@
   :url "https://github.com/halcat0x15a/anyware"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.nrepl "0.2.2"]
                  [org.clojure/test.generative "0.4.0"]
                  [clj-stacktrace "0.2.5"]]

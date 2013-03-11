@@ -1,17 +1,16 @@
 (ns anyware.core.mode.minibuffer
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.mode :as mode]
-            [anyware.core.lens.record :as record]
+            [anyware.core.lens :as lens]
             [anyware.core.command :as command]))
 
-(def with (partial record/with :minibuffer))
-
 (def keymap
-  (atom {:backspace (with buffer/backspace)
-         :left (with buffer/left)
-         :right (with buffer/right)
+  (atom {:backspace (lens/modify :minibuffer buffer/backspace)
+         :left (lens/modify :minibuffer buffer/left)
+         :right (lens/modify :minibuffer buffer/right)
          :enter command/run}))
 
 (defmethod mode/keymap :minibuffer [_] @keymap)
 
-(defmethod mode/default :minibuffer [_] (with buffer/append))
+(defmethod mode/default :minibuffer [_ key editor]
+  (lens/modify :minibuffer (partial buffer/append key) editor))

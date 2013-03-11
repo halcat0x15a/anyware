@@ -9,13 +9,14 @@
 
 (defn run [key {:keys [mode] :as editor}]
   (if-let [f ((merge (mode/keymap mode)
-                     {:escape (mode/set :normal)})
+                     {:escape (lens/set :mode :normal)})
               key)]
-    (record/modify f editor)
-    ((record/modify (mode/default mode) editor) key)))
+    (f editor)
+    (mode/default mode key editor)))
 
 (defrecord Editor [list minibuffer mode])
 
 (def default
   (Editor. (->> buffer/empty history/create (list/create "*scratch*"))
-           buffer/empty :normal))
+           buffer/empty
+           :normal))

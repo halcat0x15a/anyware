@@ -1,16 +1,15 @@
 (ns anyware.core.buffer.history
   (:refer-clojure :exclude [read])
   (:require [clojure.zip :as zip]
-            [anyware.core.buffer :as buffer]
-            [anyware.core.lens.record :as record])
-  (:import anyware.core.buffer.Buffer))
+            [anyware.core.function :as function]
+            [anyware.core.buffer :as buffer]))
 
 (defprotocol History
   (branch? [history])
   (children [history])
   (make-node [history list]))
 
-(defrecord Change [list ^Buffer buffer]
+(defrecord Change [list buffer]
   History
   (branch? [_] true)
   (children [_] list)
@@ -24,9 +23,9 @@
 
 (def read (comp create buffer/read))
 
-(def undo (record/with record/history (record/safe zip/up)))
+(def undo (function/safe zip/up))
 
-(def redo (record/with record/history (record/safe zip/down)))
+(def redo (function/safe zip/down))
 
-(defn commit [^Buffer buffer ^Change history]
+(defn commit [buffer history]
   (-> history (zip/insert-child (change buffer)) zip/down))

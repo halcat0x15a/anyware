@@ -5,8 +5,5 @@
 (defmulti keymap identity)
 (defmethod keymap :default [_] {})
 
-(defmulti default identity)
-(defmethod default :default [_] (fn [editor] (constantly editor)))
-
-(defn set [mode]
-  (record/with :mode (constantly mode)))
+(defmulti default (fn [mode _ _] mode))
+(defmethod default :default [_ _ editor] editor)
