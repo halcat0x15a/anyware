@@ -5,6 +5,6 @@
 
 (def keymap
   (atom {:backspace (lens/modify :minibuffer character/backspace)
-         :left (lens/modify :minibuffer character/backward)
-         :right (lens/modify :minibuffer character/forward)
+         :left (lens/modify :minibuffer character/prev)
+         :right (lens/modify :minibuffer character/next)
          :enter command/run}))

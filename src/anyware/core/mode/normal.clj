@@ -20,8 +20,8 @@
          \l insert/right
          \0 head
          \9 tail
-         \w (lens/modify record/buffer word/forward)
-         \b (lens/modify record/buffer word/backward)
+         \w (lens/modify record/buffer word/next)
+         \b (lens/modify record/buffer word/prev)
          \x delete/delete
          \X delete/backspace
          \u (lens/modify record/history history/undo)

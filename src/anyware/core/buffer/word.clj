@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.word
-  (:refer-clojure :exclude [find drop])
+  (:refer-clojure :exclude [find next drop])
   (:require [anyware.core.buffer :as buffer]))
 
 (def right #"^\s*\w+")
@@ -22,9 +22,9 @@
             (buffer/conj (buffer/inverse field) result))
        buffer)))
 
-(def forward (move :rights))
+(def next (move :rights))
 
-(def backward (move :lefts))
+(def prev (move :lefts))
 
 (defn drop
   ([field] (partial drop field))

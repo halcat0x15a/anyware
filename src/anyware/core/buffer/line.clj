@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.line
-  (:refer-clojure :exclude [while conj pop])
+  (:refer-clojure :exclude [while next conj pop])
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.buffer.character :as character]))
 
@@ -20,9 +20,9 @@
 
 (def end (move :rights))
 
-(def forward (comp character/forward begin))
+(def next (comp character/next begin))
 
-(def backward (comp character/backward end))
+(def prev (comp character/prev end))
 
 (def break (partial buffer/conj :lefts \newline))
 

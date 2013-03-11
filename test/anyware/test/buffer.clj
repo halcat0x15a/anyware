@@ -8,8 +8,8 @@
             [anyware.core.buffer.word :as word]))
 
 (defn move []
-  (gen/rand-nth [character/forward character/backward
-                 line/forward line/backward
+  (gen/rand-nth [character/next character/prev
+                 line/next line/prev
                  line/end buffer/begin
                  buffer/end buffer/begin]))
 

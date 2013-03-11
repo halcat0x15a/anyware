@@ -5,13 +5,13 @@
             [anyware.core.buffer.line :as line]
             [anyware.core.mode.delete :as delete]))
 
-(def left (lens/modify record/buffer character/backward))
+(def left (lens/modify record/buffer character/prev))
 
-(def right (lens/modify record/buffer character/forward))
+(def right (lens/modify record/buffer character/next))
 
-(def up (lens/modify record/buffer line/backward))
+(def up (lens/modify record/buffer line/prev))
 
-(def down (lens/modify record/buffer line/forward))
+(def down (lens/modify record/buffer line/next))
 
 (def keymap
   (atom {:backspace delete/backspace

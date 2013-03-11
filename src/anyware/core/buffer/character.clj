@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.character
-  (:refer-clojure :exclude [pop])
+  (:refer-clojure :exclude [pop next])
   (:require [anyware.core.function :as function]
             [anyware.core.buffer :as buffer]))
 
@@ -12,9 +12,9 @@
             (buffer/pop field))
        buffer)))
 
-(def forward (move :rights))
+(def next (move :rights))
 
-(def backward (move :lefts))
+(def prev (move :lefts))
 
 (def append (partial buffer/conj :lefts))
 
