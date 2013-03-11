@@ -1,4 +1,5 @@
 (ns anyware.core.buffer.character
+  (:refer-clojure :exclude [pop])
   (:require [anyware.core.function :as function]
             [anyware.core.buffer :as buffer]))
 
@@ -17,6 +18,9 @@
 
 (def append (partial buffer/conj :lefts))
 
-(def backspace (partial (function/safe pop) :lefts))
+(defn pop [field]
+  (function/safe (partial pop field)))
 
-(def delete (partial (function/safe pop) :rights))
+(def backspace (pop :lefts))
+
+(def delete (pop :rights))

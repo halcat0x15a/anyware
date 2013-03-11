@@ -1,16 +1,20 @@
 (ns anyware.core.buffer.line
-  (:refer-clojure :exclude [conj])
+  (:refer-clojure :exclude [while conj pop])
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.buffer.character :as character]))
 
-(defn move
-  ([field] (partial move field))
-  ([field buffer]
-     (if-let [char (buffer/peek field buffer)]
-       (if (identical? char \newline)
-         buffer
-         (recur field (character/move field buffer)))
-       buffer)))
+(defn while [f]
+  (letfn [(while
+            ([field] (partial while field))
+            ([field buffer]
+               (if-let [char (buffer/peek field buffer)]
+                 (if (identical? char \newline)
+                   buffer
+                   (recur field (f field buffer)))
+                 buffer)))]
+    while))
+
+(def move (while character/move))
 
 (def begin (move :lefts))
 
@@ -32,3 +36,9 @@
 (def append (conj :lefts))
 
 (def insert (conj :rights))
+
+(def pop (while character/pop))
+
+(def backspace (pop :lefts))
+
+(def delete (pop :rights))
