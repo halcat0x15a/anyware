@@ -11,9 +11,9 @@
 
 (def read (partial assoc empty :rights))
 
-(defmulti invert identity)
-(defmethod invert :rights [_] :lefts)
-(defmethod invert :lefts [_] :rights)
+(defmulti inverse identity)
+(defmethod inverse :rights [_] :lefts)
+(defmethod inverse :lefts [_] :rights)
 
 (defmulti peek (fn [field _] field))
 (defmethod peek :rights [field buffer]
@@ -41,7 +41,7 @@
   ([field] (partial move field))
   ([field buffer]
      (->> (assoc buffer field "")
-          (conj (invert field) (field buffer)))))
+          (conj (inverse field) (field buffer)))))
 
 (def begin (move :lefts))
 

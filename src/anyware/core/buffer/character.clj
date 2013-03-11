@@ -7,7 +7,7 @@
   ([field buffer]
      (if-let [char (buffer/peek field buffer)]
        (->> buffer
-            (buffer/conj (buffer/invert field) char)
+            (buffer/conj (buffer/inverse field) char)
             (buffer/pop field))
        buffer)))
 

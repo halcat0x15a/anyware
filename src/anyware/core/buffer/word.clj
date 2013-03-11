@@ -11,7 +11,7 @@
      (if-let [result (->> buffer field (re-find (regex field)))]
        (->> buffer
             (buffer/drop (count result) field)
-            (buffer/conj (buffer/invert field) result))
+            (buffer/conj (buffer/inverse field) result))
        buffer)))
 
 (def forward (move :rights))

@@ -1,4 +1,5 @@
 (ns anyware.core.buffer.line
+  (:refer-clojure :exclude [conj])
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.buffer.character :as character]))
 
@@ -19,8 +20,15 @@
 
 (def backward (comp character/backward end))
 
-(def append (partial buffer/conj :lefts \newline))
-
-(def insert (partial buffer/conj :rights \newline))
-
 (def break (partial buffer/conj :lefts \newline))
+
+(defn conj
+  ([field] (partial conj field))
+  ([field buffer]
+     (->> buffer
+          (move (buffer/inverse field))
+          (buffer/conj field \newline))))
+
+(def append (conj :lefts))
+
+(def insert (conj :rights))

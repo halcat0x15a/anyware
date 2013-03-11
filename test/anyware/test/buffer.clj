@@ -16,9 +16,9 @@
 (defn field []
   (gen/rand-nth [:lefts :rights]))
 
-(defspec invert-invert
+(defspec inverse-inverse
   (fn [field]
-    (-> field buffer/invert buffer/invert))
+    (-> field buffer/inverse buffer/inverse))
   [^{:tag `field} field]
   (is (= % field)))
 
@@ -61,3 +61,11 @@
          (buffer/peek field)))
   [^test/buffer buffer ^{:tag `field} field]
   (is (nil? %)))
+
+(defspec add-newline
+  (fn [buffer field]
+    (->> buffer
+         (line/conj field)
+         (buffer/peek field)))
+  [^test/buffer buffer ^{:tag `field} field]
+  (is (= % \newline)))
