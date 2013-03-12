@@ -1,6 +1,7 @@
 (ns anyware.core.editor
-  (:require [anyware.core.buffer.history :as history]
-            [anyware.core.buffer.list :as list]
+  (:require [anyware.core.buffer :as buffer]
+            [anyware.core.history :as history]
+            [anyware.core.list :as list]
             [anyware.core.lens :as lens]
             [anyware.core.mode :as mode]))
 
@@ -13,4 +14,8 @@
 
 (defrecord Editor [list minibuffer mode])
 
-(def default (Editor. list/empty history/empty :normal))
+(def default-history (history/create buffer/empty))
+
+(def default-list (list/create default-history))
+
+(def default (Editor. default-list default-history :normal))

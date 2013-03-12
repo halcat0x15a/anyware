@@ -3,7 +3,7 @@
             [anyware.test :as test]
             [anyware.core :as core]
             [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+            [anyware.core.record :as record]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]))
 

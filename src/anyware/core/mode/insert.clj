@@ -1,6 +1,6 @@
 (ns anyware.core.mode.insert
   (:require [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+            [anyware.core.record :as record]
             [anyware.core.buffer.character :as character]
             [anyware.core.buffer.line :as line]
             [anyware.core.mode.delete :as delete]))

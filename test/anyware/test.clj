@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [list])
   (:require [clojure.data.generators :as gen]
             [anyware.core.buffer :as buffer]
-            [anyware.core.buffer.history :as history]
-            [anyware.core.buffer.list :as list]
+            [anyware.core.history :as history]
+            [anyware.core.list :as list]
             [anyware.core.editor :as editor]))
 
 (defn buffer []

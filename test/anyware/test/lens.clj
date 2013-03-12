@@ -3,7 +3,7 @@
             [clojure.data.generators :as gen]
             [anyware.test :as test]
             [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]))
+            [anyware.core.record :as record]))
 
 (defn lens []
   (gen/rand-nth [:list

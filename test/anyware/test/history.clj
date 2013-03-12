@@ -2,10 +2,9 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [anyware.test :as test]
             [anyware.core.lens :as lens]
-            [anyware.core.buffer :as buffer]
-            [anyware.core.buffer.history :as history]))
+            [anyware.core.history :as history]))
 
-(def lens (lens/comp :buffer lens/zip))
+(def lens (lens/comp :value lens/zip))
 
 (defspec commit-undo
   (fn [history buffer]

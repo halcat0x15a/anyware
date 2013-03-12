@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+            [anyware.core.record :as record]
             [anyware.core.parser :as parser]
             [anyware.core.language.ast :as ast]
             [anyware.core.editor :as editor]

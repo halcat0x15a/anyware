@@ -1,15 +1,14 @@
-(ns anyware.core.buffer.history
+(ns anyware.core.history
   (:refer-clojure :exclude [read empty])
   (:require [clojure.zip :as zip]
-            [anyware.core.function :as function]
-            [anyware.core.buffer :as buffer]))
+            [anyware.core.function :as function]))
 
 (defprotocol History
   (branch? [history])
   (children [history])
   (make-node [history list]))
 
-(defrecord Change [list buffer]
+(defrecord Change [list value]
   History
   (branch? [_] true)
   (children [_] list)
@@ -21,13 +20,9 @@
 (def create
   (comp (partial zip/zipper branch? children make-node) change))
 
-(def empty (create buffer/empty))
-
-(def read (comp create buffer/read))
-
 (def undo (function/safe zip/up))
 
 (def redo (function/safe zip/down))
 
-(defn commit [buffer history]
-  (-> history (zip/insert-child (change buffer)) zip/down))
+(defn commit [value history]
+  (-> history (zip/insert-child (change value)) zip/down))

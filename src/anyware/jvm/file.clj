@@ -1,7 +1,7 @@
 (ns anyware.jvm.file
-  (:require [anyware.core.buffer.list :as list]
-            [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+  (:require [anyware.core.lens :as lens]
+            [anyware.core.record :as record]
+            [anyware.core.list :as list]
             [anyware.core.command :as command])
   (:import [javafx.stage FileChooser]))
 

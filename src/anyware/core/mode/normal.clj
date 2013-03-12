@@ -1,9 +1,9 @@
 (ns anyware.core.mode.normal
   (:require [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+            [anyware.core.record :as record]
             [anyware.core.buffer.line :as line]
             [anyware.core.buffer.word :as word]
-            [anyware.core.buffer.history :as history]
+            [anyware.core.history :as history]
             [anyware.core.mode.insert :as insert]
             [anyware.core.mode.delete :as delete]))
 

@@ -1,6 +1,6 @@
 (ns anyware.core.mode.delete
   (:require [anyware.core.lens :as lens]
-            [anyware.core.lens.record :as record]
+            [anyware.core.record :as record]
             [anyware.core.buffer.character :as character]
             [anyware.core.buffer.word :as word]))
 
