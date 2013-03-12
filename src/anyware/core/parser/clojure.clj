@@ -1,7 +1,8 @@
 (ns anyware.core.parser.clojure
   (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [anyware.core.parser :as parser]
-            [anyware.core.parser.ast :as ast]))
+            [anyware.core.parser.ast :as ast]
+            [anyware.core.parser.language :as language]))
 
 (declare expressions)
 
@@ -72,3 +73,5 @@
               (parser/maybe space)))
 
 (def expressions (parser/repeat expression))
+
+(defmethod language/extension "clj" [_] expression)
