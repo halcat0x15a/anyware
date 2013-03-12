@@ -4,7 +4,7 @@
             [anyware.core.lens :as lens]
             [anyware.core.lens.record :as record]
             [anyware.core.parser :as parser]
-            [anyware.core.parser.ast :as ast]
+            [anyware.core.language.ast :as ast]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
             [anyware.core.format :as format]
@@ -44,7 +44,7 @@
     (if-let [parser (-> buffer meta (get :parser))]
       (ast/parse parser buffer)
       (buffer/write buffer)))
-  anyware.core.parser.ast.Node
+  anyware.core.language.ast.Node
   (render [{:keys [label value]}]
     (element :span
              {:style (style {:color (-> label color/read name)})}

@@ -1,8 +1,8 @@
-(ns anyware.core.parser.clojure
+(ns anyware.core.language.clojure
   (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [anyware.core.parser :as parser]
-            [anyware.core.parser.ast :as ast]
-            [anyware.core.parser.language :as language]))
+            [anyware.core.language :as language]
+            [anyware.core.language.ast :as ast]))
 
 (declare expressions)
 

@@ -1,4 +1,4 @@
-(ns anyware.core.parser.ast
+(ns anyware.core.language.ast
   (:refer-clojure :exclude [map])
   (:require [clojure.zip :as zip]
             [anyware.core.buffer :as buffer]
