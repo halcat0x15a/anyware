@@ -1,6 +1,7 @@
 (ns anyware.core.parser.ast
   (:refer-clojure :exclude [map])
   (:require [clojure.zip :as zip]
+            [anyware.core.buffer :as buffer]
             [anyware.core.parser :as parser]))
 
 (defrecord Node [label value])
@@ -20,12 +21,26 @@
 (defn- children [node]
   (-> node extract seq))
 
-(defn- make-node [_ children] children)
+(defn- make-node [_ children] (vec children))
 
 (def zip (partial zip/zipper branch? children make-node))
 
-(defn cursor [n zipper]
-  (let [node (zip/node zipper)]
-    (cond (branch? node) (recur n (zip/next zipper))
-          (not (pos? n)) zipper
-          :else (recur (dec n) (zip/next zipper)))))
+(defn traverse
+  ([f] (partial traverse f))
+  ([f n zipper]
+     (let [node (zip/node zipper)]
+       (cond (zip/end? zipper) zipper
+             (branch? node) (recur f n (zip/next zipper))
+             (not (pos? n)) zipper
+             :else (recur f (dec n) (-> zipper f zip/next))))))
+
+(def move (traverse identity))
+
+(def drop (traverse zip/remove))
+
+(defn parse [parser {:keys [lefts] :as buffer}]
+  (let [{:keys [result next]} (->> buffer buffer/write parser)]
+    (-> (->> result zip (move (count lefts)))
+        (zip/edit (partial ->Node :cursor))
+        zip/rightmost
+        (zip/insert-right next))))

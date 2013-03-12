@@ -7,6 +7,7 @@
             [anyware.core.parser.ast :as ast]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
+            [anyware.core.format :as format]
             [anyware.core.format.color :as color]))
 
 (def global
@@ -16,9 +17,7 @@
          :font-family "monospace"}))
 
 (defn escape [string]
-  (string/escape string {\< "&lt;"
-                         \> "&gt;"
-                         \& "&amp;"}))
+  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
 
 (defn- attribute [attributes key value]
   (str attributes \space (name key) \= \" value \"))
@@ -34,28 +33,16 @@
 
 (def style (partial reduce-kv declaration ""))
 
-(defprotocol Node
-  (render [node]))
-
-(extend-protocol Node
+(extend-protocol format/Node
   anyware.core.editor.Editor
-  (render [{:keys [minibuffer] :as editor}]
-    (let [buffer (lens/get record/buffer editor)]
-      (element :pre {:class "editor" :style (style @global)}
-               (str (buffer/center (dec (get (meta editor) :height))
-                                   (buffer/line :lefts buffer)
-                                   (buffer/write buffer))
-                    (buffer/write minibuffer)))))
+  (render [editor]
+    (element :pre {:class "editor" :style (style @global)}
+             (str (->> editor (lens/get record/buffer) format/render)
+                  (->> editor (lens/get record/minibuffer) format/render))))
   anyware.core.buffer.Buffer
-  (render [{:keys [lefts] :as buffer}]
+  (render [buffer]
     (if-let [parser (-> buffer meta (get :parser))]
-      (-> (->> buffer
-               buffer/write
-               parser
-               ast/zip
-               (ast/cursor (count lefts)))
-          (zip/insert-left "<span>")
-          (zip/insert-right "</span>"))
+      (ast/parse parser buffer)
       (buffer/write buffer)))
   anyware.core.parser.ast.Node
   (render [{:keys [label value]}]

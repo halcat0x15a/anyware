@@ -1,5 +1,5 @@
 (ns anyware.core.lens.record
-  (:refer-clojure :exclude [comp name])
+  (:refer-clojure :exclude [name])
   (:require [anyware.core.lens :as lens]))
 
 (def entry (lens/comp lens/zip :list))
@@ -12,4 +12,6 @@
 
 (def buffer (lens/comp :buffer change))
 
-(def minibuffer (lens/comp lens/zip :minibuffer))
+(def minibuffer (->> :minibuffer
+                     (lens/comp lens/zip)
+                     (lens/comp :buffer)))

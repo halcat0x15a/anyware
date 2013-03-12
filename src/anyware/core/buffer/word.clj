@@ -2,9 +2,9 @@
   (:refer-clojure :exclude [find next drop])
   (:require [anyware.core.buffer :as buffer]))
 
-(def right #"^\s*\w+")
+(def right #"^\W*\w+")
 
-(def left #"\w+\s*$")
+(def left #"\w+\W*$")
 
 (defmulti regex identity)
 (defmethod regex :rights [_] right)

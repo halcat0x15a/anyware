@@ -21,9 +21,9 @@
 (def create
   (comp (partial zip/zipper branch? children make-node) change))
 
-(def read (comp create buffer/read))
+(def empty (create buffer/empty))
 
-(def empty (read ""))
+(def read (comp create buffer/read))
 
 (def undo (function/safe zip/up))
 

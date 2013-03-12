@@ -11,7 +11,7 @@
 
 (def read (comp (partial create @name) history/read))
 
-(def empty (read ""))
+(def empty (create @name history/empty))
 
 (defn add [name history list]
   (-> list
