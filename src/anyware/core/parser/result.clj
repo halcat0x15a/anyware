@@ -12,11 +12,15 @@
   (mapcat [success f] (f result next))
   (or [success result] success))
 
-(defrecord Failure [message next]
+(defrecord Failure [result next]
   Result
   (success? [failure] false)
   (mapcat [failure f] failure)
   (or [failure result] result))
+
+(def success (partial ->Success []))
+
+(def failure (partial ->Failure []))
 
 (defn map [result f]
   (mapcat result

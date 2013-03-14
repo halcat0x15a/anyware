@@ -18,8 +18,8 @@
          \j insert/down
          \k insert/up
          \l insert/right
-         \0 head
-         \9 tail
+         \^ head
+         \$ tail
          \w (lens/modify record/buffer word/next)
          \b (lens/modify record/buffer word/prev)
          \x delete/delete

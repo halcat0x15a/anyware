@@ -9,24 +9,24 @@
   (cond (coll? x) (first x)
         (string? x) x))
 
-(defn regex [regex']
+(defn regex [regex]
   (fn [input]
-    (if-let [result (re-find regex' input)]
+    (if-let [result (re-find regex input)]
       (result/->Success result (subs input (-> result extract count)))
-      (result/->Failure regex' input))))
+      (result/failure input))))
 
 (defn literal [string]
   (fn [input]
     (let [length (count string)]
-      (cond (< (count input) length) (result/->Failure length input)
+      (cond (< (count input) length) (result/failure input)
             (= (subs input 0 length) string)
             (result/->Success string (subs input length))
-            :else (result/->Failure string input)))))
+            :else (result/failure input)))))
 
 (defn or [parser & parsers]
   (fn [input]
     (reduce (fn [result parser]
-                 (result/or result (parser input)))
+              (result/or result (parser input)))
             (parser input)
             parsers)))
 
@@ -50,9 +50,5 @@
           (recur result')
           (result/or result (result/->Success [] input)))))))
 
-(def success (partial result/->Success []))
-
 (defn maybe [parser]
-  (or parser success))
-    
-(def text (regex #"[\s\S]*"))
+  (or parser result/success))

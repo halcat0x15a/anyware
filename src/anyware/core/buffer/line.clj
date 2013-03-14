@@ -42,3 +42,5 @@
 (def backspace (pop :lefts))
 
 (def delete (pop :rights))
+
+(def remove (comp backspace delete))

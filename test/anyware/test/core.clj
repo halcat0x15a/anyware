@@ -35,6 +35,6 @@
 
 (deftest editor
   (testing "type 'hello world'"
-    (is (= (->> (emulate editor/default \i "helloworld" :escape \0)
+    (is (= (->> (emulate editor/default \i "helloworld" :escape \^)
                 (lens/get record/buffer))
            (buffer/read "helloworld")))))
