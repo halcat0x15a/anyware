@@ -20,8 +20,6 @@
 
 (def prev (move :lefts))
 
-(def append (partial buffer/conj :lefts))
-
 (def backspace (pop :lefts))
 
 (def delete (pop :rights))

@@ -30,7 +30,5 @@
      (set lens (f (get lens obj)) obj)))
 
 (defn comp [lens' lens]
-  (Lens. (fn [obj]
-           (->> obj (get lens) (get lens')))
-         (fn [obj value]
-           (modify lens (set lens' value) obj))))
+  (Lens. (fn [obj] (->> obj (get lens) (get lens')))
+         (fn [obj value] (modify lens (set lens' value) obj))))

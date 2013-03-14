@@ -23,8 +23,6 @@
 
 (defspec set-get
   (fn [editor lens value]
-    (->> editor
-         (lens/set lens value)
-         (lens/get lens)))
+    (->> editor (lens/set lens value) (lens/get lens)))
   [^test/editor editor ^{:tag `lens} lens ^anything value]
   (is (= % value)))

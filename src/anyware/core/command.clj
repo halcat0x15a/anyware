@@ -6,11 +6,3 @@
 
 (defmulti exec (fn [[f & args] editor] f))
 (defmethod exec :default [_ editor] editor)
-
-(defn run [editor]
-  (if-let [editor' (exec (->> editor
-                              (lens/get record/minibuffer)
-                              buffer/command)
-                         editor)]
-    (assoc editor' :minibuffer buffer/empty)
-    editor))

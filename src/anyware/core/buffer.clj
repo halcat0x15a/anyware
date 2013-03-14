@@ -43,6 +43,8 @@
 
 (def end (move :rights))
 
+(def append (partial conj :lefts))
+
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))
 
@@ -51,12 +53,3 @@
 
 (defn line [field buffer]
   (->> buffer field (filter (partial identical? \newline)) count))
-
-(defn center [height line string]
-  (let [n (- line (/ height 2))
-        lines (string/split-lines string)]
-    (string/join
-     (take height
-           (if (pos? n)
-             (clojure.core/drop n lines)
-             lines)))))

@@ -22,38 +22,16 @@
   [^string string]
   (is (= % string)))
 
-(defspec write-read-write
+(defspec write-read
   (fn [buffer]
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
   (is (= % (-> buffer buffer/begin))))
 
-(defspec conj-pop
-  (fn [buffer field char]
+(defspec conj-drop
+  (fn [buffer field string]
     (->> buffer
-         (buffer/conj field char)
-         (character/pop field)))
-  [^test/buffer buffer ^{:tag `field} field ^char char]
+         (buffer/conj field string)
+         (buffer/drop (count string) field)))
+  [^test/buffer buffer ^{:tag `field} field ^string string]
   (is (= % buffer)))
-
-(defspec move-cursor
-  (fn [buffer field]
-    (->> buffer (character/move field) (buffer/cursor field)))
-  [^test/buffer buffer ^{:tag `field} field]
-  (is (<= % (buffer/cursor field buffer))))
-
-(defspec most-peek
-  (fn [buffer field]
-    (->> buffer
-         (buffer/move field)
-         (buffer/peek field)))
-  [^test/buffer buffer ^{:tag `field} field]
-  (is (nil? %)))
-
-(defspec add-newline
-  (fn [buffer field]
-    (->> buffer
-         (line/conj field)
-         (buffer/peek field)))
-  [^test/buffer buffer ^{:tag `field} field]
-  (is (= % \newline)))

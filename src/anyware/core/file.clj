@@ -13,8 +13,5 @@
                         (with-meta (-> string
                                        buffer/read
                                        history/create)
-                          {:parser (language/extension path)}))
+                          (language/extension path)}))
                editor))
-
-(defn save [editor]
-  (lens/get record/entry editor))
