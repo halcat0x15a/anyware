@@ -1,20 +1,24 @@
 (ns anyware.core.list
-  (:refer-clojure :exclude [name])
+  (:refer-clojure :exclude [find remove assoc])
   (:require [clojure.zip :as zip]))
 
-(defrecord Entry [name history])
+(defrecord Entry [saved name history])
 
-(def default (atom "*scratch*"))
+(def entry (partial ->Entry true))
 
-(defn create
-  ([history] (create @default history))
-  ([name history]
-     (-> (Entry. name history)
-         vector
-         zip/vector-zip
-         zip/down)))
+(defn create [name history]
+  (-> (entry name history) vector zip/vector-zip zip/down))
 
-(defn add [name history list]
-  (-> list
-      (zip/insert-right (Entry. name history))
-      zip/right))
+(defn find [name list]
+  (loop [list (-> list zip/root zip/vector-zip)]
+    (cond (identical? name (-> list zip/node :name)) list
+          (not (zip/end? list)) (recur (zip/next list)))))
+
+(defn remove [list]
+  (if (-> list zip/node :saved)
+    (zip/remove list)))
+
+(defn assoc [name history list]
+  (if-let [list (find name list)]
+    (if-let [list (remove list)]
+      (-> list (zip/insert-right (entry name history)) zip/right))))

@@ -3,22 +3,17 @@
   (:require [clojure.zip :as zip]
             [anyware.core.function :as function]))
 
-(defprotocol History
-  (branch? [history])
-  (children [history])
-  (make-node [history list]))
+(defrecord Change [list value])
 
-(defrecord Change [list value]
-  History
-  (branch? [_] true)
-  (children [_] list)
-  (make-node [change list]
-    (assoc change :list list)))
+(def branch? (partial instance? Change))
+
+(defn- make-node [change list]
+  (assoc change :list list))
 
 (def change (partial ->Change []))
 
 (def create
-  (comp (partial zip/zipper branch? children make-node) change))
+  (comp (partial zip/zipper branch? :list make-node) change))
 
 (def undo (function/safe zip/up))
 

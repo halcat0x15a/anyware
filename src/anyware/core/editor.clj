@@ -12,10 +12,12 @@
     (f editor)
     (mode/default mode key editor)))
 
+(def default (atom "*scratch*"))
+
 (defrecord Editor [list minibuffer mode])
 
 (def default-history (history/create buffer/empty))
 
-(def default-list (list/create default-history))
+(def default-list (list/create @default default-history))
 
 (def default (Editor. default-list default-history :normal))
