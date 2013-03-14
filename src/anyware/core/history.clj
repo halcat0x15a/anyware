@@ -1,7 +1,5 @@
 (ns anyware.core.history
-  (:refer-clojure :exclude [read empty])
-  (:require [clojure.zip :as zip]
-            [anyware.core.function :as function]))
+  (:require [clojure.zip :as zip]))
 
 (defrecord Change [list value])
 

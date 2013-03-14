@@ -26,7 +26,8 @@
 (defmethod normal \O [_]
   (comp api/insert-mode api/insert-newline-into-backward))
 (defmethod normal \d [_] api/delete-mode)
-(defmethod normal \: [_] api/minibuffer-mode)
+(defmethod normal \: [_]
+  (comp api/minibuffer-mode api/clear-minibuffer))
 (defmethod normal :default [_] identity)
 
 (defmulti insert identity)
@@ -55,6 +56,8 @@
 (defmethod minibuffer :escape [_] api/normal-mode)
 (defmethod minibuffer :right [_] api/forward-minibuffer-character)
 (defmethod minibuffer :left [_] api/backward-minibuffer-character)
+(defmethod minibuffer :enter [_]
+  (comp api/clear-minibuffer api/execute-command))
 (defmethod minibuffer :default [char]
   (partial api/insert-string-into-minibuffer char))
 

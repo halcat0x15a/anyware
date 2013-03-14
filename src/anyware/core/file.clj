@@ -8,10 +8,9 @@
 
 (defn open [path string editor]
   (lens/modify :frame
-               (partial frame/assoc
-                        path
+               (partial frame/assoc path
                         (with-meta (-> string
                                        buffer/read
                                        history/create)
-                          (language/extension path)}))
+                          {:parser (language/extension path)}))
                editor))

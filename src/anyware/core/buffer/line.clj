@@ -1,5 +1,5 @@
 (ns anyware.core.buffer.line
-  (:refer-clojure :exclude [while next conj pop])
+  (:refer-clojure :exclude [while next conj pop remove])
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.buffer.character :as character]))
 

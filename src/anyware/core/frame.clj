@@ -6,8 +6,7 @@
 
 (defrecord Saved [name value])
 
-(defn create [name value]
-  (-> (Saved. name value) vector zip/vector-zip zip/down))
+(def create (comp zip/down zip/vector-zip vector ->Saved))
 
 (defn find [name frame]
   (loop [frame (-> frame zip/root zip/vector-zip)]
