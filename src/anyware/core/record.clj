@@ -2,11 +2,11 @@
   (:refer-clojure :exclude [name])
   (:require [anyware.core.lens :as lens]))
 
-(def entry (lens/comp lens/zip :list))
+(def entry (lens/comp lens/zip :frame))
 
 (def name (lens/comp :name entry))
 
-(def history (lens/comp :history entry))
+(def history (lens/comp :value entry))
 
 (def change (lens/comp lens/zip history))
 

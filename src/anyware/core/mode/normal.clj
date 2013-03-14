@@ -1,5 +1,7 @@
 (ns anyware.core.mode.normal
-  (:require [anyware.core.lens :as lens]
+  (:require [clojure.zip :as zip]
+            [anyware.core.lens :as lens]
+            [anyware.core.function :as function]
             [anyware.core.record :as record]
             [anyware.core.buffer.line :as line]
             [anyware.core.buffer.word :as word]
@@ -24,8 +26,8 @@
          \b (lens/modify record/buffer word/prev)
          \x delete/delete
          \X delete/backspace
-         \u (lens/modify record/history history/undo)
-         \r (lens/modify record/history history/redo)
+         \u (lens/modify record/history (function/safe zip/up))
+         \r (lens/modify record/history (function/safe zip/down))
          \a (comp insert insert/right)
          \I (comp insert head)
          \A (comp insert tail)

@@ -3,12 +3,12 @@
             [anyware.core.record :as record]
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
-            [anyware.core.list :as list]
+            [anyware.core.frame :as frame]
             [anyware.core.language :as language]))
 
 (defn open [path string editor]
-  (lens/modify :list
-               (partial list/add
+  (lens/modify :frame
+               (partial frame/assoc
                         path
                         (with-meta (-> string
                                        buffer/read

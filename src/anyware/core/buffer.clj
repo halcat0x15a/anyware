@@ -33,10 +33,6 @@
 (defmethod drop :lefts [n field buffer]
   (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
 
-(defn pop [field buffer]
-  (if-not (-> buffer field empty?)
-    (drop 1 field buffer)))
-
 (defn move
   ([field] (partial move field))
   ([field buffer]

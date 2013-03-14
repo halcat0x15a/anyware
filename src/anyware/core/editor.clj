@@ -1,7 +1,7 @@
 (ns anyware.core.editor
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
-            [anyware.core.list :as list]
+            [anyware.core.frame :as frame]
             [anyware.core.lens :as lens]
             [anyware.core.mode :as mode]))
 
@@ -14,10 +14,10 @@
 
 (def default (atom "*scratch*"))
 
-(defrecord Editor [list minibuffer mode])
+(defrecord Editor [frame minibuffer mode])
 
-(def default-history (history/create buffer/empty))
+(def history (history/create buffer/empty))
 
-(def default-list (list/create @default default-history))
+(def frame (frame/create @default history))
 
-(def default (Editor. default-list default-history :normal))
+(def default (Editor. frame history :normal))

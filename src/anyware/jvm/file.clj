@@ -1,7 +1,7 @@
 (ns anyware.jvm.file
   (:require [anyware.core.lens :as lens]
             [anyware.core.record :as record]
-            [anyware.core.list :as list]
+            [anyware.core.frame :as frame]
             [anyware.core.command :as command])
   (:import [javafx.stage FileChooser]))
 
@@ -13,7 +13,7 @@
        (open (.getPath file) editor)
        editor))
   ([path editor]
-     (update-in editor [:list] (partial list/add path (slurp path)))))
+     (update-in editor [:list] (partial frame/assoc path (slurp path)))))
 
 (defmethod command/exec "open" [[_ file] editor]
   (if file (open editor) editor))

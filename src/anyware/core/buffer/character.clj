@@ -1,7 +1,12 @@
 (ns anyware.core.buffer.character
   (:refer-clojure :exclude [pop next])
-  (:require [anyware.core.function :as function]
-            [anyware.core.buffer :as buffer]))
+  (:require [anyware.core.buffer :as buffer]))
+
+(defn pop
+  ([field] (partial pop field))
+  ([field buffer]
+     (if-not (-> buffer field empty?)
+       (buffer/drop 1 field buffer))))
 
 (defn move
   ([field] (partial move field))
@@ -9,17 +14,13 @@
      (if-let [char (buffer/peek field buffer)]
        (->> buffer
             (buffer/conj (buffer/inverse field) char)
-            (buffer/pop field))
-       buffer)))
+            (pop field)))))
 
 (def next (move :rights))
 
 (def prev (move :lefts))
 
 (def append (partial buffer/conj :lefts))
-
-(defn pop [field]
-  (function/safe (partial pop field)))
 
 (def backspace (pop :lefts))
 

@@ -3,7 +3,7 @@
   (:require [clojure.data.generators :as gen]
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
-            [anyware.core.list :as list]
+            [anyware.core.frame :as frame]
             [anyware.core.editor :as editor]))
 
 (defn buffer []
@@ -12,12 +12,12 @@
 (defn history []
   (history/create (buffer)))
 
-(defn list []
-  (list/create (gen/keyword) (history)))
+(defn frame []
+  (frame/create (gen/keyword) (history)))
 
 (defn editor []
   (with-meta
     (assoc editor/default
-      :list (list)
+      :frame (frame)
       :minibuffer (history))
     {:height (gen/byte)}))

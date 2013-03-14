@@ -3,22 +3,22 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.buffer.character :as character]))
 
-(defn while [f]
-  (letfn [(while
-            ([field] (partial while field))
-            ([field buffer]
-               (if-let [char (buffer/peek field buffer)]
-                 (if (identical? char \newline)
-                   buffer
-                   (recur field (f field buffer)))
-                 buffer)))]
-    while))
+(defn- while
+  ([f] (partial while f))
+  ([f field buffer]
+     (if-let [char (buffer/peek field buffer)]
+       (if (identical? char \newline)
+         buffer
+         (if-let [buffer (f field buffer)]
+           (recur f field buffer)
+           buffer))
+       buffer)))
 
 (def move (while character/move))
 
-(def begin (move :lefts))
+(def begin (partial move :lefts))
 
-(def end (move :rights))
+(def end (partial move :rights))
 
 (def next (comp character/next begin))
 
@@ -39,8 +39,8 @@
 
 (def pop (while character/pop))
 
-(def backspace (pop :lefts))
+(def backspace (partial pop :lefts))
 
-(def delete (pop :rights))
+(def delete (partial pop :rights))
 
 (def remove (comp backspace delete))

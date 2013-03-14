@@ -1,5 +1,6 @@
 (ns anyware.test.history
   (:require [clojure.test.generative :refer (defspec is)]
+            [clojure.zip :as zip]
             [anyware.test :as test]
             [anyware.core.lens :as lens]
             [anyware.core.history :as history]))
@@ -10,7 +11,7 @@
   (fn [history buffer]
     (->> history
          (history/commit buffer)
-         history/undo
+         zip/up
          (lens/get lens)))
   [^test/history history ^test/buffer buffer]
   (is (= % (lens/get lens history))))
@@ -19,8 +20,8 @@
   (fn [history buffer]
     (->> history
          (history/commit buffer)
-         history/undo
-         history/redo
+         zip/up
+         zip/down
          (lens/get lens)))
   [^test/history history ^test/buffer buffer]
   (is (= % buffer)))

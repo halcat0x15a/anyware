@@ -7,12 +7,6 @@
             [anyware.core.buffer.line :as line]
             [anyware.core.buffer.word :as word]))
 
-(defn move []
-  (gen/rand-nth [character/next character/prev
-                 line/next line/prev
-                 line/end buffer/begin
-                 buffer/end buffer/begin]))
-
 (defn field []
   (gen/rand-nth [:lefts :rights]))
 
@@ -34,17 +28,11 @@
   [^test/buffer buffer]
   (is (= % (-> buffer buffer/begin))))
 
-(defspec constant
-  #(% %2)
-  [^{:tag `move} move ^test/buffer buffer]
-  (is (= (buffer/write %)
-         (buffer/write buffer))))
-
 (defspec conj-pop
   (fn [buffer field char]
     (->> buffer
          (buffer/conj field char)
-         (buffer/pop field)))
+         (character/pop field)))
   [^test/buffer buffer ^{:tag `field} field ^char char]
   (is (= % buffer)))
 

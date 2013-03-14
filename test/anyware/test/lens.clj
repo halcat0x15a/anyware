@@ -6,7 +6,7 @@
             [anyware.core.record :as record]))
 
 (defn lens []
-  (gen/rand-nth [:list
+  (gen/rand-nth [:frame
                  :minibuffer
                  :mode
                  record/entry
