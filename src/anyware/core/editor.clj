@@ -2,7 +2,7 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
-            [anyware.core.api.keymap :as keymap]))
+            [anyware.core.keymap :as keymap]))
 
 (def default (atom "*scratch*"))
 

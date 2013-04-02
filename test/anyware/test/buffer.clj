@@ -10,6 +10,9 @@
 (defn field []
   (gen/rand-nth [:lefts :rights]))
 
+(defn move []
+  (gen/rand-nth [character/move line/move word/move buffer/move]))
+
 (defspec inverse-inverse
   (fn [field]
     (-> field buffer/inverse buffer/inverse))
@@ -35,3 +38,8 @@
          (buffer/drop (count string) field)))
   [^test/buffer buffer ^{:tag `field} field ^string string]
   (is (= % buffer)))
+
+(defspec move-cursor
+  (fn [move field buffer] (move field buffer))
+  [^{:tag `move} move ^{:tag `field} field ^test/buffer buffer]
+  (is (<= (buffer/cursor field %) (buffer/cursor field buffer))))

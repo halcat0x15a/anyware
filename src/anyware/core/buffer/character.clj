@@ -6,7 +6,8 @@
   ([field] (partial pop field))
   ([field buffer]
      (if-not (-> buffer field empty?)
-       (buffer/drop 1 field buffer))))
+       (buffer/drop 1 field buffer)
+       buffer)))
 
 (defn move
   ([field] (partial move field))
@@ -14,7 +15,8 @@
      (if-let [char (buffer/peek field buffer)]
        (->> buffer
             (buffer/conj (buffer/inverse field) char)
-            (pop field)))))
+            (pop field))
+       buffer)))
 
 (def next (move :rights))
 

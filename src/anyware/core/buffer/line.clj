@@ -9,9 +9,10 @@
      (if-let [char (buffer/peek field buffer)]
        (if (identical? char \newline)
          buffer
-         (if-let [buffer (f field buffer)]
-           (recur f field buffer)
-           buffer))
+         (let [buffer' (f field buffer)]
+           (if (identical? buffer' buffer)
+             buffer
+             (recur f field buffer'))))
        buffer)))
 
 (def move (while character/move))
