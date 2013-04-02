@@ -1,5 +1,5 @@
 (ns anyware.core.language.ast
-  (:refer-clojure :exclude [map])
+  (:refer-clojure :exclude [map drop])
   (:require [clojure.zip :as zip]
             [anyware.core.buffer :as buffer]
             [anyware.core.parser :as parser]))
@@ -38,9 +38,12 @@
 
 (def drop (traverse zip/remove))
 
-(defn parse [parser {:keys [lefts] :as buffer}]
-  (let [{:keys [result next]} (->> buffer buffer/write parser)]
-    (-> (->> result zip (move (count lefts)))
-        (zip/edit (partial ->Node :cursor))
-        zip/rightmost
-        (zip/insert-right next))))
+(defn parse [{:keys [lefts] :as buffer}]
+  (if-let [parser (-> buffer meta :parser)]
+    (let [{:keys [result next]} (->> buffer buffer/write parser)]
+      (-> (->> result zip (move (count lefts)))
+          (zip/edit (partial ->Node :cursor))
+          zip/rightmost
+          (zip/insert-right next)
+          zip/root))
+    (buffer/write buffer)))

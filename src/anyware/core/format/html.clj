@@ -1,10 +1,7 @@
 (ns anyware.core.format.html
+  (:refer-clojure :exclude [format])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
-            [anyware.core.lens :as lens]
-            [anyware.core.record :as record]
-            [anyware.core.parser :as parser]
-            [anyware.core.language.ast :as ast]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
             [anyware.core.format :as format]
@@ -33,19 +30,11 @@
 
 (def style (partial reduce-kv declaration ""))
 
-(extend-protocol format/Node
-  anyware.core.editor.Editor
-  (render [editor]
-    (element :pre {:class "editor" :style (style @global)}
-             (str (->> editor (lens/get record/buffer) format/render)
-                  (->> editor (lens/get record/minibuffer) format/render))))
-  anyware.core.buffer.Buffer
-  (render [buffer]
-    (if-let [parser (-> buffer meta (get :parser))]
-      (ast/parse parser buffer)
-      (buffer/write buffer)))
-  anyware.core.language.ast.Node
-  (render [{:keys [label value]}]
-    (element :span
-             {:style (style {:color (-> label color/read name)})}
-             value)))
+(def format
+  (reify format/Format
+    (root [this child]
+      (element :pre {:class "editor" :style (style @global)} child))
+    (node [this {:keys [label value]}]
+      (element :span
+               {:style (style {:color (-> label color/read name)})}
+               value))))

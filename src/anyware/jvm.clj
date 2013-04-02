@@ -1,6 +1,7 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
-            [anyware.core.command :as command]
+            [anyware.core.keymap :as keymap]
+            [anyware.core.format.html :as html]
             [anyware.jvm.file :as file])
   (:gen-class
    :extends javafx.application.Application)
@@ -24,24 +25,25 @@
   core/Anyware
   (keycode [this event]
     (let [event ^KeyEvent event]
-      (if-let [key (-> event .getCode special)]
-        key
-        (-> event .getText first))))
-  (render [this html]
-    (.. view getEngine (loadContent html))))
+      (get special (.getCode event) (-> event .getText first))))
+  (format [this] html/format)
+  (render [this string]
+    (.. view getEngine (loadContent string))))
 
-(defmethod command/exec "quit" [_ _] (Platform/exit))
+(defmethod keymap/execute "quit" [_ _] (Platform/exit))
 
 (defn -start [this ^Stage stage]
   (let [view (WebView.)
-        anyware (Anyware. view)]
+        anyware (Anyware. view)
+        handler (reify EventHandler
+                  (handle [this event]
+                    (core/run anyware event)))
+        scene (doto (Scene. view)
+                (.setOnKeyPressed handler))]
     (swap! core/editor with-meta {:stage stage})
     (doto stage
       (.setTitle "Anyware")
-      (.setScene (doto (Scene. view)
-                   (.setOnKeyPressed (reify EventHandler
-                                       (handle [this event]
-                                         (core/run anyware event))))))
+      (.setScene scene)
       (.show))))
 
 (defn -main [& args]

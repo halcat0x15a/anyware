@@ -2,7 +2,7 @@
   (:require [anyware.core.lens :as lens]
             [anyware.core.record :as record]
             [anyware.core.frame :as frame]
-            [anyware.core.command :as command])
+            [anyware.core.keymap :as keymap])
   (:import [javafx.stage FileChooser]))
 
 (def ^FileChooser chooser (FileChooser.))
@@ -15,12 +15,12 @@
   ([path editor]
      (update-in editor [:list] (partial frame/assoc path (slurp path)))))
 
-(defmethod command/exec "open" [[_ file] editor]
+(defmethod keymap/execute "open" [[_ file] editor]
   (if file (open editor) editor))
 
 (defn save [editor]
   (doto editor
     (->> (lens/get record/buffer) spit)))
 
-(defmethod command/exec "save" [_ editor]
+(defmethod keymap/execute "save" [_ editor]
   (save editor))

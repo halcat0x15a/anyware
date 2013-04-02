@@ -14,7 +14,6 @@
   (is (nil? (some #{\< \>} %))))
 
 (defspec valid-html
-  (fn [editor]
-    (-> editor format/render format/write))
+  (partial format/render html/format)
   [^test/editor editor]
   (is (-> % .getBytes ByteArrayInputStream. xml/parse)))
