@@ -2,13 +2,11 @@
   (:refer-clojure :exclude [name])
   (:require [anyware.core.lens :refer (comp zip)]))
 
-(def entry (comp zip :frame))
+(def window (comp zip :frame))
 
-(def name (comp :name entry))
+(def name (comp :name window))
 
-(def history (comp :value entry))
-
-(def saved (comp :saved entry))
+(def history (comp :value window))
 
 (def change (comp zip history))
 

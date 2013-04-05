@@ -65,6 +65,8 @@
 
 (defmulti minibuffer identity)
 (defmethod minibuffer :escape [_] (lens/set :mode :normal))
+(defmethod minibuffer :backspace [_]
+  (modify record/minibuffer character/backspace))
 (defmethod minibuffer :right [_]
   (modify record/minibuffer character/next))
 (defmethod minibuffer :left [_]

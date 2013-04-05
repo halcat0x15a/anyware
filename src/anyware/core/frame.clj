@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [find remove assoc set])
   (:require [clojure.zip :as zip]))
 
-(defrecord Entry [name value])
+(defrecord Window [name value])
 
 (defrecord Saved [name value])
 
@@ -24,6 +24,3 @@
 
 (defn save [frame]
   (zip/edit frame map->Saved))
-
-(defn set [entry value]
-  (with-meta (Entry. (:name entry) value) (meta entry)))

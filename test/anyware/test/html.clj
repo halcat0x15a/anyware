@@ -16,4 +16,4 @@
 (defspec valid-html
   (partial format/render html/format)
   [^test/editor editor]
-  (is (-> % .getBytes ByteArrayInputStream. xml/parse)))
+  (is (->> (.getBytes ^String %) ByteArrayInputStream. xml/parse)))

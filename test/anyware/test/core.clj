@@ -1,4 +1,5 @@
 (ns anyware.test.core
+  (:refer-clojure :exclude [type])
   (:require [clojure.test :refer (deftest is testing)]
             [anyware.test :as test]
             [anyware.core :as core]
@@ -19,8 +20,18 @@
   ([editor x & xs]
      (reduce emulate editor (cons x xs))))
 
+(def type
+  (comp buffer/write
+        (lens/get record/buffer)
+        (partial emulate editor/default)))
+
 (deftest editor
   (testing "type 'hello world'"
-    (is (= (->> (emulate editor/default \i "helloworld" :escape \^)
-                (lens/get record/buffer))
-           (buffer/read "helloworld")))))
+    (is (= (type \i "hello world" :escape \^)
+           "hello world")))
+  (testing "hello world in clojure"
+    (is (= (type \i
+                 "(defn helloworld []" :enter
+                 "  (prn \"hello world\"))":escape \^)
+           "(defn helloworld []
+  (prn \"hello world\"))"))))
