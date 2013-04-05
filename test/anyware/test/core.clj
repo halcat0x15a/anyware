@@ -14,7 +14,6 @@
 
 (defn emulate
   ([editor x]
-     (prn editor x)
      (cond (or (keyword? x) (char? x)) (core/run anyware x editor)
            (string? x) (apply emulate editor x)))
   ([editor x & xs]

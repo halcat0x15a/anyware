@@ -1,20 +1,17 @@
 (ns anyware.core.record
   (:refer-clojure :exclude [name])
-  (:require [anyware.core.lens :as lens]
-            [anyware.core.frame :as frame]))
+  (:require [anyware.core.lens :refer (comp zip)]))
 
-(def entry (lens/comp lens/zip :frame))
+(def entry (comp zip :frame))
 
-(def name (lens/comp :name entry))
+(def name (comp :name entry))
 
-(def history (lens/comp (lens/->Lens :value frame/set) entry))
+(def history (comp :value entry))
 
-(def saved (lens/comp :saved entry))
+(def saved (comp :saved entry))
 
-(def change (lens/comp lens/zip history))
+(def change (comp zip history))
 
-(def buffer (lens/comp :value change))
+(def buffer (comp :value change))
 
-(def minibuffer (->> :minibuffer
-                     (lens/comp lens/zip)
-                     (lens/comp :value)))
+(def minibuffer (->> :minibuffer (comp zip) (comp :value)))
