@@ -12,26 +12,13 @@
     (keycode [this event] event)
     (render [this html] (prn html))))
 
-(defprotocol Input
-  (input [this editor]))
-
-(extend-protocol Input
-  java.lang.String
-  (input [this editor]
-    (if-let [char (first this)]
-      (->> editor
-           (input char)
-           (input (subs this 1)))
-      editor))
-  java.lang.Character
-  (input [this editor]
-    (core/run anyware this editor))
-  clojure.lang.Keyword
-  (input [this editor]
-    (core/run anyware this editor)))
-
-(defn emulate [editor x & xs]
-  (reduce (fn [editor x] (input x editor)) editor (cons x xs)))
+(defn emulate
+  ([editor x]
+     (prn editor x)
+     (cond (or (keyword? x) (char? x)) (core/run anyware x editor)
+           (string? x) (apply emulate editor x)))
+  ([editor x & xs]
+     (reduce emulate editor (cons x xs))))
 
 (deftest editor
   (testing "type 'hello world'"
