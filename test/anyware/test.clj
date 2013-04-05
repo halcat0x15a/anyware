@@ -12,8 +12,11 @@
 (defn history []
   (history/create (buffer)))
 
+(defn window []
+  (frame/->Saved (gen/string) (history)))
+
 (defn frame []
-  (frame/create (gen/keyword) (history)))
+  (frame/create (window)))
 
 (defn editor []
   (with-meta
