@@ -7,8 +7,8 @@
 (def left #"\w+\W*$")
 
 (defmulti regex identity)
-(defmethod regex :rights [_] right)
-(defmethod regex :lefts [_] left)
+(defmethod regex :right [_] right)
+(defmethod regex :left [_] left)
 
 (defn find [field buffer]
   (->> buffer field (re-find (regex field)))) 
@@ -22,9 +22,9 @@
             (buffer/conj (buffer/inverse field) result))
        buffer)))
 
-(def next (move :rights))
+(def next (move :right))
 
-(def prev (move :lefts))
+(def prev (move :left))
 
 (defn drop
   ([field] (partial drop field))
@@ -33,6 +33,6 @@
        (buffer/drop (count result) field buffer)
        buffer)))
 
-(def backspace (drop :lefts))
+(def backspace (drop :left))
 
-(def delete (drop :rights))
+(def delete (drop :right))

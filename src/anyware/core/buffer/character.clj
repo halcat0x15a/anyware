@@ -18,10 +18,10 @@
             (pop field))
        buffer)))
 
-(def next (move :rights))
+(def next (move :right))
 
-(def prev (move :lefts))
+(def prev (move :left))
 
-(def backspace (pop :lefts))
+(def backspace (pop :left))
 
-(def delete (pop :rights))
+(def delete (pop :right))

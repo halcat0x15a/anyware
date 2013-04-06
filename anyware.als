@@ -10,8 +10,8 @@ sig History {
 }
 
 sig Buffer {
-  lefts: String,
-  rights: String
+  left: String,
+  right: String
 }
 
 pred show (e: Editor) {

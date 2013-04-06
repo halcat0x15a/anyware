@@ -2,9 +2,16 @@
   (:refer-clojure :exclude [find remove conj assoc set])
   (:require [clojure.zip :as zip]))
 
-(defrecord Window [name value])
+(defprotocol Window
+  (save? [window]))
 
-(defrecord Saved [name value])
+(defrecord Saved [name value]
+  Window
+  (save? [_] true))
+
+(defrecord Modified [name value]
+  Window
+  (save? [_] false))
 
 (defn create
   ([name value] (create (Saved. name value)))
@@ -16,7 +23,7 @@
           (not (zip/end? frame)) (recur (zip/next frame)))))
 
 (defn remove [frame]
-  (if (->> frame zip/node (instance? Saved))
+  (if (-> frame zip/node save?)
     (zip/remove frame)))
 
 (defn conj

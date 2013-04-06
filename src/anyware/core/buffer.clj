@@ -2,35 +2,35 @@
   (:refer-clojure :exclude [empty read peek conj drop pop newline])
   (:require [clojure.string :as string]))
 
-(defn write [{:keys [lefts rights]}]
-  (str lefts rights))
+(defn write [{:keys [left right]}]
+  (str left right))
 
-(defrecord Buffer [lefts rights])
+(defrecord Buffer [left right])
 
 (def empty (Buffer. "" ""))
 
-(def read (partial assoc empty :rights))
+(def read (partial assoc empty :right))
 
 (defmulti inverse identity)
-(defmethod inverse :rights [_] :lefts)
-(defmethod inverse :lefts [_] :rights)
+(defmethod inverse :right [_] :left)
+(defmethod inverse :left [_] :right)
 
 (defmulti peek (fn [field _] field))
-(defmethod peek :rights [field buffer]
+(defmethod peek :right [field buffer]
   (-> buffer field first))
-(defmethod peek :lefts [field buffer]
+(defmethod peek :left [field buffer]
   (-> buffer field last))
 
 (defmulti conj (fn [field _ _] field))
-(defmethod conj :rights [field value buffer]
+(defmethod conj :right [field value buffer]
   (update-in buffer [field] (partial str value)))
-(defmethod conj :lefts [field value buffer]
+(defmethod conj :left [field value buffer]
   (update-in buffer [field] #(str % value)))
 
 (defmulti drop (fn [_ field _] field))
-(defmethod drop :rights [n field buffer]
+(defmethod drop :right [n field buffer]
   (update-in buffer [field] #(subs % n)))
-(defmethod drop :lefts [n field buffer]
+(defmethod drop :left [n field buffer]
   (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
 
 (defn move
@@ -39,11 +39,11 @@
      (->> (assoc buffer field "")
           (conj (inverse field) (field buffer)))))
 
-(def begin (move :lefts))
+(def begin (move :left))
 
-(def end (move :rights))
+(def end (move :right))
 
-(def append (partial conj :lefts))
+(def append (partial conj :left))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))

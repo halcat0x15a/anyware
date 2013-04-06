@@ -17,15 +17,15 @@
 
 (def move (while character/move))
 
-(def begin (partial move :lefts))
+(def begin (partial move :left))
 
-(def end (partial move :rights))
+(def end (partial move :right))
 
 (def next (comp character/next begin))
 
 (def prev (comp character/prev end))
 
-(def break (partial buffer/conj :lefts \newline))
+(def break (partial buffer/conj :left \newline))
 
 (defn conj
   ([field] (partial conj field))
@@ -34,14 +34,14 @@
           (move (buffer/inverse field))
           (buffer/conj field \newline))))
 
-(def append (conj :lefts))
+(def append (conj :left))
 
-(def insert (conj :rights))
+(def insert (conj :right))
 
 (def pop (while character/pop))
 
-(def backspace (partial pop :lefts))
+(def backspace (partial pop :left))
 
-(def delete (partial pop :rights))
+(def delete (partial pop :right))
 
 (def remove (comp backspace delete))

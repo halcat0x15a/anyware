@@ -8,7 +8,7 @@
             [anyware.core.buffer.word :as word]))
 
 (defn field []
-  (gen/rand-nth [:lefts :rights]))
+  (gen/rand-nth [:left :right]))
 
 (defn move []
   (gen/rand-nth [character/move line/move word/move buffer/move]))

@@ -38,10 +38,10 @@
 
 (def drop (traverse zip/remove))
 
-(defn parse [{:keys [lefts] :as buffer}]
+(defn parse [{:keys [left] :as buffer}]
   (if-let [parser (-> buffer meta :parser)]
     (let [{:keys [result next]} (->> buffer buffer/write parser)]
-      (-> (->> result zip (move (count lefts)))
+      (-> (->> result zip (move (count left)))
           (zip/edit (partial ->Node :cursor))
           zip/rightmost
           (zip/insert-right next)
