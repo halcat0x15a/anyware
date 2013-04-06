@@ -10,8 +10,8 @@
 (defn field []
   (gen/rand-nth [:left :right]))
 
-(defn move []
-  (gen/rand-nth [character/move line/move word/move buffer/move]))
+(defn unit []
+  (gen/rand-nth [buffer/char buffer/line buffer/word buffer/buffer]))
 
 (defspec inverse-inverse
   (fn [field]
@@ -29,17 +29,17 @@
   (fn [buffer]
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
-  (is (= % (-> buffer buffer/begin))))
+  (is (= % (->> buffer (buffer/move buffer/buffer :left)))))
 
-(defspec conj-drop
+(defspec append-substring
   (fn [buffer field string]
     (->> buffer
-         (buffer/conj field string)
-         (buffer/drop (count string) field)))
+         (buffer/append field string)
+         (buffer/substring field (count string))))
   [^test/buffer buffer ^{:tag `field} field ^string string]
   (is (= % buffer)))
 
 (defspec move-cursor
-  (fn [move field buffer] (move field buffer))
-  [^{:tag `move} move ^{:tag `field} field ^test/buffer buffer]
+  buffer/move
+  [^{:tag `unit} unit ^{:tag `field} field ^test/buffer buffer]
   (is (<= (buffer/cursor field %) (buffer/cursor field buffer))))

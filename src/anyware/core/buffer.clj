@@ -1,9 +1,6 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [empty read peek conj drop pop newline])
+  (:refer-clojure :exclude [char empty read peek conj drop pop newline])
   (:require [clojure.string :as string]))
-
-(defn write [{:keys [left right]}]
-  (str left right))
 
 (defrecord Buffer [left right])
 
@@ -11,39 +8,47 @@
 
 (def read (partial assoc empty :right))
 
-(defmulti inverse identity)
-(defmethod inverse :right [_] :left)
-(defmethod inverse :left [_] :right)
+(defn write [{:keys [left right]}]
+  (str left right))
 
-(defmulti peek (fn [field _] field))
-(defmethod peek :right [field buffer]
-  (-> buffer field first))
-(defmethod peek :left [field buffer]
-  (-> buffer field last))
+(defmulti fold (fn [left right field] field))
+(defmethod fold :right [_ right _] right)
+(defmethod fold :left [left _ _] left)
 
-(defmulti conj (fn [field _ _] field))
-(defmethod conj :right [field value buffer]
-  (update-in buffer [field] (partial str value)))
-(defmethod conj :left [field value buffer]
-  (update-in buffer [field] #(str % value)))
+(def inverse (partial fold :right :left))
 
-(defmulti drop (fn [_ field _] field))
-(defmethod drop :right [n field buffer]
-  (update-in buffer [field] #(subs % n)))
-(defmethod drop :left [n field buffer]
-  (update-in buffer [field] #(subs % 0 (-> % count (- n)))))
+(defmulti append (fn [field _ _] field))
+(defmethod append :right [field value buffer]
+  (assoc buffer field (str value (field buffer))))
+(defmethod append :left [field value buffer]
+  (assoc buffer field (str (field buffer) value)))
+
+(defmulti substring (fn [field _ _] field))
+(defmethod substring :right [field n buffer]
+  (assoc buffer field (subs (field buffer) n)))
+(defmethod substring :left [field n buffer]
+  (assoc buffer
+    field (subs (field buffer) 0 (-> buffer field count (- n)))))
+
+(defn split [f regex field buffer]
+  (if-let [result (->> buffer field (re-find (regex field)))]
+    (->> buffer (substring field (count result)) (f result))
+    buffer))
+
+(defn delete
+  ([regex field] (partial delete regex field)) 
+  ([regex field buffer]
+     (split (fn [_ buffer] buffer) regex field buffer)))
 
 (defn move
-  ([field] (partial move field))
-  ([field buffer]
-     (->> (assoc buffer field "")
-          (conj (inverse field) (field buffer)))))
+  ([regex field] (partial move regex field))
+  ([regex field buffer]
+     (split (partial append (inverse field)) regex field buffer)))
 
-(def begin (move :left))
-
-(def end (move :right))
-
-(def append (partial conj :left))
+(def char (partial fold #"[\s\S]$" #"^[\s\S]"))
+(def line (partial fold #"\n??[^\n]*$" #"^[^\n]*\n??"))
+(def word (partial fold #"\w+\W*$" #"^\W*\w+"))
+(def buffer (constantly #"[\s\S]*"))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))
@@ -51,5 +56,8 @@
 (defn cursor [field buffer]
   (-> buffer field count))
 
-(defn line [field buffer]
+(defn lines [field buffer]
   (->> buffer field (filter (partial identical? \newline)) count))
+
+(->> (read "foo\nbar\nbaz")
+     (move line :right))
