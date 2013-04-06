@@ -1,6 +1,7 @@
 (ns anyware.core.frame
-  (:refer-clojure :exclude [find remove conj assoc set])
-  (:require [clojure.zip :as zip]))
+  (:refer-clojure :exclude [next find remove conj assoc set])
+  (:require [clojure.zip :as zip]
+            [anyware.core.function :refer (safe)]))
 
 (defprotocol Window
   (save? [window]))
@@ -16,6 +17,10 @@
 (defn create
   ([name value] (create (Saved. name value)))
   ([window] (-> window vector zip/vector-zip zip/down)))
+
+(def next (safe zip/right))
+
+(def prev (safe zip/left))
 
 (defn find [name frame]
   (loop [frame (-> frame zip/root zip/vector-zip)]

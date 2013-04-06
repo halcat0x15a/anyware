@@ -1,7 +1,8 @@
 (ns anyware.core
   (:refer-clojure :exclude [format])
   (:require [anyware.core.editor :as editor]
-            [anyware.core.format :as format]))
+            [anyware.core.format :as format]
+            [anyware.core.keymap :as keymap]))
 
 (def editor (atom editor/default))
 
@@ -11,8 +12,8 @@
   (render [this string]))
 
 (defn run
-  ([anyware event editor]
-     (editor/run (keycode anyware event) editor))
+  ([anyware event {:keys [mode] :as editor}]
+     (((keymap/keymap mode) (keycode anyware event)) editor))
   ([anyware event]
      (render anyware
              (format/render (format anyware)

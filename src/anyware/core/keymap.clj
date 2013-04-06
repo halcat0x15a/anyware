@@ -7,12 +7,7 @@
             [anyware.core.buffer
              :refer (move char line word)
              :as buffer]
-            [anyware.core.buffer.character :as character]
-            [anyware.core.buffer.line :as line]
-            [anyware.core.buffer.word :as word]))
-
-(defmulti execute (fn [[f & args] editor] f))
-(defmethod execute :default [_ editor] editor)
+            [anyware.core.editor :as editor]))
 
 (defmulti normal identity)
 (defmulti insert identity)
@@ -37,10 +32,9 @@
 (defmethod normal \I [_] (comp (normal \i) (normal \^)))
 (defmethod normal \a [_] (comp (normal \i) (normal \l)))
 (defmethod normal \A [_] (comp (normal \i) (normal \$)))
-(defmethod normal \o [_]
-  (comp (normal \i) (modify buffer line/insert)))
+(defmethod normal \o [_] (comp (normal \i) (insert :enter) (normal \$)))
 (defmethod normal \O [_]
-  (comp (normal \i) (modify buffer line/append)))
+  (comp (normal \i) (normal \h) (insert :enter) (normal \^)))
 (defmethod normal \d [_] (lens/set :mode :delete))
 (defmethod normal \: [_] (lens/set :mode :minibuffer))
 (defmethod normal :default [_] identity)
@@ -73,8 +67,7 @@
 (defmethod minibuffer :left [key]
   (modify record/minibuffer (move char key)))
 (defmethod minibuffer :enter [_]
-  (comp (lens/set record/minibuffer buffer/empty)
-        #(execute (->> % (lens/get record/minibuffer) buffer/command) %)))
+  (comp (lens/set record/minibuffer buffer/empty) editor/exec))
 (defmethod minibuffer :default [key]
   (modify record/minibuffer (partial buffer/append :left key)))
 

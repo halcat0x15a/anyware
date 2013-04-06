@@ -2,17 +2,25 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
-            [anyware.core.keymap :as keymap]))
-
-(def default (atom "*scratch*"))
-
-(defn run [key {:keys [mode] :as editor}]
-  (((keymap/keymap mode) key) editor))
+            [anyware.core.lens :as lens]
+            [anyware.core.record :as record]
+            [anyware.core.command :as command]))
 
 (defrecord Editor [frame minibuffer mode])
 
+(defn exec [editor]
+  ((->> editor
+        (lens/get record/minibuffer)
+        buffer/command
+        (apply command/exec))
+   editor))
+
+(def buffer (atom "*scratch*"))
+
+(def mode (atom :normal))
+
 (def history (history/create buffer/empty))
 
-(def frame (frame/create @default history))
+(def frame (frame/create @buffer history))
 
-(def default (Editor. frame history :normal))
+(def default (Editor. frame history @mode))

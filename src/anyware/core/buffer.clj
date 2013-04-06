@@ -58,6 +58,3 @@
 
 (defn lines [field buffer]
   (->> buffer field (filter (partial identical? \newline)) count))
-
-(->> (read "foo\nbar\nbaz")
-     (move line :right))
