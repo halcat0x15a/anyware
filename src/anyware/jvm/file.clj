@@ -1,6 +1,5 @@
 (ns anyware.jvm.file
-  (:require [anyware.core.lens :as lens]
-            [anyware.core.record :as record]
+  (:require [anyware.core.record :as record]
             [anyware.core.frame :as frame]
             [anyware.core.keymap :as keymap])
   (:import [javafx.stage FileChooser]))
@@ -20,7 +19,7 @@
 
 (defn save [editor]
   (doto editor
-    (->> (lens/get record/buffer) spit)))
+    (->> (record/get record/buffer) spit)))
 
 (defmethod keymap/execute "save" [_ editor]
   (save editor))

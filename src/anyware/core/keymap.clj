@@ -1,8 +1,9 @@
 (ns anyware.core.keymap
   (:refer-clojure :exclude [char])
   (:require [clojure.zip :as zip]
-            [anyware.core.lens :refer (modify) :as lens]
-            [anyware.core.record :refer (buffer history) :as record]
+            [anyware.core.record
+             :refer (modify buffer history)
+             :as record]
             [anyware.core.function :as function]
             [anyware.core.buffer
              :refer (move char line word)
@@ -28,15 +29,15 @@
   (modify history (function/safe zip/up)))
 (defmethod normal #{:control \r} [_]
   (modify history (function/safe zip/down)))
-(defmethod normal \i [_] (lens/set :mode :insert))
+(defmethod normal \i [_] (record/set :mode :insert))
 (defmethod normal \I [_] (comp (normal \i) (normal \^)))
 (defmethod normal \a [_] (comp (normal \i) (normal \l)))
 (defmethod normal \A [_] (comp (normal \i) (normal \$)))
 (defmethod normal \o [_] (comp (normal \i) (insert :enter) (normal \$)))
 (defmethod normal \O [_]
   (comp (normal \i) (normal \h) (insert :enter) (normal \^)))
-(defmethod normal \d [_] (lens/set :mode :delete))
-(defmethod normal \: [_] (lens/set :mode :minibuffer))
+(defmethod normal \d [_] (record/set :mode :delete))
+(defmethod normal \: [_] (record/set :mode :minibuffer))
 (defmethod normal :default [_] identity)
 
 (defmethod insert :escape [key] (minibuffer key))
@@ -59,7 +60,7 @@
 (defmethod delete \b [_] (modify buffer (buffer/delete word :left)))
 (defmethod delete :default [_] identity)
 
-(defmethod minibuffer :escape [_] (lens/set :mode :normal))
+(defmethod minibuffer :escape [_] (record/set :mode :normal))
 (defmethod minibuffer :backspace [_]
   (modify record/minibuffer (buffer/delete char :left)))
 (defmethod minibuffer :right [key]
@@ -67,7 +68,7 @@
 (defmethod minibuffer :left [key]
   (modify record/minibuffer (move char key)))
 (defmethod minibuffer :enter [_]
-  (comp (lens/set record/minibuffer buffer/empty) editor/exec))
+  (comp (record/set record/minibuffer buffer/empty) editor/exec))
 (defmethod minibuffer :default [key]
   (modify record/minibuffer (partial buffer/append :left key)))
 

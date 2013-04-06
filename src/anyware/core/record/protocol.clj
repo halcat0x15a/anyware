@@ -1,4 +1,4 @@
-(ns anyware.core.lens.protocol
+(ns anyware.core.record.protocol
   (:refer-clojure :exclude [get set]))
 
 (defprotocol Lens

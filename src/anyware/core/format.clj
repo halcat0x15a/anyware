@@ -1,6 +1,5 @@
 (ns anyware.core.format
-  (:require [anyware.core.lens :as lens]
-            [anyware.core.record :as record]
+  (:require [anyware.core.record :as record]
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast])
   (:import anyware.core.language.ast.Node))
@@ -16,5 +15,5 @@
 
 (defn render [format editor]
   (root format
-        (str (->> editor (lens/get record/buffer) ast/parse (write format))
-             (->> editor (lens/get record/minibuffer) buffer/write))))
+        (str (->> editor (record/get record/buffer) ast/parse (write format))
+             (->> editor (record/get record/minibuffer) buffer/write))))

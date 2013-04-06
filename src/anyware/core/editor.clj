@@ -2,7 +2,6 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
-            [anyware.core.lens :as lens]
             [anyware.core.record :as record]
             [anyware.core.command :as command]))
 
@@ -10,7 +9,7 @@
 
 (defn exec [editor]
   ((->> editor
-        (lens/get record/minibuffer)
+        (record/get record/minibuffer)
         buffer/command
         (apply command/exec))
    editor))

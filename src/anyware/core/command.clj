@@ -1,5 +1,5 @@
 (ns anyware.core.command
-  (:require [anyware.core.lens :refer (modify)]
+  (:require [anyware.core.record :refer (modify)]
             [anyware.core.frame :as frame]))
 
 (defmulti exec (fn [f & args] f))

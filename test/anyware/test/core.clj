@@ -3,7 +3,6 @@
   (:require [clojure.test :refer (deftest is testing)]
             [anyware.test :as test]
             [anyware.core :as core]
-            [anyware.core.lens :as lens]
             [anyware.core.record :as record]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]))
@@ -22,7 +21,7 @@
 
 (def type
   (comp buffer/write
-        (lens/get record/buffer)
+        (record/get record/buffer)
         (partial emulate editor/default)))
 
 (deftest editor
