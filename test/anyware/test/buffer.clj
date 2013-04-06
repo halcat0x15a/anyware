@@ -2,10 +2,7 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.data.generators :as gen]
             [anyware.test :as test]
-            [anyware.core.buffer :as buffer]
-            [anyware.core.buffer.character :as character]
-            [anyware.core.buffer.line :as line]
-            [anyware.core.buffer.word :as word]))
+            [anyware.core.buffer :as buffer]))
 
 (defn field []
   (gen/rand-nth [:left :right]))
