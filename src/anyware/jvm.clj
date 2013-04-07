@@ -1,6 +1,6 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
-            [anyware.core.keymap :as keymap]
+            [anyware.core.command :as command]
             [anyware.core.format.html :as html]
             [anyware.jvm.file :as file])
   (:gen-class
@@ -30,7 +30,7 @@
   (render [this string]
     (.. view getEngine (loadContent string))))
 
-(defmethod keymap/execute "quit" [_ _] (Platform/exit))
+(defmethod command/exec "quit" [_ _] (Platform/exit))
 
 (defn -start [this ^Stage stage]
   (let [view (WebView.)

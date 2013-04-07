@@ -19,10 +19,10 @@
 (defn- attribute [attributes key value]
   (str attributes \space (name key) \= \" value \"))
 
-(defn element [label attributes content]
+(defn element [format label attributes content]
   (let [label (name label)]
     (str \< label (reduce-kv attribute "" attributes) \>
-         (escape content)
+         (format/write format content)
          \< \/ label \>)))
 
 (defn- declaration [declarations property value]
@@ -33,8 +33,12 @@
 (def format
   (reify format/Format
     (root [this child]
-      (element :pre {:class "editor" :style (style @global)} child))
+      (element this :pre {:class "editor" :style (style @global)} child))
     (node [this {:keys [label value]}]
-      (element :span
-               {:style (style {:color (-> label color/read name)})}
-               value))))
+      (let [{:keys [foreground background]} (-> label color/read)]
+        (element this :span
+                 {:style (style {:color foreground
+                                 :background-color background})}
+                 value)))
+    (text [this text]
+      (escape text))))

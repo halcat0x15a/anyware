@@ -29,7 +29,7 @@
   ([f] (partial traverse f))
   ([f n zipper]
      (let [node (zip/node zipper)]
-       (cond (zip/end? zipper) zipper
+       (cond (-> zipper zip/next zip/end?) zipper
              (branch? node) (recur f n (zip/next zipper))
              (not (pos? n)) zipper
              :else (recur f (dec n) (-> zipper f zip/next))))))

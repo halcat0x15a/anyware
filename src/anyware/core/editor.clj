@@ -3,7 +3,8 @@
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
             [anyware.core.record :as record]
-            [anyware.core.command :as command]))
+            [anyware.core.command :as command]
+            [anyware.core.parser :as parser]))
 
 (defrecord Editor [frame minibuffer mode])
 
@@ -18,7 +19,8 @@
 
 (def mode (atom :normal))
 
-(def history (history/create buffer/empty))
+(def history
+  (history/create (with-meta buffer/empty {:parser parser/id})))
 
 (def frame (frame/create @buffer history))
 

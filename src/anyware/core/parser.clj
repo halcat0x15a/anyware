@@ -2,6 +2,10 @@
   (:refer-clojure :exclude [map and or repeat])
   (:require [anyware.core.parser.result :as result]))
 
+(def success (partial result/->Success []))
+
+(def failure (partial result/->Failure []))
+
 (defn map [f parser]
   (fn [input] (result/map (parser input) f)))
 
@@ -13,15 +17,15 @@
   (fn [input]
     (if-let [result (re-find regex input)]
       (result/->Success result (subs input (-> result extract count)))
-      (result/failure input))))
+      (failure input))))
 
 (defn literal [string]
   (fn [input]
     (let [length (count string)]
-      (cond (< (count input) length) (result/failure input)
+      (cond (< (count input) length) (failure input)
             (= (subs input 0 length) string)
             (result/->Success string (subs input length))
-            :else (result/failure input)))))
+            :else (failure input)))))
 
 (defn or [parser & parsers]
   (fn [input]
@@ -51,4 +55,6 @@
           (result/or result (result/->Success [] input)))))))
 
 (defn maybe [parser]
-  (or parser result/success))
+  (or parser success))
+
+(defn id [s] (result/->Success s ""))

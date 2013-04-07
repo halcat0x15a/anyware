@@ -1,5 +1,5 @@
 (ns anyware.core.frame
-  (:refer-clojure :exclude [next find remove conj assoc set])
+  (:refer-clojure :exclude [next find remove conj assoc])
   (:require [clojure.zip :as zip]
             [anyware.core.function :refer (safe)]))
 

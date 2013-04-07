@@ -6,3 +6,4 @@
 (defmethod exec :default [_])
 
 (defmethod exec "next" [_] (modify :frame frame/next))
+(defmethod exec "prev" [_] (modify :frame frame/prev))

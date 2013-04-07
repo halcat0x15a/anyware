@@ -1,17 +1,17 @@
 (ns anyware.core.format
   (:require [anyware.core.record :as record]
             [anyware.core.buffer :as buffer]
-            [anyware.core.language.ast :as ast])
-  (:import anyware.core.language.ast.Node))
+            [anyware.core.language.ast :as ast]))
 
 (defprotocol Format
   (root [format child])
-  (node [format node]))
+  (node [format node])
+  (text [format text]))
 
-(defn write [format node]
-  (cond (instance? Node node) (node format node)
-        (vector? node) (reduce str (mapv (partial write format) node))
-        :else (str node)))
+(defn write [format x]
+  (cond (:label x) (node format x)
+        (vector? x) (reduce str (mapv (partial write format) x))
+        :else (text format (str x))))
 
 (defn render [format editor]
   (root format

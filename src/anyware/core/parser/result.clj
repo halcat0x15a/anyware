@@ -18,10 +18,6 @@
   (mapcat [failure f] failure)
   (or [failure result] result))
 
-(def success (partial ->Success []))
-
-(def failure (partial ->Failure []))
-
 (defn map [result f]
   (mapcat result
           (fn [result next]

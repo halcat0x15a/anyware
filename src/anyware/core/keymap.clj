@@ -1,10 +1,9 @@
 (ns anyware.core.keymap
   (:refer-clojure :exclude [char])
-  (:require [clojure.zip :as zip]
-            [anyware.core.record
+  (:require [anyware.core.record
              :refer (modify buffer history)
              :as record]
-            [anyware.core.function :as function]
+            [anyware.core.history :as history]
             [anyware.core.buffer
              :refer (move char line word)
              :as buffer]
@@ -25,10 +24,8 @@
 (defmethod normal \^ [_] (modify buffer (move line :left)))
 (defmethod normal \x [_] (delete \h))
 (defmethod normal \X [_] (delete \l))
-(defmethod normal #{:control \u} [_]
-  (modify history (function/safe zip/up)))
-(defmethod normal #{:control \r} [_]
-  (modify history (function/safe zip/down)))
+(defmethod normal #{:control \u} [_] (modify history history/undo))
+(defmethod normal #{:control \r} [_] (modify history history/redo))
 (defmethod normal \i [_] (record/set :mode :insert))
 (defmethod normal \I [_] (comp (normal \i) (normal \^)))
 (defmethod normal \a [_] (comp (normal \i) (normal \l)))
