@@ -11,7 +11,7 @@
   (fn [history buffer]
     (->> history
          (history/commit buffer)
-         zip/up
+         history/undo
          (record/get lens)))
   [^test/history history ^test/buffer buffer]
   (is (= % (record/get lens history))))
@@ -20,8 +20,8 @@
   (fn [history buffer]
     (->> history
          (history/commit buffer)
-         zip/up
-         zip/down
+         history/undo
+         history/redo
          (record/get lens)))
   [^test/history history ^test/buffer buffer]
   (is (= % buffer)))

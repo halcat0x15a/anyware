@@ -14,6 +14,7 @@
 (defmulti delete identity)
 (defmulti minibuffer identity)
 
+(defmethod normal :escape [_] (modify buffer buffer/deselect))
 (defmethod normal \l [_] (modify buffer (move char :right)))
 (defmethod normal \h [_] (modify buffer (move char :left)))
 (defmethod normal \j [_] (comp (normal \l) (normal \$)))
@@ -22,6 +23,13 @@
 (defmethod normal \b [_] (modify buffer (move word :left)))
 (defmethod normal \$ [_] (modify buffer (move line :right)))
 (defmethod normal \^ [_] (modify buffer (move line :left)))
+(defmethod normal \v [_] (modify buffer buffer/select))
+(defmethod normal \y [_]
+  (fn [editor]
+    (if-let [string
+             (buffer/selection buffer/find (record/get buffer editor))]
+      (modify :clipboard (history/commit string) editor)
+      editor)))
 (defmethod normal \x [_] (delete \h))
 (defmethod normal \X [_] (delete \l))
 (defmethod normal #{:control \u} [_] (modify history history/undo))
@@ -37,7 +45,11 @@
 (defmethod normal \: [_] (record/set :mode :minibuffer))
 (defmethod normal :default [_] identity)
 
-(defmethod insert :escape [key] (minibuffer key))
+(defmethod insert :escape [key]
+  (fn [editor]
+    (->> editor
+         (modify history (history/commit (record/get buffer editor)))
+         (record/set :mode :normal))))
 (defmethod insert :backspace [_] (normal \x))
 (defmethod insert :enter [_] (insert \newline))
 (defmethod insert :right [_] (normal \l))
@@ -47,7 +59,7 @@
 (defmethod insert :default [char]
   (modify buffer (partial buffer/append :left char)))
 
-(defmethod delete :escape [key] (minibuffer key))
+(defmethod delete :escape [key] (insert key))
 (defmethod delete \l [_] (modify buffer (buffer/delete char :right)))
 (defmethod delete \h [_] (modify buffer (buffer/delete char :left)))
 (defmethod delete \$ [_] (modify buffer (buffer/delete line :right)))
@@ -69,9 +81,8 @@
 (defmethod minibuffer :default [key]
   (modify record/minibuffer (partial buffer/append :left key)))
 
-(defmulti keymap identity)
-(defmethod keymap :normal [_] normal)
-(defmethod keymap :insert [_] insert)
-(defmethod keymap :delete [_] delete)
-(defmethod keymap :minibuffer [_] minibuffer)
-(defmethod keymap :default [_] normal)
+(def keymap
+  (atom {:normal normal
+         :insert insert
+         :delete delete
+         :minibuffer minibuffer}))

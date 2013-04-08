@@ -12,7 +12,7 @@
 
 (defspec inverse-inverse
   (fn [field]
-    (-> field buffer/inverse buffer/inverse))
+    ((field buffer/inverse) buffer/inverse))
   [^{:tag `field} field]
   (is (= % field)))
 

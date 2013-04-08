@@ -1,5 +1,5 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [char empty read peek conj drop pop newline])
+  (:refer-clojure :exclude [char empty read find])
   (:require [clojure.string :as string]))
 
 (defrecord Buffer [left right])
@@ -11,11 +11,7 @@
 (defn write [{:keys [left right]}]
   (str left right))
 
-(defmulti fold (fn [left right field] field))
-(defmethod fold :right [_ right _] right)
-(defmethod fold :left [left _ _] left)
-
-(def inverse (partial fold :right :left))
+(def inverse (Buffer. :right :left))
 
 (defmulti append (fn [field _ _] field))
 (defmethod append :right [field value buffer]
@@ -30,8 +26,11 @@
   (assoc buffer
     field (subs (field buffer) 0 (-> buffer field count (- n)))))
 
+(defn find [regex field buffer]
+  (->> buffer field (re-find (field regex))))
+
 (defn split [f regex field buffer]
-  (if-let [result (->> buffer field (re-find (regex field)))]
+  (if-let [result (find regex field buffer)]
     (->> buffer (substring field (count result)) (f result))
     buffer))
 
@@ -43,18 +42,37 @@
 (defn move
   ([regex field] (partial move regex field))
   ([regex field buffer]
-     (split (partial append (inverse field)) regex field buffer)))
+     (split (partial append (field inverse)) regex field buffer)))
 
-(def char (partial fold #"[\s\S]$" #"^[\s\S]"))
-(def line (partial fold #"\n??[^\n]*$" #"^[^\n]*\n??"))
-(def word (partial fold #"\w+\W*$" #"^\W*\w+"))
-(def buffer (constantly #"[\s\S]*"))
+(def char (Buffer. #"[\s\S]$" #"^[\s\S]"))
 
-(defn command [buffer]
-  (-> buffer write (string/split #"\s+")))
+(def line (Buffer. #"\n??[^\n]*$" #"^[^\n]*\n??"))
+
+(def word (Buffer. #"\w+\W*$" #"^\W*\w+"))
+
+(def buffer (let [regex #"[\s\S]*"] (Buffer. regex regex)))
+
+(defn times [n]
+  (Buffer. (re-pattern (str "[\\s\\S]" \{ n \} \$))
+           (re-pattern (str \^ "[\\s\\S]" \{ (- n) \}))))
 
 (defn cursor [field buffer]
   (-> buffer field count))
 
-(defn lines [field buffer]
-  (->> buffer field (filter (partial identical? \newline)) count))
+(defn select [buffer]
+  (with-meta buffer
+    (assoc (meta buffer)
+      :mark (cursor :left buffer))))
+
+(defn deselect [buffer]
+  (with-meta buffer
+    (dissoc (meta buffer) :mark)))
+
+(defn selection [f buffer]
+  (if-let [mark (-> buffer meta :mark)]
+    (let [n (- (cursor buffer) mark)]
+      (cond (pos? n) (f (times n) :left buffer)
+            (neg? n) (f (times n) :right buffer)))))
+
+(defn command [buffer]
+  (-> buffer write (string/split #"\s+")))

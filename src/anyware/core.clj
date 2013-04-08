@@ -13,7 +13,7 @@
 
 (defn run
   ([anyware event {:keys [mode] :as editor}]
-     (((keymap/keymap mode) (keycode anyware event)) editor))
+     (((mode @keymap/keymap) (keycode anyware event)) editor))
   ([anyware event]
      (render anyware
              (format/render (format anyware)

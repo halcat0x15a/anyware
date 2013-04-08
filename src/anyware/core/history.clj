@@ -17,5 +17,7 @@
 
 (def redo (safe zip/down))
 
-(defn commit [value history]
-  (-> history (zip/insert-child (change value)) zip/down))
+(defn commit
+  ([value] (partial commit value))
+  ([value history]
+     (-> history (zip/insert-child (change value)) zip/down)))
