@@ -2,9 +2,12 @@
   (:refer-clojure :exclude [format])
   (:require [anyware.core.editor :as editor]
             [anyware.core.format :as format]
-            [anyware.core.keymap :as keymap]))
+            [anyware.core.keymap :as keymap])
+  (:import anyware.core.editor.Editor))
 
-(def editor (atom editor/default))
+(def validator (partial instance? Editor))
+
+(def editor (atom editor/default :validator validator))
 
 (defprotocol Anyware
   (keycode [this event])
@@ -16,5 +19,6 @@
      (((mode @keymap/keymap) (keycode anyware event)) editor))
   ([anyware event]
      (render anyware
-             (format/render (format anyware)
-                            (swap! editor (partial run anyware event))))))
+             (doto (format/render (format anyware)
+                            (swap! editor (partial run anyware event)))
+               prn))))

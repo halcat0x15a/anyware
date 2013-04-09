@@ -22,10 +22,12 @@
 
 (def prev (safe zip/left))
 
-(defn find [name frame]
-  (loop [frame (-> frame zip/root zip/vector-zip)]
-    (cond (identical? name (-> frame zip/node :name)) frame
-          (not (zip/end? frame)) (recur (zip/next frame)))))
+(defn find
+  ([name] (partial find name))
+  ([name frame]
+     (loop [frame (-> frame zip/root zip/vector-zip)]
+       (cond (identical? name (-> frame zip/node :name)) frame
+             (not (zip/end? frame)) (recur (zip/next frame))))))
 
 (defn remove [frame]
   (if (-> frame zip/node save?)
@@ -37,9 +39,11 @@
      (-> frame (zip/insert-right window) zip/right)))
 
 (defn assoc [name value frame]
-  (if-let [frame (find name frame)]
-    (if-let [frame (remove frame)]
-      (conj name value frame))))
+  (if-let [frame' (find name frame)]
+    (if-let [frame'' (remove frame')]
+      (conj name value frame'')
+      (conj name value frame'))
+    (conj name value frame)))
 
 (defn save [frame]
   (zip/edit frame map->Saved))

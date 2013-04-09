@@ -14,7 +14,7 @@
          :font-family "monospace"}))
 
 (defn escape [string]
-  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;"}))
+  (string/escape string {\< "&lt;" \> "&gt;" \& "&amp;" \newline " \n"}))
 
 (defn- attribute [attributes key value]
   (str attributes \space (name key) \= \" value \"))
