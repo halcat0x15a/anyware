@@ -44,17 +44,17 @@
   ([regex field buffer]
      (split (partial append (field inverse)) regex field buffer)))
 
-(def char (Buffer. #"[\s\S]$" #"^[\s\S]"))
+(def char (Buffer. #"[\s\S]\z" #"\A[\s\S]"))
 
-(def line (Buffer. #"\n??[^\n]*$" #"^[^\n]*\n??"))
+(def line (Buffer. #"\n??[^\n]*\z" #"\A[^\n]*\n??"))
 
-(def word (Buffer. #"\w+\W*$" #"^\W*\w+"))
+(def word (Buffer. #"\w+\W*\z" #"\A\W*\w+"))
 
 (def buffer (let [regex #"[\s\S]*"] (Buffer. regex regex)))
 
 (defn times [n]
-  (Buffer. (re-pattern (str "[\\s\\S]" \{ n \} \$))
-           (re-pattern (str \^ "[\\s\\S]" \{ (- n) \}))))
+  (Buffer. (re-pattern (str "[\\s\\S]" \{ n \} "\\z"))
+           (re-pattern (str "\\A" "[\\s\\S]" \{ (- n) \}))))
 
 (defn cursor [field buffer]
   (-> buffer field count))

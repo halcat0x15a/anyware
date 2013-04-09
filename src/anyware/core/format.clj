@@ -9,6 +9,7 @@
   (text [format text]))
 
 (defn write [format x]
+  (prn x)
   (cond (:label x) (node format x)
         (vector? x) (reduce str (mapv (partial write format) x))
         :else (text format (str x))))
