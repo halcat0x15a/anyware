@@ -1,6 +1,7 @@
 (ns anyware.core.keymap
   (:refer-clojure :exclude [char])
-  (:require [anyware.core.record
+  (:require [anyware.core.function :refer (combine)]
+            [anyware.core.record
              :refer (modify buffer history)
              :as record]
             [anyware.core.history :as history]
@@ -46,10 +47,9 @@
 (defmethod normal :default [_] identity)
 
 (defmethod insert :escape [key]
-  (fn [editor]
-    (->> editor
-         (modify history (history/commit (record/get buffer editor)))
-         (record/set :mode :normal))))
+  (combine (comp history/commit (record/get buffer))
+           (record/set :mode :normal)
+           (modify history)))
 (defmethod insert :backspace [_] (normal \x))
 (defmethod insert :enter [_] (insert \newline))
 (defmethod insert :right [_] (normal \l))
@@ -69,7 +69,10 @@
 (defmethod delete \b [_] (modify buffer (buffer/delete word :left)))
 (defmethod delete :default [_] identity)
 
-(defmethod minibuffer :escape [_] (record/set :mode :normal))
+(defmethod minibuffer :escape [_]
+  (combine (comp history/commit buffer/write (record/get record/minibuffer))
+           (record/set :mode :normal)
+           (modify history)))
 (defmethod minibuffer :backspace [_]
   (modify record/minibuffer (buffer/delete char :left)))
 (defmethod minibuffer :right [key]

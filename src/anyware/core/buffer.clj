@@ -70,9 +70,9 @@
 
 (defn selection [f buffer]
   (if-let [mark (-> buffer meta :mark)]
-    (let [n (- (cursor buffer) mark)]
-      (cond (pos? n) (f (times n) :left buffer)
-            (neg? n) (f (times n) :right buffer)))))
+    (let [n (- (cursor buffer) mark)
+          field (cond (pos? n) :left (neg? n) :right)]
+      (if field (f (times n) field buffer)))))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))

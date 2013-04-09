@@ -25,6 +25,7 @@
        (protocol/set lens obj value))))
 
 (defn modify
+  ([lens] (partial modify lens))
   ([lens f] (partial modify lens f))
   ([lens f obj]
      (set lens (f (get lens obj)) obj)))

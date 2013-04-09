@@ -6,7 +6,13 @@
             [anyware.core.command :as command]
             [anyware.core.parser :as parser]))
 
-(defrecord Editor [frame minibuffer clipboard mode])
+(defrecord Editor [frame minibuffer mode clipboard message])
+
+(defn log [level message editor]
+  (->> editor
+       (record/modify :message
+                      #(merge-with concat % {level [message]}))
+       (record/set record/minibuffer (buffer/read message))))
 
 (defn exec [editor]
   ((->> editor
@@ -24,4 +30,4 @@
 
 (def frame (frame/create @buffer history))
 
-(def default (Editor. frame history (history/create "") @mode))
+(def default (Editor. frame history @mode (history/create "") {}))
