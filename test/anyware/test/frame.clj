@@ -9,11 +9,3 @@
     (->> frame (frame/conj window) zip/node))
   [^test/window window ^test/frame frame]
   (is (= % window)))
-
-(defspec conj-find
-  (fn [name value frame]
-    (->> frame
-         (frame/conj name value) (frame/find name)
-         zip/node :value))
-  [^string name ^anything value ^test/frame frame]
-  (is (= % value)))

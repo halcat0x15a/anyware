@@ -8,8 +8,7 @@
 
 (def read (partial assoc empty :right))
 
-(defn write [{:keys [left right]}]
-  (str left right))
+(defn write [{:keys [left right]}] (str left right))
 
 (def inverse (Buffer. :right :left))
 

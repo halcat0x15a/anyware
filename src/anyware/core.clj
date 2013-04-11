@@ -11,14 +11,10 @@
 
 (defprotocol Anyware
   (keycode [this event])
-  (format [this])
-  (render [this string]))
+  (render [this editor]))
 
 (defn run
-  ([anyware event {:keys [mode] :as editor}]
+  ([{:keys [mode] :as editor} anyware event]
      (((mode @keymap/keymap) (keycode anyware event)) editor))
   ([anyware event]
-     (render anyware
-             (doto (format/render (format anyware)
-                            (swap! editor (partial run anyware event)))
-               prn))))
+     (render anyware (swap! editor run anyware event))))

@@ -14,7 +14,7 @@
 
 (defn emulate
   ([editor x]
-     (cond (or (keyword? x) (char? x)) (core/run anyware x editor)
+     (cond (or (keyword? x) (char? x)) (core/run editor anyware x)
            (string? x) (apply emulate editor x)))
   ([editor x & xs]
      (reduce emulate editor (cons x xs))))

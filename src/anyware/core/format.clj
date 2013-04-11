@@ -1,5 +1,5 @@
 (ns anyware.core.format
-  (:require [anyware.core.record :as record]
+  (:require [anyware.core.record :refer (buffer minibuffer) :as record]
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast]))
 
@@ -15,5 +15,6 @@
 
 (defn render [format editor]
   (root format
-        (str (->> editor (record/get record/buffer) ast/parse (write format))
-             (->> editor (record/get record/minibuffer) buffer/write (text format)))))
+        (str (->> editor (record/get minibuffer) buffer/write (text format))
+             \newline
+             (->> editor (record/get buffer) ast/parse (write format)))))

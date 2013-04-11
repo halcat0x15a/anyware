@@ -1,6 +1,7 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
             [anyware.core.command :as command]
+            [anyware.core.format :as format]
             [anyware.core.format.html :as html]
             [anyware.jvm.file :as file])
   (:gen-class
@@ -9,7 +10,7 @@
            [javafx.event EventHandler]
            [javafx.stage Stage]
            [javafx.scene Scene]
-           [javafx.scene.web WebView]
+           [javafx.scene.web WebView WebEngine]
            [javafx.scene.input KeyCode KeyEvent]))
 
 (def special
@@ -21,20 +22,20 @@
    KeyCode/BACK_SPACE :backspace
    KeyCode/ENTER :enter})
 
-(defrecord Anyware [^WebView view]
-  core/Anyware
-  (keycode [this event]
-    (let [event ^KeyEvent event]
-      (get special (.getCode event) (-> event .getText first))))
-  (format [this] html/format)
-  (render [this string]
-    (.. view getEngine (loadContent string))))
+(defn keycode [^KeyEvent event]
+  (get special (.getCode event) (first (.getText event))))
 
-(defmethod command/exec "quit" [_ _] (Platform/exit))
+(defrecord Anyware [^WebEngine engine]
+  core/Anyware
+  (keycode [this event] (keycode event))
+  (render [this editor]
+    (.loadContent engine (format/render html/format editor))))
+
+(defmethod command/exec "quit" [_] (Platform/exit))
 
 (defn -start [this ^Stage stage]
   (let [view (WebView.)
-        anyware (Anyware. view)
+        anyware (-> view .getEngine Anyware.)
         handler (reify EventHandler
                   (handle [this event]
                     (core/run anyware event)))
