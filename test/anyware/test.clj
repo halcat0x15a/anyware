@@ -13,7 +13,7 @@
   (history/create (buffer)))
 
 (defn window []
-  (frame/->Saved (gen/string) (history)))
+  (frame/window (gen/string) (history)))
 
 (defn frame []
   (frame/create (window)))

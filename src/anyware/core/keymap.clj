@@ -8,6 +8,7 @@
             [anyware.core.buffer
              :refer (move char line word)
              :as buffer]
+            [anyware.core.command :as command]
             [anyware.core.editor :as editor]))
 
 (defmulti normal identity)
@@ -80,7 +81,14 @@
 (defmethod minibuffer :left [key]
   (modify record/minibuffer (move char key)))
 (defmethod minibuffer :enter [_]
-  (comp (record/set record/minibuffer buffer/empty) editor/exec))
+  (fn [editor]
+    (record/set record/minibuffer
+                buffer/empty
+                ((->> editor
+                      (record/get record/minibuffer)
+                      buffer/command
+                      (apply command/exec))
+                 editor))))
 (defmethod minibuffer :default [key]
   (modify record/minibuffer (partial buffer/append :left key)))
 
