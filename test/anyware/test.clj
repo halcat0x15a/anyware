@@ -3,6 +3,7 @@
   (:require [clojure.data.generators :as gen]
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
+            [anyware.core.window :as window]
             [anyware.core.frame :as frame]
             [anyware.core.editor :as editor]))
 
@@ -13,7 +14,7 @@
   (history/create (buffer)))
 
 (defn window []
-  (frame/window (gen/string) (history)))
+  (window/create (gen/string) (history)))
 
 (defn frame []
   (frame/create (window)))

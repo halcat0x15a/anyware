@@ -1,10 +1,6 @@
 (ns anyware.core.frame
-  (:refer-clojure :exclude [next find remove conj assoc])
+  (:refer-clojure :exclude [find remove conj assoc])
   (:require [clojure.zip :as zip]))
-
-(defrecord Window [saved? name value])
-
-(def window (partial ->Window true))
 
 (def create (comp zip/down zip/vector-zip vector))
 
@@ -19,17 +15,13 @@
   (if (-> frame zip/node :save?)
     (zip/remove frame)))
 
-(defn conj [window frame]
-  (-> frame (zip/insert-right window) zip/right))
+(defn conj [value frame]
+  (-> frame (zip/insert-right value) zip/right))
 
 (defn assoc
-  ([name value] (partial assoc name value))
-  ([name value frame]
+  ([f name value] (partial assoc name value))
+  ([f name value frame]
      (if-let [frame (find name frame)]
        (if-let [frame (remove frame)]
-         (conj (window name value) frame)
-         frame)
-       (conj (window name value) frame))))
-
-(defn save [frame]
-  (zip/edit frame #(assoc % :save? true)))
+         (conj (f name value) frame))
+       (conj (f name value) frame))))
