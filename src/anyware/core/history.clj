@@ -1,6 +1,5 @@
 (ns anyware.core.history
-  (:require [clojure.zip :as zip]
-            [anyware.core.function :refer (safe)]))
+  (:require [clojure.zip :as zip]))
 
 (defrecord Change [list value])
 
@@ -13,11 +12,17 @@
 
 (def create (comp (partial zip/zipper branch? :list make-node) change))
 
-(def undo (safe zip/up))
+(defn undo [history]
+  (if-let [history (zip/up history)]
+    history
+    "Already at oldest change"))
 
-(def redo (safe zip/down))
+(defn redo [history]
+  (if-let [history (zip/down history)]
+    history
+    "Already at newest change"))
 
 (defn commit
-  ([value] (partial commit value))
+  ([history] (commit (-> history zip/node :value) history))
   ([value history]
      (-> history (zip/insert-child (change value)) zip/down)))

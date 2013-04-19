@@ -17,4 +17,4 @@
 
 (def frame (frame/create (window/create @buffer history)))
 
-(def default (Editor. frame history @mode (history/create "") {}))
+(def default (Editor. frame history @mode (history/create "")))

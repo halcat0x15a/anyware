@@ -12,7 +12,8 @@
              (not (zip/end? frame)) (recur (zip/next frame))))))
 
 (defn remove [frame]
-  (if (-> frame zip/node :save?)
+  (if (-> frame zip/node :changed?)
+    "No write since last change"
     (zip/remove frame)))
 
 (defn conj [value frame]
@@ -22,6 +23,8 @@
   ([f name value] (partial assoc name value))
   ([f name value frame]
      (if-let [frame (find name frame)]
-       (if-let [frame (remove frame)]
-         (conj (f name value) frame))
+       (let [frame (remove frame)]
+         (if (string? frame)
+           frame
+           (conj (f name value) frame)))
        (conj (f name value) frame))))

@@ -48,9 +48,7 @@
 (defmethod normal :default [_] identity)
 
 (defmethod insert :escape [key]
-  (combine (comp history/commit (record/get buffer))
-           (record/set :mode :normal)
-           (modify history)))
+  (comp (record/set :mode :normal) (modify history history/commit)))
 (defmethod insert :backspace [_] (normal \x))
 (defmethod insert :enter [_] (insert \newline))
 (defmethod insert :right [_] (normal \l))
