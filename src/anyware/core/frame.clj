@@ -1,30 +1,45 @@
 (ns anyware.core.frame
-  (:refer-clojure :exclude [find remove conj assoc])
+  (:refer-clojure :exclude [find remove conj])
   (:require [clojure.zip :as zip]))
 
-(def create (comp zip/down zip/vector-zip vector))
+(defn init [name obj]
+  (vary-meta obj assoc
+             :name name
+             :saved? true))
+
+(defn create [& keyvals]
+  (->> keyvals
+       (partition 2)
+       (map (partial apply init))
+       vec
+       zip/vector-zip
+       zip/down))
 
 (defn find
   ([name] (partial find name))
   ([name frame]
-     (loop [frame (-> frame zip/root zip/vector-zip)]
-       (cond (identical? name (-> frame zip/node :name)) frame
-             (not (zip/end? frame)) (recur (zip/next frame))))))
+     (loop [frame' (-> frame zip/root zip/vector-zip)]
+       (cond (zip/end? frame')
+             (vary-meta frame assoc
+                        :error (str "No matching buffer for " name))
+             (identical? name (-> frame' zip/node meta :name)) frame'
+             :else (recur (zip/next frame'))))))
 
 (defn remove [frame]
-  (if (-> frame zip/node :changed?)
-    "No write since last change"
-    (zip/remove frame)))
+  (if (-> frame zip/node meta :saved?)
+    (zip/remove frame)
+    (vary-meta frame assoc
+               :error "No write since last change")))
 
 (defn conj [value frame]
   (-> frame (zip/insert-right value) zip/right))
 
-(defn assoc
-  ([f name value] (partial assoc name value))
-  ([f name value frame]
-     (if-let [frame (find name frame)]
-       (let [frame (remove frame)]
-         (if (string? frame)
-           frame
-           (conj (f name value) frame)))
-       (conj (f name value) frame))))
+(defn update
+  ([name value] (partial update name value))
+  ([name value frame]
+     (let [frame' (find name frame)
+           frame'' (remove frame')
+           value' (vary-meta value assoc :name name)]
+       (cond (-> frame' meta :error) (conj value' frame)
+             (-> frame'' meta :error) frame''
+             :else (conj value' frame'')))))

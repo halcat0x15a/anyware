@@ -5,7 +5,7 @@
             [anyware.core.record :as record]
             [anyware.core.history :as history]))
 
-(def lens (record/comp :value record/zip))
+(def lens (record/comp :current record/zip))
 
 (defspec commit-undo
   (fn [history buffer]

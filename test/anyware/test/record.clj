@@ -8,7 +8,6 @@
   [:frame
    :minibuffer
    :mode
-   record/window
    record/name
    record/history
    record/change

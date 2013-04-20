@@ -4,8 +4,8 @@
             [anyware.test :as test]
             [anyware.core.frame :as frame]))
 
-(defspec conj-window
-  (fn [window frame]
-    (->> frame (frame/conj window) zip/node))
-  [^test/window window ^test/frame frame]
-  (is (= % window)))
+(defspec conj-value
+  (fn [value frame]
+    (->> frame (frame/conj value) zip/node))
+  [^anything value ^test/frame frame]
+  (is (= % value)))

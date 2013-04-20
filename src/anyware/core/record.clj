@@ -10,6 +10,8 @@
 
 (def zip (Lens. zip/node zip/replace))
 
+(def metadata (Lens. meta with-meta))
+
 (defn get
   ([lens] (partial get lens))
   ([lens obj]
@@ -34,14 +36,12 @@
   (Lens. (fn [obj] (->> obj (get lens) (get lens')))
          (fn [obj value] (modify lens (set lens' value) obj))))
 
-(def window (comp zip :frame))
+(def history (comp zip :frame))
 
-(def name (comp :name window))
-
-(def history (comp :value window))
+(def name (->> history (comp metadata) (comp :name)))
 
 (def change (comp zip history))
 
-(def buffer (comp :value change))
+(def buffer (comp :current change))
 
-(def minibuffer (->> :minibuffer (comp zip) (comp :value)))
+(def minibuffer (->> :minibuffer (comp zip) (comp :current)))

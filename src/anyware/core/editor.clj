@@ -1,7 +1,6 @@
 (ns anyware.core.editor
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
-            [anyware.core.window :as window]
             [anyware.core.frame :as frame]
             [anyware.core.record :as record]
             [anyware.core.parser :as parser]))
@@ -15,6 +14,6 @@
 (def history
   (history/create (with-meta buffer/empty {:parser parser/id})))
 
-(def frame (frame/create (window/create @buffer history)))
+(def frame (frame/create @buffer history))
 
 (def default (Editor. frame history @mode (history/create "")))

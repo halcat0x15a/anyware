@@ -10,4 +10,4 @@
 (defmethod exec "next" [_] (modify :frame zip/right))
 (defmethod exec "prev" [_] (modify :frame zip/left))
 (defmethod exec "new" [_ name]
-  (modify :frame (frame/assoc name editor/history)))
+  (modify :frame (frame/update name editor/history)))

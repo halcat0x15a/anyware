@@ -1,16 +1,17 @@
 (ns anyware.core.history
   (:require [clojure.zip :as zip]))
 
-(defrecord Change [list value])
+(defrecord Change [future current])
+
+(def current [0 :current])
 
 (def change (partial ->Change []))
 
-(def branch? (partial instance? Change))
+(defn- make-node [change children]
+  (assoc change :future children))
 
-(defn- make-node [change list]
-  (assoc change :list list))
-
-(def create (comp (partial zip/zipper branch? :list make-node) change))
+(def create
+  (comp (partial zip/zipper :future :future make-node) change))
 
 (defn undo [history]
   (if-let [history (zip/up history)]
@@ -23,6 +24,6 @@
     "Already at newest change"))
 
 (defn commit
-  ([history] (commit (-> history zip/node :value) history))
+  ([history] (commit (get-in history current) history))
   ([value history]
      (-> history (zip/insert-child (change value)) zip/down)))
