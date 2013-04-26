@@ -10,9 +10,9 @@
 (defn unit []
   (gen/rand-nth [buffer/char buffer/line buffer/word buffer/buffer]))
 
-(defspec inverse-inverse
+(defspec double-complement
   (fn [field]
-    ((field buffer/inverse) buffer/inverse))
+    ((field buffer/complement) buffer/complement))
   [^{:tag `field} field]
   (is (= % field)))
 

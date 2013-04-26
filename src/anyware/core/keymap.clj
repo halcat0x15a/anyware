@@ -29,7 +29,7 @@
 (defmethod normal \y [_]
   (fn [editor]
     (if-let [string
-             (buffer/selection buffer/find (record/get buffer editor))]
+             (buffer/selection (record/get buffer editor))]
       (modify :clipboard (history/commit string) editor)
       editor)))
 (defmethod normal \x [_] (delete \h))

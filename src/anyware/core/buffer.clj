@@ -1,5 +1,5 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [char empty read find])
+  (:refer-clojure :exclude [char empty read find complement])
   (:require [clojure.string :as string]))
 
 (defrecord Buffer [left right])
@@ -10,7 +10,9 @@
 
 (defn write [{:keys [left right]}] (str left right))
 
-(def inverse (Buffer. :right :left))
+(defn pair [left right] {:left left :right right})
+
+(def complement (pair :right :left))
 
 (defmulti append (fn [field _ _] field))
 (defmethod append :right [field value buffer]
@@ -25,53 +27,48 @@
   (assoc buffer
     field (subs (field buffer) 0 (-> buffer field count (- n)))))
 
-(defn find [regex field buffer]
-  (->> buffer field (re-find (field regex))))
-
-(defn split [f regex field buffer]
-  (if-let [result (find regex field buffer)]
-    (->> buffer (substring field (count result)) (f result))
-    buffer))
-
 (defn delete
-  ([regex field] (partial delete regex field)) 
-  ([regex field buffer]
-     (split (fn [_ buffer] buffer) regex field buffer)))
+  ([f field] (partial delete f field)) 
+  ([f field buffer]
+     (if-let [result (->> buffer field ((f field)))]
+       (substring field (count result) buffer)
+       buffer)))
 
 (defn move
-  ([regex field] (partial move regex field))
-  ([regex field buffer]
-     (split (partial append (field inverse)) regex field buffer)))
+  ([f field] (partial move f field))
+  ([f field buffer]
+     (if-let [result (->> buffer field ((f field)))]
+       (->> buffer
+            (substring field (count result))
+            (append (complement field) result))
+       buffer)))
 
-(def char (Buffer. #"[\s\S]\z" #"\A[\s\S]"))
+(def char (pair (comp str last) (comp str first)))
 
-(def line (Buffer. #"\n??[^\n]*\z" #"\A[^\n]*\n??"))
+(def line
+  (pair (partial re-find #"\n??[^\n]*\z")
+        (partial re-find #"\A[^\n]*\n??")))
 
-(def word (Buffer. #"\w+\W*\z" #"\A\W*\w+"))
+(def word
+  (pair (partial re-find #"\w+\W*\z")
+        (partial re-find #"\A\W*\w+")))
 
-(def buffer (let [regex #"[\s\S]*"] (Buffer. regex regex)))
+(def buffer (constantly identity))
 
-(defn times [n]
-  (Buffer. (re-pattern (str "[\\s\\S]" \{ n \} "\\z"))
-           (re-pattern (str "\\A" "[\\s\\S]" \{ (- n) \}))))
-
-(defn cursor [field buffer]
-  (-> buffer field count))
+(defn cursor [field buffer] (-> buffer field count))
 
 (defn select [buffer]
-  (with-meta buffer
-    (assoc (meta buffer)
-      :mark (cursor :left buffer))))
+  (vary-meta buffer assoc :mark (cursor :left buffer)))
 
 (defn deselect [buffer]
-  (with-meta buffer
-    (dissoc (meta buffer) :mark)))
+  (vary-meta buffer dissoc :mark))
 
-(defn selection [f buffer]
+(defn selection [buffer]
   (if-let [mark (-> buffer meta :mark)]
-    (let [n (- (cursor buffer) mark)
-          field (cond (pos? n) :left (neg? n) :right)]
-      (if field (f (times n) field buffer)))))
+    (let [n (- (cursor buffer) mark)]
+      (cond (pos? n) (->> buffer :left (take-last n) string/join)
+            (neg? n) (subs (:right buffer) 0 n)
+            :else ""))))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))
