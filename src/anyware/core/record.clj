@@ -45,3 +45,4 @@
 (def buffer (comp :current change))
 
 (def minibuffer (->> :minibuffer (comp zip) (comp :current)))
+

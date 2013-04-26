@@ -2,7 +2,6 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
-            [anyware.core.record :as record]
             [anyware.core.parser :as parser]))
 
 (defrecord Editor [frame minibuffer mode clipboard])

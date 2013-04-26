@@ -1,5 +1,5 @@
 (ns anyware.core.frame
-  (:refer-clojure :exclude [find remove conj])
+  (:refer-clojure :exclude [next find remove conj])
   (:require [clojure.zip :as zip])
   (:import clojure.lang.ExceptionInfo))
 
@@ -12,6 +12,17 @@
        vec
        zip/vector-zip
        zip/down))
+
+(defn- move
+  ([f] (partial move f))
+  ([f frame]
+     (if-let [frame (f frame)]
+       frame
+       (throw (ex-info "There is only one file to edit" {})))))
+
+(def next (move zip/next))
+
+(def prev (move zip/prev))
 
 (defn find
   ([name] (partial find name))

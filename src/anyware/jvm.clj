@@ -1,8 +1,8 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
-            [anyware.core.command :as command]
             [anyware.core.format :as format]
             [anyware.core.format.html :as html]
+            [anyware.core.api.command :as command]
             [anyware.jvm.file :as file])
   (:gen-class
    :extends javafx.application.Application)

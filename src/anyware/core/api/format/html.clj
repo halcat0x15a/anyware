@@ -1,11 +1,11 @@
-(ns anyware.core.format.html
+(ns anyware.core.api.format.html
   (:refer-clojure :exclude [format])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
-            [anyware.core.format :as format]
-            [anyware.core.format.color :as color]))
+            [anyware.core.api.format :as format]
+            [anyware.core.api.format.color :as color]))
 
 (def global
   (atom {:color "black"

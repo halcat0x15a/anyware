@@ -1,4 +1,4 @@
-(ns anyware.core.keymap
+(ns anyware.core.api.keymap
   (:refer-clojure :exclude [char])
   (:require [anyware.core.function :refer (combine)]
             [anyware.core.record
@@ -8,8 +8,8 @@
             [anyware.core.buffer
              :refer (move char line word)
              :as buffer]
-            [anyware.core.command :as command]
-            [anyware.core.editor :as editor]))
+            [anyware.core.editor :as editor]
+            [anyware.core.api.command :as command]))
 
 (defmulti normal identity)
 (defmulti insert identity)
@@ -85,7 +85,7 @@
                 ((->> editor
                       (record/get record/minibuffer)
                       buffer/command
-                      (apply command/exec))
+                      (apply command/exec editor))
                  editor))))
 (defmethod minibuffer :default [key]
   (modify record/minibuffer (partial buffer/append :left key)))

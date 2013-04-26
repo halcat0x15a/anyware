@@ -1,4 +1,4 @@
-(ns anyware.core.format
+(ns anyware.core.api.format
   (:require [anyware.core.record :refer (buffer minibuffer) :as record]
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast]))

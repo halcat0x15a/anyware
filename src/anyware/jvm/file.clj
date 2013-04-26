@@ -1,7 +1,7 @@
 (ns anyware.jvm.file
   (:require [anyware.core.record :as record]
             [anyware.core.frame :as frame]
-            [anyware.core.command :as command])
+            [anyware.core.api.command :as command])
   (:import [javafx.stage FileChooser]))
 
 (def ^FileChooser chooser (FileChooser.))
@@ -12,7 +12,7 @@
        (open (.getPath file) editor)
        editor))
   ([path editor]
-     (update-in editor [:list] (partial frame/assoc path (slurp path)))))
+     (update-in editor [:list] (partial frame/update path (slurp path)))))
 
 (defmethod command/exec "open" [[_ file] editor]
   (if file (open editor) editor))
