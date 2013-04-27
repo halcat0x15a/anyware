@@ -1,97 +1,110 @@
 (ns anyware.core.api.keymap
   (:refer-clojure :exclude [char])
   (:require [anyware.core.function :refer (combine)]
-            [anyware.core.record
-             :refer (modify buffer history)
-             :as record]
+            [anyware.core.path
+             :refer (mode clipboard buffer history)
+             :as path]
             [anyware.core.history :as history]
             [anyware.core.buffer
              :refer (move char line word)
              :as buffer]
-            [anyware.core.editor :as editor]
             [anyware.core.api.command :as command]))
 
-(defmulti normal identity)
-(defmulti insert identity)
-(defmulti delete identity)
-(defmulti minibuffer identity)
+(defn dispatch [key editor] key)
 
-(defmethod normal :escape [_] (modify buffer buffer/deselect))
-(defmethod normal \l [_] (modify buffer (move char :right)))
-(defmethod normal \h [_] (modify buffer (move char :left)))
-(defmethod normal \j [_] (comp (normal \l) (normal \$)))
-(defmethod normal \k [_] (comp (normal \h) (normal \^)))
-(defmethod normal \w [_] (modify buffer (move word :right)))
-(defmethod normal \b [_] (modify buffer (move word :left)))
-(defmethod normal \$ [_] (modify buffer (move line :right)))
-(defmethod normal \^ [_] (modify buffer (move line :left)))
-(defmethod normal \v [_] (modify buffer buffer/select))
-(defmethod normal \y [_]
-  (fn [editor]
-    (if-let [string
-             (buffer/selection (record/get buffer editor))]
-      (modify :clipboard (history/commit string) editor)
-      editor)))
-(defmethod normal \x [_] (delete \h))
-(defmethod normal \X [_] (delete \l))
-(defmethod normal #{:control \u} [_] (modify history history/undo))
-(defmethod normal #{:control \r} [_] (modify history history/redo))
-(defmethod normal \i [_] (record/set :mode :insert))
-(defmethod normal \I [_] (comp (normal \i) (normal \^)))
-(defmethod normal \a [_] (comp (normal \i) (normal \l)))
-(defmethod normal \A [_] (comp (normal \i) (normal \$)))
-(defmethod normal \o [_] (comp (normal \i) (insert :enter) (normal \$)))
-(defmethod normal \O [_]
-  (comp (normal \i) (normal \h) (insert :enter) (normal \^)))
-(defmethod normal \d [_] (record/set :mode :delete))
-(defmethod normal \: [_] (record/set :mode :minibuffer))
-(defmethod normal :default [_] identity)
+(defmulti normal dispatch)
+(defmulti insert dispatch)
+(defmulti delete dispatch)
+(defmulti minibuffer dispatch)
 
-(defmethod insert :escape [key]
-  (comp (record/set :mode :normal) (modify history history/commit)))
-(defmethod insert :backspace [_] (normal \x))
-(defmethod insert :enter [_] (insert \newline))
-(defmethod insert :right [_] (normal \l))
-(defmethod insert :left [_] (normal \h))
-(defmethod insert :down [_] (normal \j))
-(defmethod insert :up [_] (normal \k))
-(defmethod insert :default [char]
-  (modify buffer (partial buffer/append :left char)))
+(defmethod normal :escape [_ editor]
+  (update-in editor buffer buffer/deselect))
+(defmethod normal \l [_ editor]
+  (update-in editor buffer (move char :right)))
+(defmethod normal \h [_ editor]
+  (update-in editor buffer (move char :left)))
+(defmethod normal \j [_ editor]
+  (->> editor (normal \l) (normal \$)))
+(defmethod normal \k [_ editor]
+  (->> editor (normal \h) (normal \^)))
+(defmethod normal \w [_ editor]
+  (update-in editor buffer (move word :right)))
+(defmethod normal \b [_ editor]
+  (update-in editor buffer (move word :left)))
+(defmethod normal \$ [_ editor]
+  (update-in editor buffer (move line :right)))
+(defmethod normal \^ [_ editor]
+  (update-in editor buffer (move line :left)))
+(defmethod normal \v [_ editor]
+  (update-in editor buffer buffer/select))
+(defmethod normal \y [_ editor]
+  (if-let [string
+           (buffer/selection (get-in editor buffer))]
+    (update-in editor clipboard (history/commit string) editor)
+    editor))
+(defmethod normal \x [_ editor] (delete \h editor))
+(defmethod normal \X [_ editor] (delete \l editor))
+(defmethod normal #{:control \u} [_ editor]
+  (update-in editor history history/undo))
+(defmethod normal #{:control \r} [_ editor]
+  (update-in editor history history/redo))
+(defmethod normal \i [_ editor] (assoc-in editor mode insert))
+(defmethod normal \I [_ editor] (->> editor (normal \i) (normal \^)))
+(defmethod normal \a [_ editor] (->> editor (normal \i) (normal \l)))
+(defmethod normal \A [_ editor] (->> editor (normal \i) (normal \$)))
+(defmethod normal \o [_ editor]
+  (->> editor (normal \i) (insert :enter) (normal \$)))
+(defmethod normal \O [_ editor]
+  (->> editor (normal \i) (normal \h) (insert :enter) (normal \^)))
+(defmethod normal \d [_ editor] (assoc-in editor mode delete))
+(defmethod normal \: [_ editor] (assoc-in editor mode minibuffer))
+(defmethod normal :default [_ editor] editor)
+
+(defmethod insert :escape [key editor]
+  (-> editor
+      (assoc-in mode normal)
+      (update-in history history/commit)))
+(defmethod insert :backspace [_ editor] (normal \x editor))
+(defmethod insert :enter [_ editor] (insert \newline editor))
+(defmethod insert :right [_ editor] (normal \l editor))
+(defmethod insert :left [_ editor] (normal \h editor))
+(defmethod insert :down [_ editor] (normal \j editor))
+(defmethod insert :up [_ editor] (normal \k))
+(defmethod insert :default [char editor]
+  (update-in editor buffer (partial buffer/append :left char)))
 
 (defmethod delete :escape [key] (insert key))
-(defmethod delete \l [_] (modify buffer (buffer/delete char :right)))
-(defmethod delete \h [_] (modify buffer (buffer/delete char :left)))
-(defmethod delete \$ [_] (modify buffer (buffer/delete line :right)))
-(defmethod delete \^ [_] (modify buffer (buffer/delete line :left)))
-(defmethod delete \d [_] (comp (delete \$) (delete \^) (delete \h)))
-(defmethod delete \w [_] (modify buffer (buffer/delete word :right)))
-(defmethod delete \b [_] (modify buffer (buffer/delete word :left)))
-(defmethod delete :default [_] identity)
+(defmethod delete \l [_ editor]
+  (update-in editor buffer (buffer/delete char :right)))
+(defmethod delete \h [_ editor]
+  (update-in editor buffer (buffer/delete char :left)))
+(defmethod delete \$ [_ editor]
+  (update-in editor buffer (buffer/delete line :right)))
+(defmethod delete \^ [_ editor]
+  (update-in editor buffer (buffer/delete line :left)))
+(defmethod delete \d [_ editor]
+  (->> editor (delete \$) (delete \^) (delete \h)))
+(defmethod delete \w [_ editor]
+  (update-in editor buffer (buffer/delete word :right)))
+(defmethod delete \b [_ editor]
+  (update-in editor buffer (buffer/delete word :left)))
+(defmethod delete :default [_ editor] identity)
 
-(defmethod minibuffer :escape [_]
-  (combine (comp history/commit buffer/write (record/get record/minibuffer))
-           (record/set :mode :normal)
-           (modify history)))
-(defmethod minibuffer :backspace [_]
-  (modify record/minibuffer (buffer/delete char :left)))
-(defmethod minibuffer :right [key]
-  (modify record/minibuffer (move char key)))
-(defmethod minibuffer :left [key]
-  (modify record/minibuffer (move char key)))
-(defmethod minibuffer :enter [_]
-  (fn [editor]
-    (record/set record/minibuffer
-                buffer/empty
-                ((->> editor
-                      (record/get record/minibuffer)
-                      buffer/command
-                      (apply command/exec editor))
-                 editor))))
-(defmethod minibuffer :default [key]
-  (modify record/minibuffer (partial buffer/append :left key)))
+(defmethod minibuffer :escape [_ editor]
+  (combine (comp history/commit buffer/write (get-in path/minibuffer))
+           (assoc-in editor mode normal)
+           (update-in editor history)))
+(defmethod minibuffer :backspace [_ editor]
+  (update-in editor path/minibuffer (buffer/delete char :left)))
+(defmethod minibuffer :right [key editor]
+  (update-in editor path/minibuffer (move char key)))
+(defmethod minibuffer :left [key editor]
+  (update-in editor path/minibuffer (move char key)))
+(defmethod minibuffer :enter [_ editor]
+  (assoc-in (->> (get-in editor path/minibuffer)
+                 buffer/command
+                 (apply command/exec editor))
+            path/minibuffer buffer/empty))
 
-(def keymap
-  (atom {:normal normal
-         :insert insert
-         :delete delete
-         :minibuffer minibuffer}))
+(defmethod minibuffer :default [key editor]
+  (update-in editor path/minibuffer (partial buffer/append :left key)))

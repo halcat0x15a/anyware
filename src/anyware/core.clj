@@ -1,11 +1,11 @@
 (ns anyware.core
   (:refer-clojure :exclude [format])
-  (:require [anyware.core.editor :as editor]
-            [anyware.core.buffer :as buffer]
-            [anyware.core.record :as record]
+  (:require [anyware.core.buffer :as buffer]
+            [anyware.core.path :as path]
+            [anyware.core.api.editor :as editor]
             [anyware.core.api.keymap :as keymap]
             [anyware.core.api.format :as format])
-  (:import anyware.core.editor.Editor
+  (:import anyware.core.api.editor.Editor
            clojure.lang.ExceptionInfo))
 
 (def validator (partial instance? Editor))
@@ -19,8 +19,8 @@
 (defn run
   ([{:keys [mode] :as editor} anyware event]
      (try
-       (((mode @keymap/keymap) (keycode anyware event)) editor)
+       (mode (keycode anyware event) editor)
        (catch ExceptionInfo e
-         (record/set record/minibuffer (buffer/read (str e))))))
+         (assoc-in editor path/minibuffer (buffer/read (str e))))))
   ([anyware event]
      (render anyware (swap! editor run anyware event))))

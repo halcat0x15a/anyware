@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [format])
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
-            [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
+            [anyware.core.api.editor :as editor]
             [anyware.core.api.format :as format]
             [anyware.core.api.format.color :as color]))
 

@@ -3,7 +3,6 @@
             [clojure.data.generators :as gen]
             [clojure.xml :as xml]
             [anyware.test :as test]
-            [anyware.core.editor :as editor]
             [anyware.core.api.format :as format]
             [anyware.core.api.format.html :as html])
   (:import [java.io ByteArrayInputStream]))

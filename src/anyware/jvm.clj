@@ -1,7 +1,7 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
-            [anyware.core.format :as format]
-            [anyware.core.format.html :as html]
+            [anyware.core.api.format :as format]
+            [anyware.core.api.format.html :as html]
             [anyware.core.api.command :as command]
             [anyware.jvm.file :as file])
   (:gen-class

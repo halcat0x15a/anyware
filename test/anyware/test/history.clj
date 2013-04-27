@@ -2,26 +2,25 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [clojure.zip :as zip]
             [anyware.test :as test]
-            [anyware.core.record :as record]
             [anyware.core.history :as history]))
 
-(def lens (record/comp :current record/zip))
+(def current [0 :current])
 
 (defspec commit-undo
   (fn [history buffer]
-    (->> history
-         (history/commit buffer)
-         history/undo
-         (record/get lens)))
+    (get-in (->> history
+                 (history/commit buffer)
+                 history/undo)
+            current))
   [^test/history history ^test/buffer buffer]
-  (is (= % (record/get lens history))))
+  (is (= % (get-in history current))))
 
 (defspec commit-undo-redo
   (fn [history buffer]
-    (->> history
-         (history/commit buffer)
-         history/undo
-         history/redo
-         (record/get lens)))
+    (get-in (->> history
+                 (history/commit buffer)
+                 history/undo
+                 history/redo)
+             current))
   [^test/history history ^test/buffer buffer]
   (is (= % buffer)))

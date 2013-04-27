@@ -1,6 +1,6 @@
 (ns anyware.jvm.file
-  (:require [anyware.core.record :as record]
-            [anyware.core.frame :as frame]
+  (:require [anyware.core.frame :as frame]
+            [anyware.core.path :as path]
             [anyware.core.api.command :as command])
   (:import [javafx.stage FileChooser]))
 
@@ -19,7 +19,7 @@
 
 (defn save [editor]
   (doto editor
-    (->> (record/get record/buffer) spit)))
+    (->> (get-in path/buffer) spit)))
 
 (defmethod command/exec "save" [_ editor]
   (save editor))

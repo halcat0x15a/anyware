@@ -3,9 +3,9 @@
   (:require [clojure.test :refer (deftest is testing)]
             [anyware.test :as test]
             [anyware.core :as core]
-            [anyware.core.record :as record]
-            [anyware.core.editor :as editor]
-            [anyware.core.buffer :as buffer]))
+            [anyware.core.api.editor :as editor]
+            [anyware.core.buffer :as buffer]
+            [anyware.core.path :as path]))
 
 (def anyware
   (reify core/Anyware
@@ -21,7 +21,7 @@
 
 (def type
   (comp buffer/write
-        (record/get record/buffer)
+        #(get-in % path/buffer)
         (partial emulate editor/default)))
 
 (deftest editor
