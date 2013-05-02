@@ -12,4 +12,6 @@
 
 (def buffer (conj change :current))
 
-(def minibuffer [:minibuffer 0 :current])
+(def command [:command])
+
+(def minibuffer (-> command (conj 0) (conj :current)))

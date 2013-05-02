@@ -8,7 +8,7 @@
                  [org.clojure/test.generative "0.4.0"]
                  [clj-stacktrace "0.2.5"]]
   :plugins [[lein-cljsbuild "0.3.0"]]
-  :resource-paths ["/usr/lib/jvm/javafx-sdk/rt/lib/jfxrt.jar"]
+  :resource-paths ["/opt/java/jre/lib/jfxrt.jar"]
   :injections [(let [orig (ns-resolve (doto 'clojure.stacktrace require)
                                       'print-cause-trace)
                      new (ns-resolve (doto 'clj-stacktrace.repl require)

@@ -19,5 +19,5 @@
   (with-meta
     (assoc editor/default
       :frame (frame)
-      :minibuffer (history))
+      :command (history))
     {:height (gen/byte)}))

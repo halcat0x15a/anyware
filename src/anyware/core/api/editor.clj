@@ -5,7 +5,7 @@
             [anyware.core.parser :as parser]
             [anyware.core.api.keymap :as keymap]))
 
-(defrecord Editor [frame minibuffer mode clipboard])
+(defrecord Editor [frame command mode clipboard])
 
 (def buffer (atom "*scratch*"))
 

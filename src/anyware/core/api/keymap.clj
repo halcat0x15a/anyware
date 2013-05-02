@@ -1,7 +1,6 @@
 (ns anyware.core.api.keymap
   (:refer-clojure :exclude [char])
-  (:require [anyware.core.function :refer (combine)]
-            [anyware.core.path
+  (:require [anyware.core.path
              :refer (mode clipboard buffer history)
              :as path]
             [anyware.core.history :as history]
@@ -91,9 +90,9 @@
 (defmethod delete :default [_ editor] identity)
 
 (defmethod minibuffer :escape [_ editor]
-  (combine (comp history/commit buffer/write (get-in path/minibuffer))
-           (assoc-in editor mode normal)
-           (update-in editor history)))
+  (->> (assoc-in editor mode normal)
+       (get-in history/commit path/minibuffer)
+       (update-in editor history)))
 (defmethod minibuffer :backspace [_ editor]
   (update-in editor path/minibuffer (buffer/delete char :left)))
 (defmethod minibuffer :right [key editor]

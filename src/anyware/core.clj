@@ -8,9 +8,7 @@
   (:import anyware.core.api.editor.Editor
            clojure.lang.ExceptionInfo))
 
-(def validator (partial instance? Editor))
-
-(def editor (atom editor/default :validator validator))
+(def editor (atom editor/default))
 
 (defprotocol Anyware
   (keycode [this event])
