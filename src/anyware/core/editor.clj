@@ -1,15 +1,15 @@
-(ns anyware.core.api.editor
+(ns anyware.core.editor
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
             [anyware.core.parser :as parser]
-            [anyware.core.api.keymap :as keymap]))
+            [anyware.core.keymap :as keymap]))
 
 (defrecord Editor [frame command mode clipboard])
 
 (def buffer (atom "*scratch*"))
 
-(def mode (atom keymap/normal))
+(def mode (atom keymap/default))
 
 (def history
   (history/create (with-meta buffer/empty {:parser parser/id})))

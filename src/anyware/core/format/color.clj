@@ -1,4 +1,4 @@
-(ns anyware.core.api.format.color
+(ns anyware.core.format.color
   (:refer-clojure :exclude [read]))
 
 (defrecord Color [foreground background])

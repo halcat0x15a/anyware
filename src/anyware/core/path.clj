@@ -15,3 +15,10 @@
 (def command [:command])
 
 (def minibuffer (-> command (conj 0) (conj :current)))
+
+(def contents (conj clipboard 0))
+
+(def paths
+  [frame mode clipboard history change buffer command minibuffer])
+
+(defn validate [editor] (every? (partial get-in editor) paths))

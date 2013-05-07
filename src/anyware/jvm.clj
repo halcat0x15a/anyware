@@ -1,8 +1,7 @@
 (ns anyware.jvm
   (:require [anyware.core :as core]
-            [anyware.core.api.format :as format]
-            [anyware.core.api.format.html :as html]
-            [anyware.core.api.command :as command]
+            [anyware.core.format :as format]
+            [anyware.core.format.html :as html]
             [anyware.jvm.file :as file])
   (:gen-class
    :extends javafx.application.Application)
@@ -31,7 +30,10 @@
   (render [this editor]
     (.loadContent engine (format/render html/format editor))))
 
-(defmethod command/exec "quit" [_] (Platform/exit))
+(def command
+  {"quit" (fn [_] (Platform/exit))
+   "open" file/open
+   "save" file/save})
 
 (defn -start [this ^Stage stage]
   (let [view (WebView.)

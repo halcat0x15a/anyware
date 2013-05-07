@@ -3,7 +3,7 @@
   (:require [clojure.test :refer (deftest is testing)]
             [anyware.test :as test]
             [anyware.core :as core]
-            [anyware.core.api.editor :as editor]
+            [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
             [anyware.core.path :as path]))
 
@@ -26,11 +26,4 @@
 
 (deftest editor
   (testing "type 'hello world'"
-    (is (= (type \i "hello world" :escape \^)
-           "hello world")))
-  (testing "hello world in clojure"
-    (is (= (type \i
-                 "(defn helloworld []" :enter
-                 "  (prn \"hello world\"))":escape \^)
-           "(defn helloworld []
-  (prn \"hello world\"))"))))
+    (is (= (type "hello world") "hello world"))))

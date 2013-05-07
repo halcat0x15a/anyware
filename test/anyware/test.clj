@@ -4,7 +4,7 @@
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
-            [anyware.core.api.editor :as editor]))
+            [anyware.core.editor :as editor]))
 
 (defn buffer []
   (buffer/->Buffer (gen/string) (gen/string)))

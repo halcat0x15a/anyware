@@ -4,8 +4,6 @@
             [anyware.test :as test]
             [anyware.core.path :refer :all]))
 
-(def paths [frame history change buffer command minibuffer])
-
 (defn path [] (gen/rand-nth paths))
 
 (defspec get-in-path
