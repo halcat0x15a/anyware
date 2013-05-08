@@ -5,7 +5,7 @@
             [anyware.core :as core]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
-            [anyware.core.path :as path]))
+            [anyware.core.api :as api]))
 
 (def anyware
   (reify core/Anyware
@@ -21,7 +21,7 @@
 
 (def type
   (comp buffer/write
-        #(get-in % path/buffer)
+        #(get-in % api/buffer)
         (partial emulate editor/default)))
 
 (deftest editor

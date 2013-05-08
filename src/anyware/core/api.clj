@@ -1,13 +1,33 @@
 (ns anyware.core.api
   (:refer-clojure :exclude [char])
-  (:require [anyware.core.path
-             :refer [mode clipboard buffer history frame contents]
-             :as path]
-            [anyware.core.frame :as frame]
+  (:require [anyware.core.frame :as frame]
             [anyware.core.history :as history]
             [anyware.core.buffer
              :refer [move char line word]
-             :as buffer]))
+             :as buffer]
+            [anyware.core.language :as language]))
+
+(def frame [:frame])
+
+(def mode [:mode])
+
+(def clipboard [:clipboard])
+
+(def history (conj frame 0))
+
+(def change (conj history 0))
+
+(def buffer (conj change :current))
+
+(def command [:command])
+
+(def minibuffer (-> command (conj 0) (conj :current)))
+
+(def contents (conj clipboard 0))
+
+(def paths [frame mode clipboard history change buffer command minibuffer])
+
+(defn validate [editor] (every? (partial get-in editor) paths))
 
 (def right #(update-in % buffer (move char :right)))
 
@@ -67,23 +87,27 @@
 
 (def prev-buffer #(update-in % frame frame/prev))
 
-(defn new-buffer [editor name]
-  (update-in editor frame (frame/update name (history/create ""))))
+(defn open [editor name string]
+  (let [buffer (vary-meta (-> string buffer/read history/create)
+                 assoc :parser (language/extension name))]
+    (update-in editor frame (frame/update name buffer))))
 
-(def command
-  {"next" next-buffer
-   "prev" prev-buffer
-   "new" new-buffer})
+(defn new [editor name] (open editor name ""))
 
-(defn execute-command [editor]
-  (let [[f & args] (-> editor (get-in path/minibuffer) buffer/command)]
-    (if-let [f (command f)]
+(def commands
+  (atom {"next" next-buffer
+         "prev" prev-buffer
+         "new" new}))
+
+(defn execute [editor]
+  (let [[f & args] (-> editor (get-in minibuffer) buffer/command)]
+    (if-let [f (@commands f)]
       (-> (apply f editor args)
-          (update-in path/command history/commit)
-          (assoc-in path/minibuffer buffer/empty))
+          (update-in command history/commit)
+          (assoc-in minibuffer buffer/empty))
       editor)))
 
-(defn run [editor key]
-  (if-let [f (get-in editor (conj mode key))]
+(defn run [{:keys [mode] :as editor} key]
+  (if-let [f (get mode key)]
     (f editor)
-    ((get-in editor (conj mode :default)) editor key)))
+    ((get mode :default) editor key)))

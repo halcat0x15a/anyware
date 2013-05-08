@@ -1,4 +1,6 @@
-(ns anyware.core.emacs)
+(ns anyware.core.emacs
+  (:require [anyware.core.api :as api]
+            [anyware.core.minibuffer :as minibuffer]))
 
 (def keymap
   {#{:ctrl \f} api/right
@@ -11,4 +13,5 @@
    #{:ctrl \a} api/beginning-of-line
    #{:ctrl \m} api/break
    #{:ctrl \h} api/backspace
-   #{:ctrl \d} api/delete)
+   #{:ctrl \d} api/delete
+   #{:alt \m} minibuffer/mode})

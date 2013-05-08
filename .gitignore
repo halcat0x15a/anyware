@@ -5,7 +5,5 @@
 pom.xml
 *.jar
 *.class
-.lein-repl-history
+.*
 *~
-.lein-failures
-.repl

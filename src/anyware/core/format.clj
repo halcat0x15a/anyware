@@ -1,5 +1,5 @@
 (ns anyware.core.format
-  (:require [anyware.core.path :refer [buffer minibuffer]]
+  (:require [anyware.core.api :refer [buffer minibuffer]]
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast]))
 

@@ -1,15 +1,14 @@
 (ns anyware.core.vi
   (:refer-clojure :exclude [char])
   (:require [anyware.core.api :as api]
-            [anyware.core.path :refer [mode] :as path]
-            [anyware.core.buffer :refer [move char] :as buffer]))
+            [anyware.core.buffer :refer [move char] :as buffer]
+            [anyware.core.minibuffer :as minibuffer]))
 
 (declare normal insert delete minibuffer)
 
-(def normal-mode #(assoc-in % mode normal))
-(def insert-mode #(assoc-in % mode insert))
-(def delete-mode #(assoc-in % mode delete))
-(def minibuffer-mode #(assoc-in % mode minibuffer))
+(def normal-mode #(assoc-in % api/mode normal))
+(def insert-mode #(assoc-in % api/mode insert))
+(def delete-mode #(assoc-in % api/mode delete))
 
 (def normal
   {:escape api/deselect
@@ -34,7 +33,7 @@
    \o (comp insert-mode api/break api/end-of-line)
    \O (comp insert-mode api/left api/break api/beginning-of-line)
    \d delete-mode
-   \: minibuffer-mode
+   \: minibuffer/mode
    :default identity})
 
 (def insert
@@ -57,11 +56,3 @@
    \w api/delete-right-word
    \b api/delete-left-word
    :default identity})
-
-(def minibuffer
-  {:escape normal-mode
-   :backspace #(update-in % path/minibuffer (buffer/delete char :left))
-   :right #(update-in % path/minibuffer (move char :right))
-   :left #(update-in % path/minibuffer (move char :left))
-   :enter api/execute-command
-   :default #(update-in %1 %2 (partial buffer/append :left key))})

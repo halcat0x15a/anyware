@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.nrepl "0.2.2"]
                  [org.clojure/test.generative "0.4.0"]
+                 [org.twitter4j/twitter4j-stream "[3.0,)"]
                  [clj-stacktrace "0.2.5"]]
   :plugins [[lein-cljsbuild "0.3.0"]]
   :resource-paths ["/opt/java/jre/lib/jfxrt.jar"]
