@@ -60,8 +60,9 @@
       (update-in buffer buffer/cut)))
 
 (defn insert
-  ([editor in] (insert editor in buffer))
-  ([editor in path]
+  ([editor in] (insert buffer editor in))
+  ([path] (partial insert path))
+  ([path editor in]
      (if (or (set? in) (keyword? int))
        editor
        (update-in editor path (partial buffer/append :left in)))))

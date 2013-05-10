@@ -33,7 +33,7 @@
    \o (comp insert-mode api/break api/end-of-line)
    \O (comp insert-mode api/left api/break api/beginning-of-line)
    \d delete-mode
-   \: minibuffer/mode
+   \: (fn [editor] (minibuffer/mode editor normal))
    :default identity})
 
 (def insert

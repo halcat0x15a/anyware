@@ -27,13 +27,13 @@
    KeyCode/CONTROL :ctrl})
 
 (defn keycode [^KeyEvent event]
-  (let [modifiers (set/select (complement nil?)
+  (let [code (.getCode event)
+        keys (set/select (complement nil?)
                               (hash-set (if (.isControlDown event) :ctrl)
                                         (if (.isAltDown event) :alt)
-                                        (-> event .getCode .getName first Character/toLowerCase)))
-        key (first (.getText event))
-        keys (if (= (count modifiers) 1) key modifiers)]
-      (get special (.getCode event) keys)))
+                                        (if (.isLetterKey code) (-> code .getName first Character/toLowerCase))))
+        key (if (= (count keys) 1) (first keys) keys)]
+    (get special (.getCode event) key)))
 
 (defrecord Anyware [^WebEngine engine]
   core/Anyware

@@ -9,14 +9,13 @@
 
 (def left #(update-in % minibuffer (move char :left)))
 
-(defn insert [editor key]
-  (update-in editor minibuffer (partial append :left key)))
-
 (def keymap
   {:backspace backspace
    :right right
    :left left
    :enter api/execute
-   :default insert})
+   :default (api/insert minibuffer)})
 
-(def mode #(assoc-in % api/mode keymap))
+(defn mode [editor mode]
+  (assoc-in editor api/mode
+            (assoc keymap :escape #(assoc-in % api/mode mode))))
