@@ -5,7 +5,12 @@
 (def default
   {:enter api/break
    :backspace api/backspace
+   :left api/left
+   :right api/right
+   :up api/up
+   :down api/down
    #{:ctrl \c} api/copy
    #{:ctrl \v} api/paste
+   #{:ctrl \x} api/cut
    #{:alt \m} minibuffer/mode
    :default api/insert})

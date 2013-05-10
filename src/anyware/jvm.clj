@@ -29,9 +29,10 @@
 (defn keycode [^KeyEvent event]
   (let [modifiers (set/select (complement nil?)
                               (hash-set (if (.isControlDown event) :ctrl)
-                                        (if (.isAltDown event) :alt)))
+                                        (if (.isAltDown event) :alt)
+                                        (-> event .getCode .getName first Character/toLowerCase)))
         key (first (.getText event))
-        keys (if (empty? modifiers) key (conj modifiers key))]
+        keys (if (= (count modifiers) 1) key modifiers)]
       (get special (.getCode event) keys)))
 
 (defrecord Anyware [^WebEngine engine]
@@ -54,6 +55,7 @@
                     (core/run anyware event)))
         scene (doto (Scene. view)
                 (.setOnKeyPressed handler))]
+    (core/init)
     (swap! core/editor with-meta {:stage stage})
     (swap! api/commands merge commands)
     (doto stage

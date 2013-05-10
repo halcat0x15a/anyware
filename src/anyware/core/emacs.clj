@@ -14,4 +14,5 @@
    #{:ctrl \m} api/break
    #{:ctrl \h} api/backspace
    #{:ctrl \d} api/delete
-   #{:alt \m} minibuffer/mode})
+   #{:alt \m} minibuffer/mode
+   :default api/insert})

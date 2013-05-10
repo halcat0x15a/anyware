@@ -50,12 +50,21 @@
 (def deselect #(update-in % buffer buffer/deselect))
 
 (defn copy [editor]
-  (if-let [string (buffer/selection (get-in editor buffer))]
+  (if-let [string (buffer/copy (get-in editor buffer))]
     (update-in editor clipboard (history/commit string) editor)
     editor))
 
-(defn insert [editor char]
-  (update-in editor buffer (partial buffer/append :left char)))
+(defn cut [editor]
+  (-> editor
+      copy
+      (update-in buffer buffer/cut)))
+
+(defn insert
+  ([editor in] (insert editor in buffer))
+  ([editor in path]
+     (if (or (set? in) (keyword? int))
+       editor
+       (update-in editor path (partial buffer/append :left in)))))
 
 (def break #(insert % \newline))
 

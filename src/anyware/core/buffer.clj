@@ -1,5 +1,5 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [char empty read find complement])
+  (:refer-clojure :exclude [char empty read find complement take])
   (:require [clojure.string :as string]))
 
 (defrecord Buffer [left right])
@@ -63,12 +63,22 @@
 (defn deselect [buffer]
   (vary-meta buffer dissoc :mark))
 
-(defn selection [buffer]
+(defmulti take (fn [field n buffer] field))
+(defmethod take :left [field n buffer]
+  (->> buffer field (take-last n) string/join))
+(defmethod take :right [field n buffer]
+  (subs (field buffer) 0 n))
+
+(defn selection [f buffer]
   (if-let [mark (-> buffer meta :mark)]
     (let [n (- (cursor buffer) mark)]
-      (cond (pos? n) (->> buffer :left (take-last n) string/join)
+      (cond (pos? n) (f :left n buffer)
             (neg? n) (subs (:right buffer) 0 n)
             :else ""))))
+
+(def copy (partial selection take))
+
+(def cut (partial selection delete))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))

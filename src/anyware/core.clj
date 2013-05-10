@@ -3,6 +3,8 @@
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.editor :as editor]
             [anyware.core.keymap :as keymap]
+            [anyware.core.emacs :as emacs]
+            [anyware.core.vi :as vi]
             [anyware.core.format :as format]
             [anyware.core.api :as api])
   (:import clojure.lang.ExceptionInfo))
@@ -12,6 +14,11 @@
 (defprotocol Anyware
   (keycode [this event])
   (render [this editor]))
+
+(defn init []
+  (doto api/commands
+    (swap! assoc "emacs" #(assoc-in % api/mode emacs/keymap))
+    (swap! assoc "vi" #(assoc-in % api/mode vi/normal))))
 
 (defn run
   ([editor anyware event]
