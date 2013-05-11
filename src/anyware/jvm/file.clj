@@ -11,7 +11,7 @@
        (open (.getPath file) editor)
        editor))
   ([path editor]
-     (update-in editor [:list] (partial frame/update path (slurp path)))))
+     (api/open editor path (slurp path))))
 
 (defn save [editor]
   (doto editor

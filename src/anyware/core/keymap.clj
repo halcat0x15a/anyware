@@ -20,4 +20,7 @@
          {#{:ctrl \c} api/copy
           #{:ctrl \v} api/paste
           #{:ctrl \x} api/cut
+          #{:ctrl \q} (api/execute "quit")
+          #{:ctrl \o} (api/execute "open")
+          #{:ctrl \s} (api/execute "save")
           #{:alt \m} minibuffer}))

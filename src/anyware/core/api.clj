@@ -63,7 +63,7 @@
   ([editor in] (insert buffer editor in))
   ([path] (partial insert path))
   ([path editor in]
-     (if (or (set? in) (keyword? int))
+     (if (or (set? in) (keyword? in))
        editor
        (update-in editor path (partial buffer/append :left in)))))
 
@@ -97,25 +97,27 @@
 
 (def prev-buffer #(update-in % frame frame/prev))
 
-(defn open [editor name string]
-  (let [buffer (vary-meta (-> string buffer/read history/create)
-                 assoc :parser (language/extension name))]
-    (update-in editor frame (frame/update name buffer))))
-
-(defn new [editor name] (open editor name ""))
+(defn open
+  ([editor name] (open editor name ""))
+  ([editor name string]
+     (let [buffer (vary-meta (-> string buffer/read history/create)
+                             assoc :parser (language/extension name))]
+       (update-in editor frame (frame/update name buffer)))))
 
 (def commands
   (atom {"next" next-buffer
          "prev" prev-buffer
-         "new" new}))
+         "new" open}))
 
-(defn execute [editor]
-  (let [[f & args] (-> editor (get-in minibuffer) buffer/command)]
-    (if-let [f (@commands f)]
-      (-> (apply f editor args)
-          (update-in command history/commit)
-          (assoc-in minibuffer buffer/empty))
-      editor)))
+(defn execute
+  ([editor]
+     (execute (-> editor (get-in minibuffer) buffer/command) editor))
+  ([[f & args] editor]
+     (if-let [f (@commands f)]
+       (-> (apply f editor args)
+           (update-in command history/commit)
+           (assoc-in minibuffer buffer/empty))
+       editor)))
 
 (defn run [{:keys [mode] :as editor} key]
   (if-let [f (get mode key)]
