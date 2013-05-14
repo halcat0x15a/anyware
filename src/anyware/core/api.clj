@@ -97,6 +97,9 @@
 
 (def prev-buffer #(update-in % frame frame/prev))
 
+(defn notice [editor message]
+  (assoc-in editor minibuffer (buffer/read message)))
+
 (defn open
   ([editor name] (open editor name ""))
   ([editor name string]

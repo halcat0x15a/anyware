@@ -5,6 +5,7 @@
             [anyware.core.format :as format]
             [anyware.core.format.html :as html]
             [anyware.jvm.file :as file]
+            [anyware.jvm.clojure :as clj]
             [anyware.jvm.twitter :as twitter])
   (:gen-class
    :extends javafx.application.Application)
@@ -22,16 +23,14 @@
    KeyCode/UP :up
    KeyCode/DOWN :down
    KeyCode/BACK_SPACE :backspace
-   KeyCode/ENTER :enter
-   KeyCode/ALT :alt
-   KeyCode/CONTROL :ctrl})
+   KeyCode/ENTER :enter})
 
 (defn keycode [^KeyEvent event]
   (let [code (.getCode event)
         keys (set/select (complement nil?)
-                              (hash-set (if (.isControlDown event) :ctrl)
-                                        (if (.isAltDown event) :alt)
-                                        (if (.isLetterKey code) (-> code .getName first Character/toLowerCase))))
+                         (hash-set (if (.isControlDown event) :ctrl)
+                                   (if (.isAltDown event) :alt)
+                                   (-> event .getText first)))
         key (if (= (count keys) 1) (first keys) keys)]
     (get special (.getCode event) key)))
 
@@ -45,7 +44,8 @@
   {"quit" (fn [_] (Platform/exit))
    "open" file/open
    "save" file/save
-   "twitter" twitter/request})
+   "twitter" twitter/request
+   "eval" clj/eval-file})
 
 (defn -start [this ^Stage stage]
   (let [view (WebView.)
