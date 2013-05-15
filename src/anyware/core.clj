@@ -1,11 +1,9 @@
 (ns anyware.core
-  (:refer-clojure :exclude [format])
   (:require [anyware.core.buffer :as buffer]
             [anyware.core.editor :as editor]
             [anyware.core.keymap :as keymap]
             [anyware.core.emacs :as emacs]
             [anyware.core.vi :as vi]
-            [anyware.core.format :as format]
             [anyware.core.api :as api])
   (:import clojure.lang.ExceptionInfo))
 

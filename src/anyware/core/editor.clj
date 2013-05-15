@@ -12,7 +12,7 @@
 (def mode (atom keymap/default))
 
 (def history
-  (history/create (with-meta buffer/empty {:parser parser/id})))
+  (vary-meta (history/create buffer/empty) assoc :parser parser/id))
 
 (def frame (frame/create @buffer history))
 

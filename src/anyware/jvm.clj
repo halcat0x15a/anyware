@@ -1,9 +1,9 @@
 (ns anyware.jvm
   (:require [clojure.set :as set]
+            [clojure.java.io :as io]
             [anyware.core :as core]
             [anyware.core.api :as api]
-            [anyware.core.format :as format]
-            [anyware.core.format.html :as html]
+            [anyware.core.html :as html]
             [anyware.jvm.file :as file]
             [anyware.jvm.clojure :as clj]
             [anyware.jvm.twitter :as twitter])
@@ -15,6 +15,8 @@
            [javafx.scene Scene]
            [javafx.scene.web WebView WebEngine]
            [javafx.scene.input KeyCode KeyEvent]))
+
+(def opacity (atom 1.0))
 
 (def special
   {KeyCode/ESCAPE :escape
@@ -38,7 +40,7 @@
   core/Anyware
   (keycode [this event] (keycode event))
   (render [this editor]
-    (.loadContent engine (format/render html/format editor))))
+    (.loadContent engine (html/render editor))))
 
 (def commands
   {"quit" (fn [_] (Platform/exit))
@@ -47,8 +49,18 @@
    "twitter" twitter/request
    "eval" clj/eval-file})
 
+(def rc ".anyware")
+
+(defn load-rc []
+  (let [file (io/as-file (str (System/getProperty "user.home")
+                              (System/getProperty "file.separator")
+                              rc))]
+    (if (.exists file)
+      (load-file (.getPath file)))))
+
 (defn -start [this ^Stage stage]
-  (let [view (WebView.)
+  (let [view (doto (WebView.)
+               (.setContextMenuEnabled false))
         anyware (-> view .getEngine Anyware.)
         handler (reify EventHandler
                   (handle [this event]
@@ -58,10 +70,13 @@
     (core/init)
     (swap! core/editor with-meta {:stage stage})
     (swap! api/commands merge commands)
+    (load-rc)
     (doto stage
       (.setTitle "Anyware")
+      (.setOpacity @opacity)
       (.setScene scene)
       (.show))))
 
 (defn -main [& args]
+  (prn args)
   (Application/launch anyware.jvm args))

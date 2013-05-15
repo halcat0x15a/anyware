@@ -3,8 +3,7 @@
             [clojure.data.generators :as gen]
             [clojure.xml :as xml]
             [anyware.test :as test]
-            [anyware.core.format :as format]
-            [anyware.core.format.html :as html])
+            [anyware.core.html :as html])
   (:import [java.io ByteArrayInputStream]))
 
 (defspec espace-string
@@ -13,6 +12,6 @@
   (is (nil? (some #{\< \>} %))))
 
 (defspec valid-html
-  (partial format/render html/format)
+  html/render
   [^test/editor editor]
   (is (->> (.getBytes ^String %) ByteArrayInputStream. xml/parse)))
