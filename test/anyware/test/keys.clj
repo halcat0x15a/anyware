@@ -1,10 +1,10 @@
-(ns anyware.test.api
+(ns anyware.test.keys
   (:require [clojure.test.generative :refer [defspec is]]
             [clojure.data.generators :as gen]
             [anyware.test :as test]
-            [anyware.core.api :refer :all]))
+            [anyware.core.keys :refer :all]))
 
-(defn path [] (gen/rand-nth paths))
+(defn path [] (gen/rand-nth all))
 
 (defspec get-in-path
   get-in

@@ -3,7 +3,8 @@
   (:require [clojure.zip :as zip])
   (:import clojure.lang.ExceptionInfo))
 
-(defn window [name obj] (vary-meta obj assoc :name name :saved? true))
+(defn window [name obj]
+  (vary-meta obj assoc :name name :saved? true :parser identity))
 
 (defn create [& keyvals]
   (->> keyvals

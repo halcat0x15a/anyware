@@ -1,6 +1,7 @@
 (ns anyware.jvm.twitter
   (:require [clojure.java.browse :refer [browse-url]]
             [anyware.core :as core]
+            [anyware.core.keys :as keys]
             [anyware.core.api :as api]
             [anyware.core.buffer :as buffer]
             [anyware.core.minibuffer :as minibuffer])
@@ -58,7 +59,7 @@
      editor))
 
 (defn access [^Twitter twitter request editor]
-  (let [pin (-> editor (get-in api/minibuffer) buffer/write)
+  (let [pin (-> editor (get-in keys/minibuffer) buffer/write)
         token (.getOAuthAccessToken twitter request pin)]
     (start twitter token editor)))
 
@@ -70,7 +71,7 @@
       (.setContent (doto (ClipboardContent.) (.putString url))))
     (-> editor
         (api/insert url)
-        (assoc-in api/mode (assoc minibuffer/keymap
+        (assoc-in keys/mode (assoc minibuffer/keymap
                              :enter (partial access twitter request))))))
 
 (defn twitter [editor]

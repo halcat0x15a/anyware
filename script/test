@@ -3,6 +3,6 @@ test/anyware/test/buffer.clj \
 test/anyware/test/history.clj \
 test/anyware/test/frame.clj \
 test/anyware/test/parser.clj \
-test/anyware/test/api.clj \
+test/anyware/test/keys.clj \
 test/anyware/test/html.clj \
 test/anyware/test/core.clj

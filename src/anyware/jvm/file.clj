@@ -2,6 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.java.io :as io]
             [anyware.core.frame :as frame]
+            [anyware.core.keys :as keys]
             [anyware.core.api :as api])
   (:import java.io.File
            javafx.stage.FileChooser))
@@ -29,4 +30,4 @@
 
 (defn save [editor]
   (doto editor
-    (->> (get-in api/buffer) spit)))
+    (->> (get-in keys/buffer) spit)))

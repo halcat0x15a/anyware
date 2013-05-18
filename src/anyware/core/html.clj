@@ -1,6 +1,7 @@
 (ns anyware.core.html
   (:require [clojure.string :as string]
             [clojure.zip :as zip]
+            [anyware.core.keys :as keys]
             [anyware.core.api :as api]
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast]
@@ -51,8 +52,14 @@
 
 (defn render [editor]
   (element :pre {:class "editor" :style (style @global)}
-           (str (->> (get-in editor api/minibuffer)
+           (str (->> (get-in editor keys/minibuffer)
                      buffer/write
                      escape)
                 \newline
-                (->> (get-in editor api/buffer) ast/parse show))))
+                (-> editor
+                    (get-in keys/buffer)
+                    (ast/parse (-> editor
+                                   (get-in keys/history)
+                                   meta
+                                   :parser))
+                    show))))

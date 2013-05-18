@@ -5,6 +5,7 @@
             [anyware.core :as core]
             [anyware.core.editor :as editor]
             [anyware.core.buffer :as buffer]
+            [anyware.core.keys :as keys]
             [anyware.core.api :as api]))
 
 (def anyware
@@ -21,7 +22,7 @@
 
 (def type
   (comp buffer/write
-        #(get-in % api/buffer)
+        #(get-in % keys/buffer)
         (partial emulate editor/default)))
 
 (deftest editor

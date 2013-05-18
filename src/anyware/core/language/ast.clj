@@ -39,12 +39,10 @@
         zipper)
       (zip/edit (partial ->Node :cursor))))
 
-(defn parse [{:keys [left] :as buffer}]
-  (if-let [parser (-> buffer meta :parser)]
-    (let [{:keys [result next]} (->> buffer buffer/write parser)]
-      (-> (->> result vector zip (move (count left)))
-          cursor
-          zip/rightmost
-          (zip/insert-right next)
-          zip/root))
-    (buffer/write buffer)))
+(defn parse [{:keys [left] :as buffer} parser]
+  (let [{:keys [result next]} (->> buffer buffer/write parser)]
+    (-> (->> result vector zip (move (count left)))
+        cursor
+        zip/rightmost
+        (zip/insert-right next)
+        zip/root)))

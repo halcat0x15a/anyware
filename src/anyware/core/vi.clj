@@ -1,14 +1,15 @@
 (ns anyware.core.vi
   (:refer-clojure :exclude [char])
   (:require [anyware.core.api :as api]
+            [anyware.core.keys :as keys]
             [anyware.core.buffer :refer [move char] :as buffer]
             [anyware.core.minibuffer :as minibuffer]))
 
 (declare normal insert delete minibuffer)
 
-(def normal-mode #(assoc-in % api/mode normal))
-(def insert-mode #(assoc-in % api/mode insert))
-(def delete-mode #(assoc-in % api/mode delete))
+(def normal-mode #(assoc-in % keys/mode normal))
+(def insert-mode #(assoc-in % keys/mode insert))
+(def delete-mode #(assoc-in % keys/mode delete))
 
 (def normal
   {:escape api/deselect
