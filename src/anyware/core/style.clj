@@ -1,9 +1,13 @@
-(ns anyware.core.color
+(ns anyware.core.style
   (:refer-clojure :exclude [read]))
 
-(defrecord Color [foreground background])
+(def global
+  (atom {:color "black"
+         :background-color "white"
+         :font-size "16px"
+         :font-family "monospace"}))
 
-(def default (atom (Color. "black" "white")))
+(defrecord Color [foreground background])
 
 (def color
   (atom {:cursor (Color. "white" "black")
@@ -13,4 +17,4 @@
          :keyword (Color. "cyan" "white")}))
 
 (defn read [key]
-  (get @color key @default))
+  (get @color key (Color. (:color @global) (:background-color @global))))

@@ -6,13 +6,7 @@
             [anyware.core.buffer :as buffer]
             [anyware.core.language.ast :as ast]
             [anyware.core.editor :as editor]
-            [anyware.core.color :as color]))
-
-(def global
-  (atom {:color "black"
-         :background-color "white"
-         :font-size "16px"
-         :font-family "monospace"}))
+            [anyware.core.style :as style]))
 
 (def special
   {\< "&lt;"
@@ -39,7 +33,7 @@
 (declare show)
 
 (defn node [{:keys [label value]}]
-  (let [{:keys [foreground background]} (-> label color/read)]
+  (let [{:keys [foreground background]} (style/read label)]
     (element :span
              {:style (style {:color foreground
                              :background-color background})}
@@ -48,13 +42,20 @@
 (defn show [x]
   (cond (:label x) (node x)
         (vector? x) (reduce str (mapv show x))
-        (string? x) (escape x)))
+        :else (escape (str x))))
 
 (defn render [editor]
-  (element :pre {:class "editor" :style (style @global)}
-           (str (->> (get-in editor keys/minibuffer)
-                     buffer/write
-                     escape)
+  (prn (-> editor
+           (get-in keys/buffer)
+           (ast/parse (-> editor
+                          (get-in keys/history)
+                          meta
+                          :parser))))
+  (element :pre {:class "editor" :style (style @style/global)}
+           (str (-> editor
+                    (get-in keys/minibuffer)
+                    buffer/write
+                    escape)
                 \newline
                 (-> editor
                     (get-in keys/buffer)

@@ -4,7 +4,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 (defn window [name obj]
-  (vary-meta obj assoc :name name :saved? true :parser identity))
+  (vary-meta obj assoc :name name :saved? true))
 
 (defn create [& keyvals]
   (->> keyvals
