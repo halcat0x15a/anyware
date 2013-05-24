@@ -3,17 +3,17 @@
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
             [anyware.core.parser :as parser]
-            [anyware.core.keymap :as keymap]))
+            [anyware.core.command :as command]))
 
-(defrecord Editor [frame command mode clipboard])
+(defrecord Editor [frame command keymap clipboard])
 
 (def buffer (atom "*scratch*"))
 
-(def mode (atom keymap/default))
+(def keymap (atom command/default))
 
 (def history
   (vary-meta (history/create buffer/empty) assoc :parser parser/id))
 
 (def frame (frame/create @buffer history))
 
-(def default (Editor. frame history @mode (history/create "")))
+(def default (Editor. frame history @keymap (history/create "")))

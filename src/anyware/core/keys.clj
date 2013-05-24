@@ -1,23 +1,30 @@
-(ns anyware.core.keys)
+(ns anyware.core.keys
+  (:require [anyware.core.history :as history]))
 
 (def frame [:frame])
 
-(def mode [:mode])
+(def window (conj frame 0))
 
-(def clipboard [:clipboard])
-
-(def history (conj frame 0))
-
-(def change (conj history 0))
-
-(def buffer (conj change :current))
+(def buffer (into window history/current))
 
 (def command [:command])
 
-(def minibuffer (-> command (conj 0) (conj :current)))
+(def minibuffer (into command history/current))
 
-(def contents (conj clipboard 0))
+(def keymap [:keymap])
 
-(def all [frame mode clipboard history change buffer command minibuffer])
+(def clipboard [:clipboard])
+
+(def clip (conj clipboard 0))
+
+(def all
+  [frame
+   window
+   buffer
+   keymap
+   command
+   minibuffer
+   clipboard
+   clip])
 
 (defn validate [editor] (every? (partial get-in editor) all))

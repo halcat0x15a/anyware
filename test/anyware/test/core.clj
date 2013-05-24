@@ -8,14 +8,15 @@
             [anyware.core.keys :as keys]
             [anyware.core.api :as api]))
 
-(def anyware
-  (reify core/Anyware
-    (keycode [this event] event)
-    (render [this html] (prn html))))
+(extend-type anyware.core.editor.Editor
+  core/Anyware
+  (keycode [this event] event)
+  (render [this] (prn this))
+  (quit [this]))
 
 (defn emulate
   ([editor x]
-     (cond (or (keyword? x) (char? x)) (core/run editor anyware x)
+     (cond (or (keyword? x) (char? x)) (core/run editor x)
            (string? x) (apply emulate editor x)))
   ([editor x & xs]
      (reduce emulate editor (cons x xs))))

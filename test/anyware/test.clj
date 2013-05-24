@@ -4,13 +4,14 @@
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
+            [anyware.core.parser :as parser]
             [anyware.core.editor :as editor]))
 
 (defn buffer []
   (buffer/->Buffer (gen/string) (gen/string)))
 
 (defn history []
-  (history/create (buffer)))
+  (vary-meta (history/create (buffer)) assoc :parser parser/id))
 
 (defn frame []
   (frame/create (gen/string) (history)))

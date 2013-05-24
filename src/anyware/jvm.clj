@@ -16,7 +16,13 @@
            [javafx.scene.web WebView WebEngine]
            [javafx.scene.input KeyCode KeyEvent]))
 
+(def home (System/getProperty "user.home"))
+
+(def separator (System/getProperty "file.separator"))
+
 (def opacity (atom 1.0))
+
+(def rc (atom ".anyware"))
 
 (def special
   {KeyCode/ESCAPE :escape
@@ -28,48 +34,39 @@
    KeyCode/ENTER :enter})
 
 (defn keycode [^KeyEvent event]
-  (let [code (.getCode event)
-        keys (set/select (complement nil?)
+  (let [keys (set/select (complement nil?)
                          (hash-set (if (.isControlDown event) :ctrl)
                                    (if (.isAltDown event) :alt)
-                                   (-> event .getText first)))
-        key (if (= (count keys) 1) (first keys) keys)]
-    (get special (.getCode event) key)))
+                                   (-> event .getText first)))]
+    (get special (.getCode event)
+         (if (-> keys count (= 1))
+           (first keys)
+           keys))))
 
-(defrecord Anyware [^WebEngine engine]
+(extend-type anyware.core.editor.Editor
   core/Anyware
-  (keycode [this event] (keycode event))
-  (render [this editor]
-    (.loadContent engine (html/render editor))))
-
-(def commands
-  {"quit" (fn [_] (Platform/exit))
-   "open" file/open
-   "save" file/save
-   "twitter" twitter/request
-   "eval" clj/eval-file})
-
-(def rc ".anyware")
+  (keycode [editor event] (keycode event))
+  (render [editor]
+    (-> editor meta :engine (.loadContent (html/render editor))))
+  (quit [editor] (Platform/exit)))
 
 (defn load-rc []
-  (let [file (io/as-file (str (System/getProperty "user.home")
-                              (System/getProperty "file.separator")
-                              rc))]
-    (if (.exists file)
-      (load-file (.getPath file)))))
+  (let [file (io/file (str home separator @rc))]
+    (when (.exists file)
+      (-> file io/reader load-reader))))
 
 (defn -start [this ^Stage stage]
   (let [view (doto (WebView.)
                (.setContextMenuEnabled false))
-        anyware (-> view .getEngine Anyware.)
-        handler (reify EventHandler
-                  (handle [this event]
-                    (core/run anyware event)))
         scene (doto (Scene. view)
-                (.setOnKeyPressed handler))]
-    (core/init)
-    (swap! core/editor with-meta {:stage stage})
-    (swap! api/commands merge commands)
+                (.setOnKeyPressed
+                 (reify EventHandler
+                   (handle [this event]
+                     (core/run! event)))))]
+    (swap! core/editor
+           with-meta
+           {:stage stage
+            :engine (.getEngine view)})
     (load-rc)
     (doto stage
       (.setTitle "Anyware")
@@ -78,5 +75,4 @@
       (.show))))
 
 (defn -main [& args]
-  (prn args)
   (Application/launch anyware.jvm args))

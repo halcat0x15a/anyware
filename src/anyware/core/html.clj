@@ -45,12 +45,6 @@
         :else (escape (str x))))
 
 (defn render [editor]
-  (prn (-> editor
-           (get-in keys/buffer)
-           (ast/parse (-> editor
-                          (get-in keys/history)
-                          meta
-                          :parser))))
   (element :pre {:class "editor" :style (style @style/global)}
            (str (-> editor
                     (get-in keys/minibuffer)
@@ -60,7 +54,7 @@
                 (-> editor
                     (get-in keys/buffer)
                     (ast/parse (-> editor
-                                   (get-in keys/history)
+                                   (get-in keys/window)
                                    meta
                                    :parser))
                     show))))

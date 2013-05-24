@@ -4,7 +4,7 @@
             [anyware.core.keys :as keys]
             [anyware.core.api :as api]
             [anyware.core.buffer :as buffer]
-            [anyware.core.minibuffer :as minibuffer])
+            [anyware.core.command :as command])
   (:import [java.io
             File
             FileOutputStream ObjectOutputStream
@@ -71,8 +71,7 @@
       (.setContent (doto (ClipboardContent.) (.putString url))))
     (-> editor
         (api/insert url)
-        (assoc-in keys/mode (assoc minibuffer/keymap
-                             :enter (partial access twitter request))))))
+        (assoc-in keys/keymap (command/minibuffer (partial access twitter request))))))
 
 (defn twitter [editor]
   (if (.exists (File. @access-token))
