@@ -1,5 +1,6 @@
 lein2 run -m clojure.test.generative.runner \
 test/anyware/test/buffer.clj \
+test/anyware/test/tree.clj \
 test/anyware/test/history.clj \
 test/anyware/test/frame.clj \
 test/anyware/test/parser.clj \

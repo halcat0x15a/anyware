@@ -4,6 +4,7 @@
             [anyware.core :as core]
             [anyware.core.api :as api]
             [anyware.core.html :as html]
+            [anyware.core.tree :as tree]
             [anyware.jvm.file :as file]
             [anyware.jvm.clojure :as clj]
             [anyware.jvm.twitter :as twitter])
