@@ -8,6 +8,11 @@
   (branch? [node])
   (children [node]))
 
+(defrecord Label [name value]
+  Node
+  (branch? [node] true)
+  (children [node] value))
+
 (extend-protocol Node
   java.lang.Character
   (branch? [node] false)
@@ -17,13 +22,10 @@
   (children [node] (seq node))
   clojure.lang.IPersistentVector
   (branch? [node] true)
-  (children [node] (seq node))
-  clojure.lang.IPersistentMap
-  (branch? [node] false)
-  (children [node] (-> node first val)))
+  (children [node] (seq node)))
 
-(defn map [label parser]
-  (parser/map (partial hash-map label) parser))
+(defn map [name parser]
+  (parser/map (partial ->Label name) parser))
 
 (def zip (partial zip/zipper branch? children #(vec %2)))
 
@@ -37,7 +39,7 @@
   (-> (if (zip/end? tree)
         (-> tree (assoc 1 \space) zip zip/down zip/rightmost)
         tree)
-      (zip/edit (partial hash-map :cursor))))
+      (zip/edit (partial ->Label :cursor))))
 
 (defn parse [{:keys [left] :as buffer} parser]
   (let [{:keys [result next]} (->> buffer buffer/write parser)]

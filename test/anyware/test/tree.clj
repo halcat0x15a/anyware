@@ -10,3 +10,8 @@
   (is (if (<= (count s) n)
         (z/end? %)
         (= (z/node %) (nth s n)))))
+
+(defspec set-cursor
+  (comp tree/cursor z/next tree/zip)
+  [^string s]
+  (is (:name (z/node %))))
