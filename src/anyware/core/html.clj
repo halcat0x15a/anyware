@@ -4,7 +4,7 @@
             [anyware.core.keys :as keys]
             [anyware.core.api :as api]
             [anyware.core.buffer :as buffer]
-            [anyware.core.language.ast :as ast]
+            [anyware.core.tree :as tree]
             [anyware.core.editor :as editor]
             [anyware.core.style :as style]))
 
@@ -30,31 +30,27 @@
 
 (def style (partial reduce-kv declaration ""))
 
-(declare show)
+(defprotocol Node
+  (render [node]))
 
-(defn node [{:keys [label value]}]
-  (let [{:keys [foreground background]} (style/read label)]
-    (element :span
-             {:style (style {:color foreground
-                             :background-color background})}
-             (show value))))
-
-(defn show [x]
-  (cond (:label x) (node x)
-        (vector? x) (reduce str (mapv show x))
-        :else (escape (str x))))
-
-(defn render [editor]
-  (element :pre {:class "editor" :style (style @style/global)}
-           (str (-> editor
-                    (get-in keys/minibuffer)
-                    buffer/write
-                    escape)
-                \newline
-                (-> editor
-                    (get-in keys/buffer)
-                    (ast/parse (-> editor
-                                   (get-in keys/window)
-                                   meta
-                                   :parser))
-                    show))))
+(extend-protocol Node
+  anyware.core.editor.Editor
+  (render [node]
+    (element :pre {:class "editor" :style (style @style/global)}
+             (str (-> node (get-in keys/minibuffer) render)
+                  \newline
+                  (-> node (get-in keys/buffer) render))))
+  anyware.core.buffer.Buffer
+  (render [node] (-> node (tree/parse (-> node meta :parser)) render))
+  anyware.core.tree.Label
+  (render [{:keys [name value]}]
+    (let [{:keys [foreground background]} (style/read name)]
+      (element :span {:style (style {:color foreground
+                                     :background-color background})}
+               (render value))))
+  java.lang.Character
+  (render [node] (escape (str node)))
+  java.lang.String
+  (render [node] (escape node))
+  clojure.lang.IPersistentVector
+  (render [node] (reduce str (mapv render node))))

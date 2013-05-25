@@ -8,10 +8,11 @@
             [anyware.core.editor :as editor]))
 
 (defn buffer []
-  (buffer/->Buffer (gen/string) (gen/string)))
+  (vary-meta (buffer/->Buffer (gen/string) (gen/string))
+             assoc :parser parser/id))
 
 (defn history []
-  (vary-meta (history/create (buffer)) assoc :parser parser/id))
+  (history/create (buffer)))
 
 (defn frame []
   (frame/create (gen/string) (history)))
