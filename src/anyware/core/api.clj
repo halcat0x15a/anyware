@@ -101,6 +101,9 @@
          buffer/read
          (vary-meta assoc :parser parser))))
 
+(defn text [editor]
+  (-> editor (get-in keys/buffer) buffer/write))
+
 (defn notice [editor message]
   (assoc-in editor keys/minibuffer (read message)))
 

@@ -10,7 +10,6 @@
   (write [io file value]))
 
 (defprotocol Data
-  (path [data])
   (content [data]))
 
 (defrecord File [path content]
@@ -31,6 +30,7 @@
        (api/open editor (:path file) (content file)))))
 
 (defn save [editor]
-  (write editor
-         (-> editor (get-in keys/window) meta :name)
-         (get-in editor keys/buffer)))
+  (-> editor
+      (write (-> editor (get-in keys/window) meta :name)
+             (api/text editor))
+      (update-in keys/window #(vary-meta assoc :save? true))))

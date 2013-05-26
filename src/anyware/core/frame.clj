@@ -40,8 +40,6 @@
     (zip/remove frame)
     (throw (ex-info "No write since last change" {}))))
 
-(defn save [frame] (vary-meta frame assoc :save? true))
-
 (defn conj [value frame]
   (-> frame (zip/insert-right value) zip/right))
 
