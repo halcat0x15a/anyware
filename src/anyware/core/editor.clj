@@ -1,5 +1,5 @@
 (ns anyware.core.editor
-  (:require [anyware.core.buffer :as buffer]
+  (:require [anyware.core.api :as api]
             [anyware.core.history :as history]
             [anyware.core.frame :as frame]
             [anyware.core.parser :as parser]
@@ -11,8 +11,7 @@
 
 (def keymap (atom command/default))
 
-(def window
-  (history/create (vary-meta buffer/empty assoc :parser parser/id)))
+(def window (history/create (api/read "")))
 
 (def frame (frame/create @buffer window))
 

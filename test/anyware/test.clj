@@ -1,5 +1,4 @@
 (ns anyware.test
-  (:refer-clojure :exclude [list])
   (:require [clojure.data.generators :as gen]
             [anyware.core.buffer :as buffer]
             [anyware.core.history :as history]

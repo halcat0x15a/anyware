@@ -1,5 +1,6 @@
 (ns anyware.core.command
   (:require [anyware.core.api :as api]
+            [anyware.core.file :as file]
             [anyware.core.keys :as keys]))
 
 (declare commands vi)
@@ -7,7 +8,7 @@
 (defn execute
   ([editor] (execute (api/command editor) editor))
   ([[f & args] editor]
-     (if-let [f (commands f)]
+     (if-let [f (@commands f)]
        (-> (apply f editor args)
            (api/commit keys/command)
            (api/notice ""))
@@ -37,7 +38,7 @@
         #{:ctrl \q} (partial execute "quit")
         #{:ctrl \o} (partial execute "open")
         #{:ctrl \s} (partial execute "save")
-        #{:alt \m} #(assoc-in % keys/keymap minibuffer)}
+        #{:alt \m} #(assoc-in % keys/keymap (minibuffer default))}
        (merge edit)))
   
 (def emacs
@@ -98,8 +99,10 @@
    :default (fn [editor key] editor)})
 
 (def commands
-  {"next" api/next-buffer
-   "prev" api/prev-buffer
-   "new" api/open
-   "vi" #(assoc-in % keys/keymap vi)
-   "emacs" #(assoc-in % keys/keymap emacs)})
+  (atom {"next" api/next-buffer
+         "prev" api/prev-buffer
+         "new" api/open
+         "vi" #(assoc-in % keys/keymap vi)
+         "emacs" #(assoc-in % keys/keymap emacs)
+         "open" file/open
+         "save" file/save}))

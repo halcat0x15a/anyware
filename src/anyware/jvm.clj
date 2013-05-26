@@ -5,14 +5,14 @@
             [anyware.core.api :as api]
             [anyware.core.html :as html]
             [anyware.core.tree :as tree]
-            [anyware.jvm.file :as file]
+            [anyware.core.file :as file]
             [anyware.jvm.clojure :as clj]
             [anyware.jvm.twitter :as twitter])
   (:gen-class
    :extends javafx.application.Application)
   (:import [javafx.application Application Platform]
            [javafx.event EventHandler]
-           [javafx.stage Stage]
+           [javafx.stage Stage FileChooser]
            [javafx.scene Scene]
            [javafx.scene.web WebView WebEngine]
            [javafx.scene.input KeyCode KeyEvent]))
@@ -44,12 +44,23 @@
            (first keys)
            keys))))
 
+(def ^FileChooser chooser (FileChooser.))
+
 (extend-type anyware.core.editor.Editor
   core/Anyware
   (keycode [editor event] (keycode event))
   (render [editor]
     (-> editor meta :engine (.loadContent (html/render editor))))
-  (quit [editor] (Platform/exit)))
+  (quit [editor] (Platform/exit))
+  file/IO
+  (dialog [editor]
+    (if-let [file (.showOpenDialog chooser (-> editor meta :stage))]
+      (file/->File (.getPath file) (slurp file))))
+  (read [editor path]
+    (file/->File path (slurp path)))
+  (write [editor path value]
+    (spit path value)
+    editor))
 
 (defn load-rc []
   (let [file (io/file (str home separator @rc))]

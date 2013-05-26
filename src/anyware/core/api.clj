@@ -1,9 +1,10 @@
 (ns anyware.core.api
-  (:refer-clojure :exclude [char])
+  (:refer-clojure :exclude [read])
   (:require [anyware.core.frame :as frame]
             [anyware.core.history :as history]
             [anyware.core.keys :as keys]
             [anyware.core.buffer :as buffer]
+            [anyware.core.parser :as parser]
             [anyware.core.language :as language]))
 
 (defn right
@@ -93,14 +94,22 @@
 
 (def prev-buffer #(update-in % keys/frame frame/prev))
 
+(defn read
+  ([string] (read string parser/id))
+  ([string parser]
+     (-> string
+         buffer/read
+         (vary-meta assoc :parser parser))))
+
 (defn notice [editor message]
-  (assoc-in editor keys/minibuffer (buffer/read message)))
+  (assoc-in editor keys/minibuffer (read message)))
 
 (defn open
   ([editor name] (open editor name ""))
   ([editor name string]
-     (let [buffer (vary-meta (-> string buffer/read history/create)
-                             assoc :parser (language/extension name))]
+     (let [buffer (-> string
+                      (read (language/extension name))
+                      history/create)]
        (update-in editor keys/frame (frame/update name buffer)))))
 
 (defn command [editor]

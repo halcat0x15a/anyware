@@ -1,8 +1,7 @@
 (ns anyware.core.language.clojure
   (:refer-clojure :exclude [symbol keyword comment list vector map])
   (:require [anyware.core.parser :as parser]
-            [anyware.core.language :as language]
-            [anyware.core.language.ast :as ast]))
+            [anyware.core.tree :as tree]))
 
 (declare expressions)
 
@@ -11,9 +10,9 @@
 (def space (parser/regex #"^\s+"))
 
 (def definition
-  (->> #"^def\w*" parser/regex (ast/map :special)))
+  (->> #"^def\w*" parser/regex (tree/map :special)))
 
-(def symbol (ast/map :symbol identifier))
+(def symbol (tree/map :symbol identifier))
 
 (defn definition-form [input]
   ((parser/and definition
@@ -26,26 +25,26 @@
 (def special
   (->> #"^(if|do|let|quote|var|fn|loop|recur|throw|try)"
        parser/regex
-       (ast/map :special)))
+       (tree/map :special)))
 
 (defn special-form [input]
   ((parser/and special (parser/maybe expressions)) input))
 
 (def number
-  (->> #"^\d+\.\d*|^\d+" parser/regex (ast/map :number)))
+  (->> #"^\d+\.\d*|^\d+" parser/regex (tree/map :number)))
 
 (def string
-  (->> #"^\"[\s\S]*?\"" parser/regex (ast/map :string)))
+  (->> #"^\"[\s\S]*?\"" parser/regex (tree/map :string)))
 
 (def keyword
-  (->> #"^:[^\(\)\[\]\{\}\s]+" parser/regex (ast/map :keyword)))
+  (->> #"^:[^\(\)\[\]\{\}\s]+" parser/regex (tree/map :keyword)))
 
 (def comment
-  (->> #"^;.*" parser/regex  (ast/map :comment)))
+  (->> #"^;.*" parser/regex  (tree/map :comment)))
 
 (defn parenthesis [label left parser right]
   (->> (parser/and (parser/literal left) parser (parser/literal right))
-       (ast/map label)))
+       (tree/map label)))
 
 (defn list [input]
   ((parenthesis :list
@@ -73,5 +72,3 @@
               (parser/maybe space)))
 
 (def expressions (parser/repeat expression))
-
-(defmethod language/extension "clj" [_] expression)
