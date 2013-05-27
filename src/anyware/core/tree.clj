@@ -14,12 +14,18 @@
   (children [node] value))
 
 (extend-protocol Node
+  ;*CLJSBUILD-REMOVE*;#_
   java.lang.Character
+  ;*CLJSBUILD-REMOVE*;#_
   (branch? [node] false)
+  ;*CLJSBUILD-REMOVE*;#_
   (children [node])
+  ;*CLJSBUILD-REMOVE*;string #_
   java.lang.String
+  ;*CLJSBUILD-REMOVE*;(branch? [node] (-> node count dec pos?)) #_
   (branch? [node] true)
   (children [node] (seq node))
+  ;*CLJSBUILD-REMOVE*;cljs.core.PersistentVector #_
   clojure.lang.IPersistentVector
   (branch? [node] true)
   (children [node] (seq node)))

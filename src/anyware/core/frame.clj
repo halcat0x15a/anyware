@@ -1,7 +1,9 @@
 (ns anyware.core.frame
   (:refer-clojure :exclude [next find remove conj])
   (:require [clojure.zip :as zip])
-  (:import clojure.lang.ExceptionInfo))
+  (:import
+;*CLJSBUILD-REMOVE*;cljs.core.ExceptionInfo #_
+   clojure.lang.ExceptionInfo))
 
 (defn window [name obj]
   (vary-meta obj assoc :name name :saved? true))

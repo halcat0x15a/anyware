@@ -1,20 +1,37 @@
 (ns anyware.core
-  (:require [anyware.core.editor :as editor]
+  (:require [clojure.set :as set]
+            [anyware.core.editor :as editor]
             [anyware.core.keys :as keys]
             [anyware.core.api :as api])
-  (:import clojure.lang.ExceptionInfo))
+  (:import
+;*CLJSBUILD-REMOVE*;cljs.core.ExceptionInfo #_
+   clojure.lang.ExceptionInfo))
 
-(def editor (atom editor/default :validator keys/validate))
+(def reference (atom editor/default :validator keys/validate))
 
 (defprotocol Anyware
-  (keycode [this event])
   (render [this])
   (quit [this]))
 
+(defprotocol Event
+  (alt? [event])
+  (ctrl? [event])
+  (keycode [event])
+  (keychar [event]))
+
+(defn keyset [event]
+  (let [keys (set/select
+              (complement nil?)
+              (hash-set (keycode event)
+                        (if (alt? event) :alt)
+                        (if (ctrl? event) :ctrl)))]
+    (if (-> keys count dec pos?) keys (keychar event))))
+
 (defn run [editor event]
   (try
-    (api/run editor (keycode editor event))
-    (catch ExceptionInfo e (api/notice editor (str e)))))
+    (api/run editor (keyset event))
+    (catch ExceptionInfo e
+      (api/notice editor (str e)))))
 
 (defn run! [event]
-  (-> editor (swap! run event) render))
+  (-> reference (swap! run event) render))

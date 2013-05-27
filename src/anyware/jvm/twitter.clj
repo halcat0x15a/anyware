@@ -31,7 +31,7 @@
 (def listener
   (proxy [UserStreamAdapter] []
     (onStatus [status]
-      (swap! core/editor api/insert (pretty status)))))
+      (swap! core/reference api/insert (pretty status)))))
 
 (defn store [token]
   (doto (-> @access-token FileOutputStream. ObjectOutputStream.)

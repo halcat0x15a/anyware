@@ -36,7 +36,7 @@
 (extend-protocol Node
   anyware.core.editor.Editor
   (render [node]
-    (element :pre {:class "editor" :style (style @style/global)}
+    (element :pre {:id "editor" :style (style @style/global)}
              (str (-> node (get-in keys/minibuffer) render)
                   \newline
                   (-> node (get-in keys/buffer) render))))
@@ -48,9 +48,13 @@
       (element :span {:style (style {:color foreground
                                      :background-color background})}
                (render value))))
+  ;*CLJSBUILD-REMOVE*;#_
   java.lang.Character
+  ;*CLJSBUILD-REMOVE*;#_
   (render [node] (escape (str node)))
+  ;*CLJSBUILD-REMOVE*;string #_
   java.lang.String
   (render [node] (escape node))
+  ;*CLJSBUILD-REMOVE*;cljs.core.PersistentVector #_
   clojure.lang.IPersistentVector
   (render [node] (reduce str (mapv render node))))

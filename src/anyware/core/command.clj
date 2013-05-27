@@ -15,46 +15,46 @@
        editor)))
 
 (def edit
-  {:enter api/break
-   :backspace api/backspace
-   :left api/left
+  {:left api/left
    :right api/right
    :up api/up
    :down api/down
+   \newline api/break
+   \backspace api/backspace
    :default api/insert})
 
 (defn minibuffer [keymap]
   {:escape #(assoc-in % keys/keymap keymap)
-   :backspace (partial api/backspace keys/minibuffer)
    :right (partial api/right keys/minibuffer)
    :left (partial api/left keys/minibuffer)
-   :enter execute
+   \newline execute
+   \backspace (partial api/backspace keys/minibuffer)
    :default (api/insert keys/minibuffer)})
 
 (def default
-  (->> {#{:ctrl \c} api/copy
-        #{:ctrl \v} api/paste
-        #{:ctrl \x} api/cut
-        #{:ctrl \q} (partial execute "quit")
-        #{:ctrl \o} (partial execute "open")
-        #{:ctrl \s} (partial execute "save")
-        #{:alt \m} #(assoc-in % keys/keymap (minibuffer default))}
+  (->> {#{:ctrl \C} api/copy
+        #{:ctrl \V} api/paste
+        #{:ctrl \X} api/cut
+        #{:ctrl \Q} (partial execute "quit")
+        #{:ctrl \O} (partial execute "open")
+        #{:ctrl \S} (partial execute "save")
+        #{:alt \M} #(assoc-in % keys/keymap (minibuffer default))}
        (merge edit)))
   
 (def emacs
-  (->> {#{:ctrl \f} api/right
-        #{:ctrl \b} api/left
-        #{:ctrl \n} api/down
-        #{:ctrl \p} api/up
-        #{:alt \f} api/right-word
-        #{:alt \b} api/left-word
-        #{:ctrl \e} api/end-of-line
-        #{:ctrl \a} api/beginning-of-line
-        #{:ctrl \m} api/break
-        #{:ctrl \h} api/backspace
-        #{:ctrl \d} api/delete
-        #{:ctrl \k} api/delete-right
-        #{:alt \m} #(assoc-in % keys/keymap (minibuffer emacs))}
+  (->> {#{:ctrl \F} api/right
+        #{:ctrl \B} api/left
+        #{:ctrl \N} api/down
+        #{:ctrl \P} api/up
+        #{:alt \F} api/right-word
+        #{:alt \B} api/left-word
+        #{:ctrl \E} api/end-of-line
+        #{:ctrl \A} api/beginning-of-line
+        #{:ctrl \M} api/break
+        #{:ctrl \H} api/backspace
+        #{:ctrl \D} api/delete
+        #{:ctrl \K} api/delete-right
+        #{:alt \M} #(assoc-in % keys/keymap (minibuffer emacs))}
        (merge edit)))
 
 (def insert
@@ -86,8 +86,8 @@
    \y api/copy
    \x api/delete
    \X api/backspace
-   #{:control \u} api/undo
-   #{:control \r} api/redo
+   #{:ctrl \U} api/undo
+   #{:ctrl \R} api/redo
    \i #(assoc-in % keys/keymap insert)
    \I #(-> % api/beginning-of-line (assoc-in keys/keymap insert))
    \a #(-> % api/right (assoc-in keys/keymap insert))

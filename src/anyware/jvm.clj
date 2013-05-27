@@ -31,24 +31,24 @@
    KeyCode/RIGHT :right
    KeyCode/UP :up
    KeyCode/DOWN :down
-   KeyCode/BACK_SPACE :backspace
-   KeyCode/ENTER :enter})
+   KeyCode/ENTER \newline
+   KeyCode/BACK_SPACE \backspace})
 
-(defn keycode [^KeyEvent event]
-  (let [keys (set/select (complement nil?)
-                         (hash-set (if (.isControlDown event) :ctrl)
-                                   (if (.isAltDown event) :alt)
-                                   (-> event .getText first)))]
-    (get special (.getCode event)
-         (if (-> keys count (= 1))
-           (first keys)
-           keys))))
+(extend-type KeyEvent
+  core/Event
+  (alt? [event] (.isAltDown event))
+  (ctrl? [event] (.isControlDown event))
+  (keycode [event]
+    (let [code (.getCode event)]
+      (prn (.isLetterKey code) (-> code .getName first))
+      (if (.isLetterKey code) (-> code .getName first))))
+  (keychar [event]
+    (get special (.getCode event) (-> event .getText first))))
 
 (def ^FileChooser chooser (FileChooser.))
 
 (extend-type anyware.core.editor.Editor
   core/Anyware
-  (keycode [editor event] (keycode event))
   (render [editor]
     (-> editor meta :engine (.loadContent (html/render editor))))
   (quit [editor] (Platform/exit))
@@ -75,7 +75,7 @@
                  (reify EventHandler
                    (handle [this event]
                      (core/run! event)))))]
-    (swap! core/editor
+    (swap! core/reference
            with-meta
            {:stage stage
             :engine (.getEngine view)})
