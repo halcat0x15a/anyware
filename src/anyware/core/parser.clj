@@ -1,35 +1,25 @@
 (ns anyware.core.parser)
 
-(defprotocol Parser
-  (parse [parser input]))
-
 (defprotocol Functor
   (fmap [x f]))
 
-(defprotocol Monad
-  (bind [x f]))
-
-(defprotocol Plus
-  (plus [x y]))
+(defprotocol Parser
+  (parse [parser input]))
 
 (defprotocol Result
   (extract [x]))
 
-(defrecord Success [result next]
+(defrecord Success [value next]
   Functor
-  (fmap [success f] (Success. (f result) next))
-  Monad
-  (bind [success f] (f result next))
-  Plus
-  (plus [success result] success))
+  (fmap [success f] (Success. (f value) next)))
 
 (defrecord Failure [next]
   Functor
-  (fmap [failure f] failure)
-  Monad
-  (bind [failure f] failure)
-  Plus
-  (plus [failure result] result))
+  (fmap [failure f] failure))
+
+(extend-protocol Functor
+  clojure.lang.IFn
+  (fmap [parser f] (fn [input] (fmap (parse parser input) f))))
 
 (extend-protocol Result
   java.lang.String
@@ -37,11 +27,7 @@
   clojure.lang.IPersistentVector
   (extract [vector] (first vector))
   nil
-  (extract [_] nil))
-
-(extend-protocol Functor
-  clojure.lang.IFn
-  (fmap [parser f] (fn [input] (fmap (parse parser input) f))))
+  (extract [_]))
 
 (extend-protocol Parser
   java.lang.Character
@@ -66,27 +52,29 @@
 
 (defn sum [parser & parsers]
   (fn [input]
-    (reduce (fn [result parser]
-              (plus result (parse parser input)))
-            (parse parser input)
-            parsers)))
+    (loop [[parser & parsers] (cons parser parsers)]
+      (let [{:keys [value next] :as result} (parse parser input)]
+        (if (or value (nil? parser))
+          result
+          (recur parsers))))))
 
 (defn product [parser & parsers]
   (fn [input]
-    (reduce (fn [result parser]
-              (bind result
-                    (fn [value input]
-                      (fmap (parse parser input)
-                            (partial conj value)))))
-            (fmap (parse parser input) vector)
-            parsers)))
+    (loop [{:keys [value next] :as result}
+           (fmap (parse parser input) vector)
+           [parser & parsers] parsers]
+      (cond (nil? parser) result
+            value (recur (fmap (parse parser next)
+                               (partial conj value))
+                         parsers)
+            :else (Failure. input)))))
 
 (defn many [parser]
   (fn [input]
-    (loop [result' [] input input]
-      (let [{:keys [result next]} (parse parser input)]
-        (if result
-          (recur (conj result' result) next)
-          (Success. result' input))))))
+    (loop [result [] input input]
+      (let [{:keys [value next]} (parse parser input)]
+        (if value
+          (recur (conj result value) next)
+          (Success. result input))))))
 
 (defn id [x] (Success. x ""))

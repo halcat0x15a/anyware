@@ -1,10 +1,14 @@
 (ns anyware.test.parser
   (:require [clojure.test.generative :refer (defspec is)]
+            [clojure.data.generators :as gen]
             [anyware.core.parser :as parser]))
 
-(defspec character-parser
+(defn literal []
+  ((rand-nth [gen/string gen/char])))
+
+(defspec literal-parser
   parser/parse
-  [^char char ^string string]
-  (is (if (:result %)
-        (= (:result %) char)
-        (= (:next %) string))))
+  [^{:tag `literal} literal ^string input]
+  (is (if-let [value (:value %)]
+        (= value literal)
+        (= (:next %) input))))

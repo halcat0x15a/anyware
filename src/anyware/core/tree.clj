@@ -49,8 +49,9 @@
       (zip/edit (partial ->Label :cursor))))
 
 (defn parse [{:keys [left] :as buffer} parser]
-  (let [{:keys [result next]} (->> buffer buffer/write parser)]
-    (-> result
+  (let [{:keys [value next]}
+        (->> buffer buffer/write (parser/parse parser))]
+    (-> value
         zip
         (move (count left))
         cursor
