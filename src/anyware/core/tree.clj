@@ -31,7 +31,8 @@
   (children [node] (seq node)))
 
 (defn map [name parser]
-  (parser/map (partial ->Label name) parser))
+  (parser/fmap (partial parser/parse parser)
+               (partial ->Label name)))
 
 (def zip (partial zip/zipper branch? children #(vec %2)))
 

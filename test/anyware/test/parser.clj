@@ -2,7 +2,9 @@
   (:require [clojure.test.generative :refer (defspec is)]
             [anyware.core.parser :as parser]))
 
-(defspec literal-parser
-  parser/literal
-  [^string string]
-  (is (= (:result (% string)) string)))
+(defspec character-parser
+  parser/parse
+  [^char char ^string string]
+  (is (if (:result %)
+        (= (:result %) char)
+        (= (:next %) string))))

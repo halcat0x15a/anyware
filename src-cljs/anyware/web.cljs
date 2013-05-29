@@ -9,7 +9,7 @@
   (:import goog.events.KeyHandler))
 
 (def special
-  {key/ESC :escape
+  {key/ESC :esc
    key/LEFT :left
    key/RIGHT :right
    key/UP :up
@@ -22,6 +22,7 @@
   (alt? [this] (.-altKey event))
   (ctrl? [this] (.-ctrlKey event))
   (keycode [this]
+    (prn (->> event .-keyCode (.fromCharCode js/String)))
     (->> event .-keyCode (.fromCharCode js/String)))
   (keychar [this]
     (get special

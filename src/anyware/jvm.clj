@@ -26,7 +26,7 @@
 (def rc (atom ".anyware"))
 
 (def special
-  {KeyCode/ESCAPE :escape
+  {KeyCode/ESCAPE :esc
    KeyCode/LEFT :left
    KeyCode/RIGHT :right
    KeyCode/UP :up
@@ -40,8 +40,8 @@
   (ctrl? [event] (.isControlDown event))
   (keycode [event]
     (let [code (.getCode event)]
-      (prn (.isLetterKey code) (-> code .getName first))
-      (if (.isLetterKey code) (-> code .getName first))))
+      (if (.isLetterKey code)
+        (-> code .getName first))))
   (keychar [event]
     (get special (.getCode event) (-> event .getText first))))
 

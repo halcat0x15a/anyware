@@ -24,7 +24,7 @@
    :default api/insert})
 
 (defn minibuffer [keymap]
-  {:escape #(assoc-in % keys/keymap keymap)
+  {:esc #(assoc-in % keys/keymap keymap)
    :right (partial api/right keys/minibuffer)
    :left (partial api/left keys/minibuffer)
    \newline execute
@@ -58,11 +58,11 @@
        (merge edit)))
 
 (def insert
-  (->> {:escape #(-> % (assoc-in keys/keymap vi) api/commit)}
+  (->> {:esc #(-> % (assoc-in keys/keymap vi) api/commit)}
        (merge edit)))
 
 (def delete
-  {:escape #(-> % (assoc-in keys/keymap vi) api/commit)
+  {:esc #(-> % (assoc-in keys/keymap vi) api/commit)
    \l api/delete
    \h api/backspace
    \$ api/delete-right
@@ -73,7 +73,7 @@
    :default (fn [editor key] editor)})
 
 (def vi
-  {:escape api/deselect
+  {:esc api/deselect
    \l api/right
    \h api/left
    \j api/down

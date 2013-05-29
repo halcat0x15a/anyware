@@ -20,11 +20,11 @@
   (keychar [event]))
 
 (defn keyset [event]
-  (let [keys (set/select
-              (complement nil?)
-              (hash-set (keycode event)
-                        (if (alt? event) :alt)
-                        (if (ctrl? event) :ctrl)))]
+  (let [keys (->> {:alt (alt? event)
+                   :ctrl (ctrl? event)}
+                  (filter val)
+                  (map key)
+                  (apply hash-set (keycode event)))]
     (if (-> keys count dec pos?) keys (keychar event))))
 
 (defn run [editor event]
