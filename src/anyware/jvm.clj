@@ -6,8 +6,7 @@
             [anyware.core.html :as html]
             [anyware.core.tree :as tree]
             [anyware.core.file :as file]
-            [anyware.jvm.clojure :as clj]
-            [anyware.jvm.twitter :as twitter])
+            [anyware.jvm.clojure :as clj])
   (:gen-class
    :extends javafx.application.Application)
   (:import [javafx.application Application Platform]
@@ -50,7 +49,8 @@
 (extend-type anyware.core.editor.Editor
   core/Anyware
   (render [editor]
-    (-> editor meta :engine (.loadContent (html/render editor))))
+    (let [^WebEngine engine (-> editor meta :engine)]
+      (.loadContent engine (html/render editor))))
   (quit [editor] (Platform/exit))
   file/IO
   (dialog [editor]

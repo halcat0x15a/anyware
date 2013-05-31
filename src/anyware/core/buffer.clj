@@ -55,7 +55,9 @@
 
 (def buffer (constantly identity))
 
-(defn cursor [field buffer] (-> buffer field count))
+(defn cursor
+  ([buffer] (cursor :left buffer))
+  ([field buffer] (-> buffer field count)))
 
 (defn select [buffer]
   (vary-meta buffer assoc :mark (cursor :left buffer)))
