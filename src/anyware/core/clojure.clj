@@ -1,4 +1,4 @@
-(ns anyware.core.language.clojure
+(ns anyware.core.clojure
   (:require [anyware.core.parser :as parser]
             [anyware.core.tree :as tree]))
 
@@ -23,5 +23,11 @@
 (def comments (tree/map :comment #"^;.*"))
 
 (def expressions
-  (-> (parser/sum definitions specials strings keywords comments #"[\s\S]")
-      parser/many))
+  (parser/many
+   (parser/sum
+    definitions
+    specials
+    strings
+    keywords
+    comments
+    #"[\s\S]")))

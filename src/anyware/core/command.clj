@@ -35,9 +35,9 @@
   (->> {#{:ctrl \C} api/copy
         #{:ctrl \V} api/paste
         #{:ctrl \X} api/cut
-        #{:ctrl \Q} (partial execute "quit")
-        #{:ctrl \O} (partial execute "open")
-        #{:ctrl \S} (partial execute "save")
+        #{:ctrl \Q} (partial execute ["quit"])
+        #{:ctrl \O} (partial execute ["open"])
+        #{:ctrl \S} (partial execute ["save"])
         #{:alt \M} #(assoc-in % keys/keymap (minibuffer default))}
        (merge edit)))
   

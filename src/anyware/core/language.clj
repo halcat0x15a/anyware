@@ -1,6 +1,6 @@
 (ns anyware.core.language
   (:require [anyware.core.parser :as parser]
-            [anyware.core.language.clojure :as clojure]))
+            [anyware.core.clojure :as clojure]))
 
 (def filename #"\.(\w+)$")
 

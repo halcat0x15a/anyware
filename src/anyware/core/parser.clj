@@ -22,19 +22,24 @@
   (fmap [parser f] (fn [input] (fmap (parse parser input) f))))
 
 (extend-protocol Result
+  ;*CLJSBUILD-REMOVE*;string #_
   java.lang.String
   (extract [string] string)
+  ;*CLJSBUILD-REMOVE*;cljs.core.PersistentVector #_
   clojure.lang.IPersistentVector
   (extract [vector] (first vector))
   nil
   (extract [_]))
 
 (extend-protocol Parser
+  ;*CLJSBUILD-REMOVE*;#_
   java.lang.Character
+  ;*CLJSBUILD-REMOVE*;#_
   (parse [char input]
     (if (identical? (first input) char)
       (Success. char (subs input 1))
       (Failure. input)))
+  ;*CLJSBUILD-REMOVE*;string #_
   java.lang.String
   (parse [string input]
     (let [length (count string)]
@@ -42,11 +47,13 @@
             (= (subs input 0 length) string)
             (Success. string (subs input length))
             :else (Failure. input))))
+  ;*CLJSBUILD-REMOVE*;js/RegExp #_
   java.util.regex.Pattern
   (parse [pattern input]
     (if-let [result (->> input (re-find pattern) extract)]
       (Success. result (subs input (count result)))
       (Failure. input)))
+  ;*CLJSBUILD-REMOVE*;js/Function #_
   clojure.lang.Fn
   (parse [parser input] (parser input)))
 
@@ -54,7 +61,7 @@
   (fn [input]
     (loop [[parser & parsers] (cons parser parsers)]
       (let [{:keys [value next] :as result} (parse parser input)]
-        (if (or value (nil? parser))
+        (if (or value (empty? parsers))
           result
           (recur parsers))))))
 
