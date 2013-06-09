@@ -10,12 +10,12 @@
 (defn right
   ([editor] (right keys/buffer editor))
   ([key editor]
-     (update-in editor key (buffer/move buffer/char :right))))
+     (update-in editor key (buffer/move first :right))))
 
 (defn left
   ([editor] (left keys/buffer editor))
   ([key editor]
-     (update-in editor key (buffer/move buffer/char :left))))
+     (update-in editor key (buffer/move first :left))))
 
 (def right-word
   #(update-in % keys/buffer (buffer/move buffer/word :right)))
@@ -63,10 +63,10 @@
   ([editor]
      (backspace keys/buffer editor))
   ([key editor]
-     (update-in editor key (buffer/delete buffer/char :left))))
+     (update-in editor key (buffer/delete first :left))))
 
 (def delete
-  #(update-in % keys/buffer (buffer/delete buffer/char :right)))
+  #(update-in % keys/buffer (buffer/delete first :right)))
 
 (def delete-right
   #(update-in % keys/buffer (buffer/delete buffer/line :right)))

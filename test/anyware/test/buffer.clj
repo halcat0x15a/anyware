@@ -8,7 +8,7 @@
   (gen/rand-nth [:left :right]))
 
 (defn unit []
-  (gen/rand-nth [buffer/char buffer/line buffer/word identity]))
+  (gen/rand-nth [first buffer/line buffer/word identity]))
 
 (defspec double-inverse
   (fn [field] (buffer/inverse (buffer/inverse field)))
@@ -20,12 +20,6 @@
     (->> string buffer/read buffer/write))
   [^string string]
   (is (= % string)))
-
-(defspec write-read
-  (fn [buffer]
-    (->> buffer buffer/write buffer/read))
-  [^test/buffer buffer]
-  (is (= % (->> buffer (buffer/move identity :left)))))
 
 (defspec insert-substring
   (fn [buffer field string]
@@ -39,3 +33,14 @@
   buffer/move
   [^{:tag `unit} unit ^{:tag `field} field ^test/buffer buffer]
   (is (<= (buffer/cursor field %) (buffer/cursor field buffer))))
+
+(defspec select-and-copy
+  (fn [unit field buffer]
+    [(->> buffer
+          buffer/select
+          (buffer/move unit field)
+          buffer/copy
+          str)
+     (-> buffer field unit str)])
+  [^{:tag `unit} unit ^{:tag `field} field ^test/buffer buffer]
+  (is (apply = %)))

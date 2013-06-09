@@ -1,5 +1,5 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [char empty read find take])
+  (:refer-clojure :exclude [empty read take])
   (:require [clojure.string :as string]))
 
 (defrecord Buffer [left right])
@@ -8,11 +8,13 @@
 
 (def read (partial assoc empty :right))
 
-(defn write [{:keys [left right]}] (str (-> left reverse string/join) right))
+(defn write [{:keys [left right]}] (str (string/reverse left) right))
 
-(def inverse
-  {:right :left
-   :left :right})
+(def inverse {:right :left, :left :right})
+
+(defmulti normalize (fn [string field] field))
+(defmethod normalize :left [string _] (string/reverse string))
+(defmethod normalize :right [string _] string)
 
 (defprotocol Text
   (insert [text field buffer]))
@@ -25,25 +27,13 @@
   java.lang.String
   (insert [string field buffer]
     (assoc buffer
-      field (str (string/reverse string) (field buffer)))))
+      field (str (normalize string field) (field buffer)))))
 
-(defn field [n]
-  (cond (pos? n) :left
-        (neg? n) :right))
+(defn substring [n field buffer]
+  (update-in buffer [field] #(subs % n)))
 
-(defn substring
-  ([n buffer]
-     (if-let [f (field n)]
-       (substring n f buffer)
-       buffer))
-  ([n field buffer]
-     (update-in buffer [field] #(subs % n))))
-
-(defn takes
-  ([n buffer]
-     (if-let [f (field n)] (takes n f buffer) ""))
-  ([n field buffer]
-     (subs (field buffer) 0 n)))
+(defn take [n field buffer]
+  (-> buffer field (subs 0 n) (normalize field)))
 
 (defn delete
   ([f field] (partial delete f field)) 
@@ -55,13 +45,11 @@
 (defn move
   ([f field] (partial move f field))
   ([f field buffer]
-     (if-let [result (->> buffer field f)]
+     (if-let [result (->> buffer field f str)]
        (->> buffer
             (substring (count result) field)
             (insert result (inverse field)))
        buffer)))
-
-(def char (comp str first))
 
 (def line (partial re-find #"^[^\n]*\n??"))
 
@@ -75,13 +63,20 @@
 
 (def deselect #(vary-meta % dissoc :mark))
 
+(defn field [n]
+  (cond (pos? n) :left
+        (neg? n) :right))
+
 (defn selection [f buffer]
   (if-let [mark (-> buffer meta :mark)]
-    (f (- (cursor buffer) mark) buffer)))
+    (let [n (- (cursor buffer) mark)
+          n' (if (neg? n) (- n) n)]
+      (if-let [field (field n)]
+        (f n' field buffer)))))
 
-(def copy (partial selection takes))
+(def copy (partial selection take))
 
-(def cut (partial selection drop))
+(def cut (partial selection substring))
 
 (defn command [buffer]
   (-> buffer write (string/split #"\s+")))
