@@ -8,7 +8,7 @@
   (gen/rand-nth [:left :right]))
 
 (defn unit []
-  (gen/rand-nth [first buffer/line buffer/word identity]))
+  (gen/rand-nth [buffer/character buffer/line buffer/word identity]))
 
 (defspec double-inverse
   (fn [field] (buffer/inverse (buffer/inverse field)))
@@ -17,7 +17,7 @@
 
 (defspec read-write
   (fn [string]
-    (->> string buffer/read buffer/write))
+    (->> string buffer/read buffer/show))
   [^string string]
   (is (= % string)))
 

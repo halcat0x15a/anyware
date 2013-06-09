@@ -40,7 +40,7 @@
              (str (-> node (get-in keys/minibuffer) render)
                   \newline
                   (-> node (get-in keys/buffer) render))))
-  anyware.core.buffer.Buffer
+  anyware.core.buffer.Zipper
   (render [node] (-> node (tree/parse (-> node meta :parser)) render))
   anyware.core.tree.Label
   (render [{:keys [name value]}]

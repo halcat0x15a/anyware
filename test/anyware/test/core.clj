@@ -28,7 +28,7 @@
      (reduce emulate editor (cons x xs))))
 
 (def type
-  (comp buffer/write
+  (comp buffer/show
         #(get-in % keys/buffer)
         (partial emulate editor/default)))
 

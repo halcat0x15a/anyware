@@ -50,7 +50,7 @@
 
 (defn parse [{:keys [left] :as buffer} parser]
   (let [{:keys [value next]}
-        (->> buffer buffer/write (parser/parse parser))]
+        (->> buffer buffer/show (parser/parse parser))]
     (-> value
         zip
         (move (count left))

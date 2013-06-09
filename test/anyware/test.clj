@@ -7,7 +7,7 @@
             [anyware.core.editor :as editor]))
 
 (defn buffer []
-  (vary-meta (buffer/->Buffer (gen/string) (gen/string))
+  (vary-meta (buffer/->Zipper (gen/string) (gen/string))
              assoc :parser parser/id))
 
 (defn history []
