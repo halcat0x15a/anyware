@@ -10,8 +10,7 @@
   ([[f & args] editor]
      (if-let [f (@commands f)]
        (-> (apply f editor args)
-           (api/commit keys/command)
-           (api/notice ""))
+           (api/commit keys/command))
        editor)))
 
 (def edit

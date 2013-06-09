@@ -8,11 +8,10 @@
   (gen/rand-nth [:left :right]))
 
 (defn unit []
-  (gen/rand-nth [buffer/char buffer/line buffer/word buffer/buffer]))
+  (gen/rand-nth [buffer/char buffer/line buffer/word identity]))
 
-(defspec double-complement
-  (fn [field]
-    ((field buffer/complement) buffer/complement))
+(defspec double-inverse
+  (fn [field] (buffer/inverse (buffer/inverse field)))
   [^{:tag `field} field]
   (is (= % field)))
 
@@ -26,13 +25,13 @@
   (fn [buffer]
     (->> buffer buffer/write buffer/read))
   [^test/buffer buffer]
-  (is (= % (->> buffer (buffer/move buffer/buffer :left)))))
+  (is (= % (->> buffer (buffer/move identity :left)))))
 
-(defspec append-substring
+(defspec insert-substring
   (fn [buffer field string]
     (->> buffer
-         (buffer/append field string)
-         (buffer/substring field (count string))))
+         (buffer/insert string field)
+         (buffer/substring (count string) field)))
   [^test/buffer buffer ^{:tag `field} field ^string string]
   (is (= % buffer)))
 

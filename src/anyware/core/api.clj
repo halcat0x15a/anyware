@@ -53,7 +53,7 @@
   ([key editor in]
      (if (or (set? in) (keyword? in))
        editor
-       (update-in editor key (partial buffer/append :left in)))))
+       (update-in editor key (partial buffer/insert in :left)))))
 
 (def break #(insert % \newline))
 

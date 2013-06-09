@@ -1,12 +1,28 @@
 (ns anyware.jvm.clojure
-  (:require [anyware.core.api :as api]
+  (:require [clojure.string :as string]
+            [clojure.tools.nrepl :as nrepl]
+            [anyware.core.api :as api]
+            [anyware.core.command :as command]
             [anyware.core.keys :as keys]
             [anyware.core.buffer :as buffer]))
 
-(defn eval-file [editor]
-  (api/notice editor
-              (-> editor
-                  (get-in keys/buffer)
-                  buffer/write
-                  read-string
-                  eval)))
+(def timeout (atom 3000))
+
+(defn nrepl [editor port]
+  (vary-meta editor
+    assoc ::nrepl
+    (nrepl/client
+     (->> port Integer/parseInt (nrepl/connect :port)) @timeout)))
+
+(defn eval [editor & messages]
+  (api/notice
+   editor
+   (-> editor meta ::nrepl
+       (nrepl/message {:op :eval :code (string/join \space messages)})
+       nrepl/response-values
+       str)))
+
+(defn init []
+  (doto command/commands
+    (swap! assoc "nrepl" nrepl)
+    (swap! assoc "eval" eval)))

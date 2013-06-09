@@ -70,7 +70,7 @@
     (loop [{:keys [value next] :as result}
            (fmap (parse parser input) vector)
            [parser & parsers] parsers]
-      (cond (nil? parser) result
+      (cond (and value (nil? parser)) result
             value (recur (fmap (parse parser next)
                                (partial conj value))
                          parsers)
@@ -80,8 +80,19 @@
   (fn [input]
     (loop [result [] input input]
       (let [{:keys [value next]} (parse parser input)]
-        (if value
-          (recur (conj result value) next)
-          (Success. result input))))))
+        (if (= input next)
+          (Success. result input)
+          (recur (conj result value) next))))))
 
 (defn id [x] (Success. x ""))
+
+(defn parenthesis [left others right]
+  (product
+   left
+   others
+   (sum
+    right
+    (product
+     #(parse (parenthesis left others right) %)
+     others
+     right))))
