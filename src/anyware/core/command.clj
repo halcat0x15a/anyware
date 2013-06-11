@@ -38,6 +38,8 @@
   (->> {#{:ctrl \C} api/copy
         #{:ctrl \V} api/paste
         #{:ctrl \X} api/cut
+        #{:ctrl \Z} api/undo
+        #{:ctrl :shift \Z} api/redo
         #{:ctrl \Q} (partial execute ["quit"])
         #{:ctrl \O} (partial execute ["open"])
         #{:ctrl \S} (partial execute ["save"])

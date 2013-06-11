@@ -18,7 +18,8 @@
   (fmap [failure f] failure))
 
 (extend-protocol Functor
-  clojure.lang.IFn
+  ;*CLJSBUILD-REMOVE*;js/Function #_
+  clojure.lang.Fn
   (fmap [parser f] (fn [input] (fmap (parse parser input) f))))
 
 (extend-protocol Result

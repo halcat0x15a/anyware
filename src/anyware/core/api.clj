@@ -88,13 +88,16 @@
 (def delete-left-word
   #(update-in % keys/buffer (buffer/delete buffer/word :left)))
 
-(def undo #(update-in % keys/window history/undo))
-
-(def redo #(update-in % keys/window history/redo))
-
 (defn commit
   ([editor] (commit editor keys/window))
   ([editor key] (update-in editor key history/commit)))
+
+(defn undo [editor]
+  (-> editor
+      commit
+      (update-in keys/window history/undo)))
+
+(def redo #(update-in % keys/window history/redo))
 
 (def next-buffer #(update-in % keys/frame frame/next))
 

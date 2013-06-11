@@ -44,4 +44,6 @@
     (is (= (type "hoge"
                  #{:shift :left} #{:shift :left} #{:shift :left} #{:shift :left}
                  #{:ctrl \C} #{:ctrl \V})
-           "hogehoge"))))
+           "hogehoge")))
+  (testing "undo and redo"
+    (is (= (type "hello" #{:ctrl \Z} #{:ctrl :shift \Z}) "hello"))))
