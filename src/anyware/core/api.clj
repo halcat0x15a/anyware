@@ -37,9 +37,14 @@
 
 (def deselect #(update-in % keys/buffer buffer/deselect))
 
+(defn selecting [editor]
+  (if (-> editor (get-in keys/buffer) meta :mark)
+    editor
+    (select editor)))
+
 (defn copy [editor]
-  (if-let [string (buffer/copy (get-in editor keys/buffer))]
-    (update-in editor keys/clipboard (history/commit string) editor)
+  (if-let [string (-> editor (get-in keys/buffer) buffer/copy)]
+    (update-in editor keys/clipboard (partial history/commit string))
     editor))
 
 (defn cut [editor]
@@ -57,7 +62,8 @@
 
 (def break #(insert % \newline))
 
-(defn paste [editor] (insert editor (get-in editor keys/clip)))
+(defn paste [editor]
+  (insert editor (get-in editor keys/clip)))
 
 (defn backspace
   ([editor]

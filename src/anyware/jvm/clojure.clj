@@ -1,4 +1,5 @@
 (ns anyware.jvm.clojure
+  (:refer-clojure :exclude [eval])
   (:require [clojure.string :as string]
             [clojure.tools.nrepl :as nrepl]
             [anyware.core.api :as api]

@@ -5,8 +5,7 @@
             [anyware.core.api :as api]
             [anyware.core.html :as html]
             [anyware.core.tree :as tree]
-            [anyware.core.file :as file]
-            [anyware.jvm.clojure :as clj])
+            [anyware.core.file :as file])
   (:gen-class
    :extends javafx.application.Application)
   (:import [javafx.application Application Platform]

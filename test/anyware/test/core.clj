@@ -22,7 +22,7 @@
 
 (defn emulate
   ([editor x]
-     (cond (or (keyword? x) (char? x)) (core/run editor (Event. x))
+     (cond (or (keyword? x) (char? x) (set? x)) (core/run editor (Event. x))
            (string? x) (apply emulate editor x)))
   ([editor x & xs]
      (reduce emulate editor (cons x xs))))
@@ -34,4 +34,14 @@
 
 (deftest editor
   (testing "type 'hello world'"
-    (is (= (type "hello world") "hello world"))))
+    (is (= (type "hello world") "hello world")))
+  (testing "move cursor"
+    (is (= (type "fizz" :left :left :left :left
+                 "1 2 " :right :right :right :right
+                 " 4 buzz")
+           "1 2 fizz 4 buzz")))
+  (testing "copy and paste"
+    (is (= (type "hoge"
+                 #{:shift :left} #{:shift :left} #{:shift :left} #{:shift :left}
+                 #{:ctrl \C} #{:ctrl \V})
+           "hogehoge"))))

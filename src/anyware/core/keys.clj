@@ -15,7 +15,7 @@
 
 (def clipboard [:clipboard])
 
-(def clip (conj clipboard 0))
+(def clip (into clipboard history/current))
 
 (def all
   [frame

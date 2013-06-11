@@ -18,6 +18,10 @@
    :right api/right
    :up api/up
    :down api/down
+   #{:shift :left} (comp api/left api/selecting)
+   #{:shift :right} (comp api/right api/selecting)
+   #{:shift :up} (comp api/up api/selecting)
+   #{:shift :down} (comp api/down api/selecting)
    \newline api/break
    \backspace api/backspace
    :default api/insert})
