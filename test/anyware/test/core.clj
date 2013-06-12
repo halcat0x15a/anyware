@@ -45,5 +45,12 @@
                  #{:shift :left} #{:shift :left} #{:shift :left} #{:shift :left}
                  #{:ctrl \C} #{:ctrl \V})
            "hogehoge")))
+  (testing "cut and paste"
+    (is (= (type "fugafuga"
+                 #{:shift :left} #{:shift :left} #{:shift :left} #{:shift :left}
+                 #{:ctrl \X} :left :left #{:ctrl \V})
+           "fufugaga")))
   (testing "undo and redo"
-    (is (= (type "hello" #{:ctrl \Z} #{:ctrl :shift \Z}) "hello"))))
+    (is (= (type "hello" #{:ctrl \Z} #{:ctrl :shift \Z}) "hello")))
+  (testing "create new buffer"
+    (is (= (type "foo" #{:alt \M} "new foo" \newline) ""))))
