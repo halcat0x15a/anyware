@@ -3,8 +3,11 @@
             [clojure.data.generators :as gen]
             [anyware.core.parser :as parser]))
 
-(defn literal []
-  ((rand-nth [gen/string gen/char])))
+(defn success []
+  (parser/->Success (gen/string) (gen/string)))
+
+(defn parser []
+  (one-of gen/string))
 
 (defspec literal-parser
   parser/parse

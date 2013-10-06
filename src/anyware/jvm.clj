@@ -1,87 +1,51 @@
 (ns anyware.jvm
-  (:require [clojure.set :as set]
-            [clojure.java.io :as io]
-            [anyware.core :as core]
-            [anyware.core.api :as api]
-            [anyware.core.html :as html]
-            [anyware.core.tree :as tree]
-            [anyware.core.file :as file])
+  (:require [clojure.pprint :refer (pprint)]
+            [clojure.core.async :refer (chan <!! >! go)]
+            [anyware.core.editor :as editor]
+            [anyware.core.buffer :as buffer])
   (:gen-class
    :extends javafx.application.Application)
   (:import [javafx.application Application Platform]
            [javafx.event EventHandler]
-           [javafx.stage Stage FileChooser]
+           [javafx.stage Stage]
            [javafx.scene Scene]
            [javafx.scene.web WebView WebEngine]
            [javafx.scene.input KeyCode KeyEvent]))
 
-(def home (System/getProperty "user.home"))
-
-(def separator (System/getProperty "file.separator"))
-
-(def opacity (atom 1.0))
-
-(def rc (atom ".anyware"))
-
 (def special
-  {KeyCode/ESCAPE :esc
-   KeyCode/LEFT :left
-   KeyCode/RIGHT :right
-   KeyCode/UP :up
-   KeyCode/DOWN :down
+  {KeyCode/TAB \tab
    KeyCode/ENTER \newline
    KeyCode/BACK_SPACE \backspace})
 
-(extend-type KeyEvent
-  core/Event
-  (alt? [event] (.isAltDown event))
-  (ctrl? [event] (.isControlDown event))
-  (keycode [event]
-    (let [code (.getCode event)]
-      (if (.isLetterKey code)
-        (-> code .getName first))))
-  (keychar [event]
-    (get special (.getCode event) (-> event .getText first))))
+(def input (chan))
 
-(def ^FileChooser chooser (FileChooser.))
-
-(extend-type anyware.core.editor.Editor
-  core/Anyware
-  (render [editor]
-    (let [^WebEngine engine (-> editor meta :engine)]
-      (.loadContent engine (html/render editor))))
-  (quit [editor] (Platform/exit))
-  file/IO
-  (dialog [editor]
-    (if-let [file (.showOpenDialog chooser (-> editor meta :stage))]
-      (file/->File (.getPath file) (slurp file))))
-  (read [editor path]
-    (file/->File path (slurp path)))
-  (write [editor path value]
-    (spit path value)
-    editor))
-
-(defn load-rc []
-  (let [file (io/file (str home separator @rc))]
-    (when (.exists file)
-      (-> file io/reader load-reader))))
+(defn -stop [this]
+  (go (>! input false))
+  (shutdown-agents))
 
 (defn -start [this ^Stage stage]
   (let [view (doto (WebView.)
                (.setContextMenuEnabled false))
+        handler (reify EventHandler
+                  (handle [this event]
+                    (go (some->> event .getText first
+                                 (get special (.getCode event))
+                                 (>! input)))))
         scene (doto (Scene. view)
-                (.setOnKeyPressed
-                 (reify EventHandler
-                   (handle [this event]
-                     (core/run! event)))))]
-    (swap! core/reference
-           with-meta
-           {:stage stage
-            :engine (.getEngine view)})
-    (load-rc)
+                (.setOnKeyPressed handler))]
+    (future
+      (try
+        (binding [editor/*buffers* editor/*buffers*
+                  editor/*keymap* editor/normal]
+          (loop []
+            (when-let [char (<!! input)]
+              (let [html (str "<pre>" (editor/run char) "</pre>")]
+                (Platform/runLater #(-> view .getEngine (.loadContent html)))
+                (recur)))))
+          (catch Exception e
+            (.printStackTrace e))))
     (doto stage
       (.setTitle "Anyware")
-      (.setOpacity @opacity)
       (.setScene scene)
       (.show))))
 

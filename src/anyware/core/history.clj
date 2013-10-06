@@ -26,3 +26,4 @@
   ([history] (commit (get-in history current) history))
   ([value history]
      (-> history (zip/insert-child (change value)) zip/down)))
+(create 1)

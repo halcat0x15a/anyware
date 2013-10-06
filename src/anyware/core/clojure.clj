@@ -1,33 +1,33 @@
 (ns anyware.core.clojure
-  (:require [anyware.core.parser :as parser]
-            [anyware.core.tree :as tree]))
+  (:refer-clojure :exclude [keyword comment])
+  (:require [anyware.core.parser :refer :all]))
 
-(def definitions
-  (parser/product
-   (tree/map :special #"^def\w*")
-   #"^\s+"
-   (tree/map :symbol #"^\w+")))
+(defrecord Label [name value])
 
-(def specials
-  (parser/product
-   \(
-   (tree/map
-    :special
-    #"^(if|do|let|quote|var|fn|loop|recur|throw|try)")
-   #"^\s+"))
+(def definition
+  (<*> (fn [def space name]
+         [(Label. :special def) space (Label. :symbol name)])
+       #"^def\w*"
+       #"^\s+"
+       #"^\w+"))
 
-(def strings (tree/map :string #"^\"[\s\S]*?\""))
+(def special
+  (<*> (fn [special space] [(Label. :special special) space])
+       #"^(if|do|let|quote|var|fn|loop|recur|throw|try)"
+       #"^(\s+|$)"))
 
-(def keywords (tree/map :keyword #"^:[^\(\)\[\]\{\}\s]+"))
+(def string (fmap #"^\"[\s\S]*?\"" (partial ->Label :string)))
 
-(def comments (tree/map :comment #"^;.*"))
+(def keyword (fmap #"^:[^\(\)\[\]\{\}\s]+" (partial ->Label :keyword)))
 
-(def expressions
-  (parser/many
-   (parser/sum
-    definitions
-    specials
-    strings
-    keywords
-    comments
-    #"[\s\S]")))
+(def comment (fmap #"^;.*" (partial ->Label :comment)))
+
+(def expression
+  (many
+   (<|> definition
+        special
+        string
+        keyword
+        comment
+        #"[\s\S]")))
+

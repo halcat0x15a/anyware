@@ -1,13 +1,7 @@
 (ns anyware.core.parser)
 
 (defprotocol Functor
-  (fmap [x f]))
-
-(defprotocol Parser
-  (parse [parser input]))
-
-(defprotocol Result
-  (extract [x]))
+  (fmap [m f]))
 
 (defrecord Success [value next]
   Functor
@@ -17,29 +11,22 @@
   Functor
   (fmap [failure f] failure))
 
+(defprotocol Parser
+  (parse [parser input]))
+
 (extend-protocol Functor
   ;*CLJSBUILD-REMOVE*;js/Function #_
   clojure.lang.Fn
-  (fmap [parser f] (fn [input] (fmap (parse parser input) f))))
+  (fmap [parser f] (fn [input] (fmap (parse parser input) f)))
+  ;*CLJSBUILD-REMOVE*;object #_
+  java.lang.Object
+  (fmap [parser f] (fmap (partial parse parser) f)))
 
-(extend-protocol Result
-  ;*CLJSBUILD-REMOVE*;string #_
-  java.lang.String
-  (extract [string] string)
-  ;*CLJSBUILD-REMOVE*;cljs.core.PersistentVector #_
-  clojure.lang.IPersistentVector
-  (extract [vector] (first vector))
-  nil
-  (extract [_]))
+(defn- extract [x]
+  (cond (string? x) x
+        (vector? x) (first x)))
 
 (extend-protocol Parser
-  ;*CLJSBUILD-REMOVE*;#_
-  java.lang.Character
-  ;*CLJSBUILD-REMOVE*;#_
-  (parse [char input]
-    (if (identical? (first input) char)
-      (Success. char (subs input 1))
-      (Failure. input)))
   ;*CLJSBUILD-REMOVE*;string #_
   java.lang.String
   (parse [string input]
@@ -58,7 +45,7 @@
   clojure.lang.Fn
   (parse [parser input] (parser input)))
 
-(defn sum [parser & parsers]
+(defn <|> [parser & parsers]
   (fn [input]
     (loop [[parser & parsers] (cons parser parsers)]
       (let [{:keys [value next] :as result} (parse parser input)]
@@ -66,15 +53,13 @@
           result
           (recur parsers))))))
 
-(defn product [parser & parsers]
+(defn <*> [f parser & parsers]
   (fn [input]
     (loop [{:keys [value next] :as result}
-           (fmap (parse parser input) vector)
+           (fmap (parse parser input) (partial partial f))
            [parser & parsers] parsers]
-      (cond (and value (nil? parser)) result
-            value (recur (fmap (parse parser next)
-                               (partial conj value))
-                         parsers)
+      (cond (and value (nil? parser)) (fmap result #(%))
+            value (recur (fmap (parse parser next) (partial partial value)) parsers)
             :else (Failure. input)))))
 
 (defn many [parser]
@@ -84,16 +69,3 @@
         (if (= input next)
           (Success. result input)
           (recur (conj result value) next))))))
-
-(defn id [x] (Success. x ""))
-
-(defn parenthesis [left others right]
-  (product
-   left
-   others
-   (sum
-    right
-    (product
-     #(parse (parenthesis left others right) %)
-     others
-     right))))

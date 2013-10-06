@@ -1,46 +1,31 @@
 (ns anyware.test.buffer
-  (:require [clojure.test.generative :refer (defspec is)]
+  (:require [clojure.test.generative :refer :all]
             [clojure.data.generators :as gen]
-            [anyware.test :as test]
             [anyware.core.buffer :as buffer]))
+
+(defn viewer []
+  (let [buffer (gen/string)
+        size (count buffer)]
+    (buffer/->Viewer buffer (if (zero? size) 0 (gen/uniform 0 size)))))
+
+(defn editor []
+  (buffer/->Editor (gen/string) (gen/string)))
+
+(defn buffer []
+  (gen/one-of viewer editor))
 
 (defn field []
   (gen/rand-nth [:left :right]))
 
-(defn unit []
-  (gen/rand-nth [buffer/character buffer/line buffer/word identity]))
+(defn regex []
+  (gen/rand-nth [buffer/line buffer/word]))
 
-(defspec double-inverse
-  (fn [field] (buffer/inverse (buffer/inverse field)))
+(defspec double-complement
+  (comp buffer/complement buffer/complement)
   [^{:tag `field} field]
-  (is (= % field)))
+  (assert (= % field)))
 
-(defspec read-write
-  (fn [string]
-    (->> string buffer/read buffer/show))
-  [^string string]
-  (is (= % string)))
-
-(defspec insert-substring
-  (fn [buffer field string]
-    (->> buffer
-         (buffer/insert string field)
-         (buffer/substring (count string) field)))
-  [^test/buffer buffer ^{:tag `field} field ^string string]
-  (is (= % buffer)))
-
-(defspec move-cursor
+(defspec preserving-move
   buffer/move
-  [^{:tag `unit} unit ^{:tag `field} field ^test/buffer buffer]
-  (is (<= (buffer/cursor field %) (buffer/cursor field buffer))))
-
-(defspec select-and-copy
-  (fn [unit field buffer]
-    [(->> buffer
-          buffer/select
-          (buffer/move unit field)
-          buffer/copy
-          str)
-     (-> buffer field unit str)])
-  [^{:tag `unit} unit ^{:tag `field} field ^test/buffer buffer]
-  (is (apply = %)))
+  [^{:tag `buffer} buffer ^{:tag `field} field ^{:tag `regex} regex]
+  (assert (= (buffer/show %) (buffer/show buffer))))

@@ -1,79 +1,91 @@
 (ns anyware.core.buffer
-  (:refer-clojure :exclude [empty read take])
+  (:refer-clojure :exclude [empty complement])
   (:require [clojure.string :as string]))
 
+(declare ->Viewer ->Editor)
+
 (defprotocol Buffer
+  (edit [buffer])
+  (view [buffer])
   (show [buffer]))
 
-(defrecord Zipper [left right]
-  Buffer
-  (show [buffer] (str (string/reverse left) right)))
+(def complement {:left :right, :right :left})
 
-(def empty (Zipper. "" ""))
+(defmulti insert
+  (fn [buffer key value]
+    (if (string? buffer) [::str key] ::insert)))
+(defmethod insert [::str :left] [buffer key value] (str buffer value))
+(defmethod insert [::str :right] [buffer key value] (str value buffer))
+(defmethod insert ::insert [buffer key value]
+  (-> buffer edit (update-in [key] #(insert % key value))))
 
-(def read (partial assoc empty :right))
-
-(def inverse {:right :left, :left :right})
-
-(defmulti normalize (fn [string field] field))
-(defmethod normalize :left [string _] (string/reverse string))
-(defmethod normalize :right [string _] string)
-
-(defn insert [value field buffer]
-  (update-in buffer [field] (partial str (normalize (str value) field))))
-
-(defn field [f n default]
-  (cond (pos? n) (f n :left)
-        (neg? n) (f (- n) :right)
-        :else default))
-
-(defn substring
-  ([n buffer] (field #(substring %1 %2 buffer) n buffer))
-  ([n field buffer]
-     (update-in buffer [field] #(subs % n))))
-
-(defn take
-  ([n buffer] (field #(take %1 %2 buffer) n ""))
-  ([n field buffer]
-     (-> buffer field (subs 0 n) (normalize field))))
-
-(defn delete
-  ([f field] (partial delete f field)) 
-  ([f field buffer]
-     (if-let [result (->> buffer field f)]
-       (substring (count result) field buffer)
-       buffer)))
+(defmulti delete
+  (fn
+    ([buffer n] ::drop)
+    ([buffer key value]
+       (cond (string? buffer) (if (>= (count buffer) (Math/abs value)) [::subs key] ::identity)
+             (integer? value) ::drop'
+             :else ::delete))))
+(defmethod delete [::subs :left] [buffer key n]
+  (subs buffer 0 (- (count buffer) n)))
+(defmethod delete [::subs :right] [buffer key n]
+  (subs buffer n))
+(defmethod delete ::drop [buffer n]
+  (delete buffer (if (pos? n) :right :left) (Math/abs n)))
+(defmethod delete ::drop' [buffer key n]
+  (-> buffer edit (update-in [key] #(delete % key n))))
+(defmethod delete ::delete [buffer key regex]
+  (->> buffer edit key (re-find (key regex)) count (delete buffer key)))
+(defmethod delete ::identity [buffer key value] buffer)
 
 (defn move
-  ([f field] (partial move f field))
-  ([f field buffer]
-     (if-let [result (->> buffer field f)]
-       (->> buffer
-            (substring (count result) field)
-            (insert result (inverse field)))
-       buffer)))
+  ([buffer n]
+     (let [viewer (view buffer)
+           {:keys [cursor buffer]} viewer
+           cursor (+ cursor n)]
+       (if (<= 0 cursor (count buffer))
+         (assoc viewer :cursor cursor)
+         viewer)))
+  ([buffer key regex]
+     (let [editor (edit buffer)]
+       (if-let [s (re-find (key regex) (key editor))]
+         (-> editor
+             (delete key (count s))
+             (insert (complement key) s))
+         buffer))))
 
-(def character (comp str first))
+(defrecord Editor [left right]
+  Buffer
+  (edit [this] this)
+  (view [this]
+    (with-meta (->Viewer (show this) (count left))
+      (meta this)))
+  (show [_] (str left right)))
 
-(def line (partial re-find #"^[^\n]*\n??"))
+(defrecord Viewer [buffer cursor]
+  Buffer
+  (edit [this]
+    (with-meta (->Editor (subs buffer 0 cursor) (subs buffer cursor))
+      (meta this)))
+  (view [this] this)
+  (show [_] buffer))
 
-(def word (partial re-find #"^\W*\w+"))
+(def empty (Viewer. "" 0))
 
-(defn cursor
-  ([buffer] (cursor :left buffer))
-  ([field buffer] (-> buffer field count)))
+(def word {:left #"\w+\W*\z" :right #"\A\W*\w+"})
 
-(def select #(vary-meta % assoc :mark (cursor :left %)))
+(def line {:left #"[^\n]*\z" :right #"\A[^\n]*"})
 
-(def deselect #(vary-meta % dissoc :mark))
+(defn select [buffer]
+  (vary-meta buffer assoc :mark (-> buffer view :cursor)))
 
-(defn selection [f buffer]
-  (if-let [mark (-> buffer meta :mark)]
-    (f (- (cursor buffer) mark) buffer)))
+(defn deselect [buffer]
+  (vary-meta buffer dissoc :mark))
 
-(def copy (partial selection take))
+(defn copy [buffer]
+  (let [mark (-> buffer meta :mark)
+        {:keys [buffer cursor]} (view buffer)]
+    (apply subs buffer (sort [cursor mark]))))
 
-(def cut (partial selection substring))
-
-(defn command [buffer]
-  (-> buffer show (string/split #"\s+")))
+(defn cut [buffer]
+  (delete buffer (- (-> buffer view :cursor) (-> buffer meta :mark))))
