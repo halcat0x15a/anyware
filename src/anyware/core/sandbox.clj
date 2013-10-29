@@ -26,3 +26,14 @@
    :keyword (Color. "aqua" "white")
    :special (Color. "magenta" "white")
    :default (Color. "black" "white")})
+
+        {:keys [value next]} (parser/parse clojure/expression (buffer/show current))
+    (loop [[node & tree] (flatten value)
+           n 0]
+      (when tree
+        (cond (string? node) (recur tree (+ n (count node)))
+              (:name node) (let [color (*style* (:name node))
+                                 size (count (:value node))]
+                             (dotimes [i size]
+                               (aset display (+ n i) color))
+                             (recur tree (+ n size))))))

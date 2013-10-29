@@ -89,3 +89,6 @@
 
 (defn cut [buffer]
   (delete buffer (- (-> buffer view :cursor) (-> buffer meta :mark))))
+
+(defn linage [buffer]
+  (->> buffer edit :left (filter (partial identical? \newline)) count))

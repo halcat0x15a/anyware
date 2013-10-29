@@ -31,3 +31,4 @@
         comment
         #"[\s\S]")))
 
+(->> (parse expression (slurp "project.clj")) :value flatten (take 10))
