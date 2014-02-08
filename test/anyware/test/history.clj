@@ -1,26 +1,15 @@
 (ns anyware.test.history
-  (:require [clojure.test.generative :refer (defspec is)]
-            [clojure.zip :as zip]
-            [anyware.test :as test]
+  (:require [clojure.data.generators :as gen]
+            [clojure.test.generative :refer :all]
             [anyware.core.history :as history]))
 
-(def current [0 :current])
+(defn history []
+  (history/history (gen/anything)))
 
-(defspec commit-undo
-  (fn [history buffer]
-    (get-in (->> history
-                 (history/commit buffer)
-                 history/undo)
-            current))
-  [^test/history history ^test/buffer buffer]
-  (is (= % (get-in history current))))
-
-(defspec commit-undo-redo
-  (fn [history buffer]
-    (get-in (->> history
-                 (history/commit buffer)
-                 history/undo
-                 history/redo)
-             current))
-  [^test/history history ^test/buffer buffer]
-  (is (= % buffer)))
+(defspec undo
+  (fn [history value]
+    (-> history
+        (history/commit value)
+        history/undo))
+  [^{:tag `history} history ^anything value]
+  (assert (= (history/present %) (history/present history))))

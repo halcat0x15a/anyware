@@ -2,135 +2,145 @@
   (:refer-clojure :exclude [read])
   (:require [clojure.string :as string]
             [anyware.core.buffer :as buffer]
+            [anyware.core.history :as history]
             [anyware.core.view :as view]
-            [anyware.core.window :as window]
+            [anyware.core.workspace :as workspace]
             [anyware.core.canvas :as canvas]
             [anyware.core.parser :as parser]
-            [anyware.core.clojure :as clojure]))
+            [anyware.core.clojure :as clojure]
+            [anyware.core.util :as util]))
 
 (declare normal)
 
-(def ^:dynamic *style*
-  {:cursor (canvas/->Color "white" "black")
-   :symbol (canvas/->Color "blue" "white")
-   :string (canvas/->Color "maroon" "white")
-   :keyword (canvas/->Color "aqua" "white")
-   :special (canvas/->Color "magenta" "white")
-   :default (canvas/->Color "black" "white")})
+(defrecord Window [name buffer history parser]
+  workspace/Window
+  (id [window] name))
 
-(defrecord Editor [buffers view keymap directory])
+(defn window [name]
+  (Window. name buffer/empty (history/history buffer/empty) identity))
 
-(defn update-buffer [editor f & args]
-  (apply update-in editor [:buffers] window/edit f args))
+(defrecord Editor [workspace minibuffer view keymap clipboard]
+  Object
+  (toString [this] 
+    (-> workspace :current :buffer str)))
 
-(def ^:dynamic *command*
-  {"new" (fn [editor name]
-           (update-in editor [:buffers] window/open name buffer/empty))
-   "cd" (fn [editor dir] (assoc editor :directory dir))})
+(def buffer [:workspace :current :buffer])
+(def history [:workspace :current :history])
+(def minibuffer [:minibuffer :buffer])
 
-(def default
-  {:esc #(assoc % :keymap normal)})
+(defmulti command (fn [editor name & args] name))
+(defmethod command "new" [editor _ name]
+  (update-in editor [:workspace] workspace/open (window name)))
+(defmethod command "buffer" [editor _ name]
+  (update-in editor [:workspace] workspace/select name))
+(defmethod command :default [editor _] nil)
 
-(def delete
-  {\h #(update-buffer % buffer/delete -1)
-   \l #(update-buffer % buffer/delete 1)
-   \w #(update-buffer % buffer/delete :right buffer/word)
-   \b #(update-buffer % buffer/delete :left buffer/word)
-   \$ #(update-buffer % buffer/delete :right buffer/line)
-   \^ #(update-buffer % buffer/delete :left buffer/line)})
+(defn keymap [editor input] input)
 
-(def insert
-  {\backspace #(update-buffer % buffer/delete -1)
-   :default #(update-buffer %1 buffer/insert :left %2)})
+(defmulti insert keymap)
+(defmethod insert \backspace [editor _]
+  (update-in editor buffer buffer/delete -1))
+(defmethod insert :esc [editor _]
+  (-> editor
+      (update-in history history/commit (get-in editor buffer))
+      (assoc :keymap normal)))
+(defmethod insert :default [editor input]
+  (update-in editor buffer buffer/insert :left input))
 
-(defn exec [editor]
-  (let [[f & args] (-> editor
-                       (get-in [:buffers :minibuffer])
-                       buffer/show
-                       (string/split #"\s"))]
-    (if-let [f (*command* f)]
-      (assoc-in (apply f editor args) [:buffers :minibuffer] buffer/empty)
-      editor)))
+(defmulti delete keymap)
+(defmethod delete \h [editor _] (insert editor \backspace))
+(defmethod delete \l [editor _]
+  (update-in editor buffer buffer/delete 1))
+(defmethod delete \w [editor _]
+  (update-in editor buffer buffer/delete-matches :right buffer/word))
+(defmethod delete \b [editor _]
+  (update-in editor buffer buffer/delete-matches :left buffer/word))
+(defmethod delete \$ [editor _]
+  (update-in editor buffer buffer/delete-matches :right buffer/line))
+(defmethod delete \^ [editor _]
+  (update-in editor buffer buffer/delete-matches :left buffer/line))
+(defmethod delete :esc [editor input] (insert editor input))
+(defmethod delete :default [editor _] editor)
 
-(def minibuffer
-  {\backspace #(update-in % [:buffers :minibuffer] buffer/delete -1)
-   \newline exec
-   :default #(update-in %1 [:buffers :minibuffer] buffer/insert :left %2)})
+(defmulti command-line keymap)
+(defmethod command-line \backspace [editor _]
+  (update-in editor minibuffer buffer/delete -1))
+(defmethod command-line \newline [editor _]
+  (let [[f & args] (-> editor (get-in minibuffer) str (string/split #"\s"))]
+    (or (some-> (apply command editor f args)
+                (update-in [:minibuffer :history] history/commit (get-in editor minibuffer))
+                (assoc-in minibuffer buffer/empty))
+        editor)))
+(defmethod command-line :esc [editor _]
+  (assoc editor :keymap normal))
+(defmethod command-line :default [editor input]
+  (update-in editor minibuffer buffer/insert :left input))
 
-(def normal
-  {\h #(update-buffer % buffer/move -1)
-   \j #(-> %
-           (update-buffer buffer/move :right buffer/line)
-           (update-buffer buffer/move 1))
-   \k #(-> %
-           (update-buffer buffer/move :left buffer/line)
-           (update-buffer buffer/move -1))
-   \l #(update-buffer % buffer/move 1)
-   \w #(update-buffer % buffer/move :right buffer/word)
-   \b #(update-buffer % buffer/move :left buffer/word)
-   \$ #(update-buffer % buffer/move :right buffer/line)
-   \^ #(update-buffer % buffer/move :left buffer/line)
-   \v #(update-buffer % buffer/select)
-   \x #(update-buffer % buffer/delete 1)
-   \X #(update-buffer % buffer/delete -1)
-   \i #(assoc % :keymap insert)
-   \I #(-> %
-           (update-buffer buffer/move :left buffer/line)
-           (assoc :keymap insert))
-   \a #(-> %
-           (update-buffer buffer/move 1)
-           (assoc :keymap insert))
-   \A #(-> %
-           (update-buffer buffer/move :right buffer/line)
-           (assoc :keymap insert))
-   \o #(-> %
-           (update-buffer buffer/move :right buffer/line)
-           (update-buffer buffer/insert :left \newline)
-           (assoc :keymap insert))
-   \O #(-> %
-           (update-buffer buffer/move :left buffer/line)
-           (update-buffer buffer/insert :left \newline)
-           (assoc :keymap insert))
-   \d #(assoc % :keymap delete)
-   \: #(assoc % :keymap minibuffer)})
+(defmulti normal keymap)
+(defmethod normal \h [editor _]
+  (update-in editor buffer buffer/move :left buffer/character))
+(defmethod normal \j [editor _]
+  (-> editor (normal \$) (normal \l)))
+(defmethod normal \k [editor _]
+  (-> editor (normal \^) (normal \h) (normal \^)))
+(defmethod normal \l [editor _]
+  (update-in editor buffer buffer/move :right buffer/character))
+(defmethod normal \w [editor _]
+  (update-in editor buffer buffer/move :right buffer/word))
+(defmethod normal \b [editor _]
+  (update-in editor buffer buffer/move :left buffer/word))
+(defmethod normal \$ [editor _]
+  (update-in editor buffer buffer/move :right buffer/line))
+(defmethod normal \^ [editor _]
+  (update-in editor buffer buffer/move :left buffer/line))
+(defmethod normal \v [editor _]
+  (update-in editor buffer buffer/select))
+(defmethod normal \y [editor _]
+  (update-in editor [:clipboard] history/commit (-> editor :workspace :current :value buffer/copy)))
+(defmethod normal \p [{:keys [clipboard] :as editor} _]
+  (update-in buffer buffer/insert :left (history/present clipboard)))
+(defmethod normal \u [editor _]
+  (-> editor
+      (update-in history history/commit (get-in editor buffer))
+      (update-in history history/undo)
+      (assoc-in buffer (-> editor (get-in history) history/present))))
+(defmethod normal \x [editor _]
+  (update-in editor buffer buffer/delete 1))
+(defmethod normal \X [editor _]
+  (update-in editor buffer buffer/delete -1))
+(defmethod normal \i [editor _]
+  (assoc editor :keymap insert))
+(defmethod normal \I [editor _]
+  (-> editor (normal \^) (normal \i)))
+(defmethod normal \a [editor _]
+  (-> editor (normal \l) (normal \i)))
+(defmethod normal \A [editor _]
+  (-> editor (normal \$) (normal \i)))
+(defmethod normal \o [editor _]
+  (-> editor (normal \$) (insert \newline) (normal \i)))
+(defmethod normal \O [editor _]
+  (-> editor (normal \^) (insert \newline) (normal \i)))
+(defmethod normal \d [editor _]
+  (assoc editor :keymap delete))
+(defmethod normal \: [editor _]
+  (assoc editor :keymap command-line))
+(defmethod normal :default [editor _] editor)
 
-(defn run [editor input]
-  (let [editor (if-let [f ((merge default (:keymap editor)) input)]
-                 (f editor)
-                 (if-let [f (some-> editor :keymap :default)]
-                   (f editor input)
-                   editor))]
-    (update-in editor [:view] view/move (-> editor :buffers window/current buffer/linage))))
+(defn run [{:keys [keymap] :as editor} input]
+  (let [editor (keymap editor input)]
+    (update-in editor [:view] view/move (-> editor (get-in buffer) :left util/split-lines count dec))))
 
-(defn paint
-  ([{:keys [buffer] :as view} current]
-     (paint view (object-array (-> buffer count inc)) current))
-  ([{:keys [buffer cursor] :as view} display current]
-     (let [string (str buffer \space)]
-       (if current
-         (aset display cursor (canvas/->Color "white" "black")))
-       (areduce display i text ""
-                (let [char (nth string i)]
-                  (str text (if-let [color (aget display i)]
-                              (canvas/html char color)
-                              char)))))))
-
-(defn render [{:keys [buffers view]}]
-  (let [{:keys [minibuffer]} buffers
-        {:keys [y height]} view 
-        current (-> buffers window/current buffer/view)
-        display (object-array (-> current buffer/show count inc))]
-    (str (paint (buffer/view minibuffer) false)
+(defn render [{:keys [minibuffer view] :as editor}]
+  (let [{:keys [left] :as buffer} (get-in editor buffer)
+        {:keys [y height]} view]
+    (str (canvas/render (:buffer minibuffer) 0 1)
          \newline
-         (let [s (paint current display true)
-               s (subs s (->> s (re-find (re-pattern (str "([^\n]*\n){" y "}"))) first count))]
-           (subs s 0 (->> s (re-find (re-pattern (str "([^\n]*\n){" height "}"))) first count))))))
+         (canvas/render buffer y height))))
 
 (def editor
   (Editor.
-    (window/open {}
-      :*scratch* buffer/empty
-      :minibuffer buffer/empty)
-    (view/->View 0 0 80 24)
-    normal
-    "./"))
+   (workspace/workspace (window :*scratch*))
+   (window :*minibuffer*)
+   (view/->View 0 0 80 24)
+   normal
+   (history/history "")))

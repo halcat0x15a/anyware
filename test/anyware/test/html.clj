@@ -1,10 +1,10 @@
 (ns anyware.test.html
-  (:require [clojure.test.generative :refer (defspec is)]
+  (:require [clojure.test.generative :refer (defspec)]
             [clojure.data.generators :as gen]
-            [clojure.xml :as xml]
-            [anyware.test :as test]
-            [anyware.core.html :as html])
+            [clojure.xml :as xml])
   (:import [java.io ByteArrayInputStream]))
+
+(comment
 
 (defspec espace-string
   html/escape
@@ -15,3 +15,6 @@
   html/render
   [^test/editor editor]
   (is (->> (.getBytes ^String %) ByteArrayInputStream. xml/parse)))
+
+)
+

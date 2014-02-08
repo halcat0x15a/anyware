@@ -2,33 +2,30 @@
   (:refer-clojure :exclude [keyword comment])
   (:require [anyware.core.parser :refer :all]))
 
-(defrecord Label [name value])
-
 (def definition
-  (<*> (fn [def space name]
-         [(Label. :special def) space (Label. :symbol name)])
-       #"^def\w*"
-       #"^\s+"
-       #"^\w+"))
+  (chain (fn [def space name] [(->Label :special def) space (->Label :symbol name)])
+         (parser #"^def\w*")
+         (parser #"^\s+")
+         (parser #"^\w+")))
 
 (def special
-  (<*> (fn [special space] [(Label. :special special) space])
-       #"^(if|do|let|quote|var|fn|loop|recur|throw|try)"
-       #"^(\s+|$)"))
+  (chain (fn [special _] (->Label :special special))
+         (parser #"^(def\w*|if|do|let|quote|var|fn|loop|recur|throw|try)")
+         (fail #"^\w")))
 
-(def string (fmap #"^\"[\s\S]*?\"" (partial ->Label :string)))
+(defn string [input]
+  (fmap (parse #"^\"[\s\S]*?\"" input) (partial ->Label :string)))
 
-(def keyword (fmap #"^:[^\(\)\[\]\{\}\s]+" (partial ->Label :keyword)))
+(defn keyword [input]
+  (fmap (parse #"^:[^\(\)\[\]\{\}\s]+" input) (partial ->Label :keyword)))
 
-(def comment (fmap #"^;.*" (partial ->Label :comment)))
+(defn comment [input]
+  (fmap (parse #"^;.*" input) (partial ->Label :comment)))
 
 (def expression
-  (many
-   (<|> definition
-        special
-        string
-        keyword
-        comment
-        #"[\s\S]")))
-
-(->> (parse expression (slurp "project.clj")) :value flatten (take 10))
+  (many (choice definition
+                special
+                string
+                keyword
+                comment
+                (parser #"^[\s\S]"))))

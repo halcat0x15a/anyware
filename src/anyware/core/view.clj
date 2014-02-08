@@ -7,11 +7,12 @@
   (let [y' (+ height y)]
     (assoc view
       :y (cond (<= y' cursor) (inc (- cursor height))
-               (< cursor y) cursor
+               (<= cursor y) cursor
                :else y))))
 
-(defn bounds [lines {:keys [y height]}]
-  (->> lines
-       (drop y)
-       (take height)
-       (string/join \newline)))
+(defn bounds [buffer {:keys [y]}]
+  (subs buffer
+        (loop [n 0 y y]
+          (cond (zero? y) n
+                (identical? (nth buffer n) \newline) (recur (inc n) (dec y))
+                :else (recur (inc n) y)))))
