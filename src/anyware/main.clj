@@ -12,7 +12,8 @@
 (def editor (atom editor/default))
 
 (defn handle-key [^KeyEvent event]
-  (let [key (case (.getCode event)
+  (let [^KeyCode code (.getCode event)
+        key (condp identical? code
               KeyCode/ESCAPE :escape
               KeyCode/LEFT :left
               KeyCode/RIGHT :right
@@ -24,12 +25,12 @@
     (reset! editor (editor/run key @editor))))
 
 (defn -start [this ^Stage stage]
+  (eval '(require '[anyware.command :refer :all]))
   (let [view (WebView.)
         engine (.getEngine view)
         scene (Scene. view)]
     (.setOnKeyPressed scene (reify EventHandler
                               (handle [this event]
-                                (println @editor)
                                 (handle-key event)
                                 (.loadContent engine (editor/html @editor)))))
     (doto stage
