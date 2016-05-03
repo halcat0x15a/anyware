@@ -7,7 +7,8 @@
            [javafx.scene.input KeyCode KeyEvent]
            [javafx.scene.web WebView]
            [javafx.stage Stage])
-  (:require [anyware.editor :as editor]))
+  (:require [anyware.editor :as editor]
+            [anyware.html :as html]))
 
 (def editor (atom editor/default))
 
@@ -32,7 +33,7 @@
     (.setOnKeyPressed scene (reify EventHandler
                               (handle [this event]
                                 (handle-key event)
-                                (.loadContent engine (editor/html @editor)))))
+                                (.loadContent engine (html/render (editor/html @editor))))))
     (doto stage
       (.setTitle "Anyware")
       (.setScene scene)

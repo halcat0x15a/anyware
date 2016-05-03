@@ -1,20 +1,28 @@
 (ns anyware.editor
-  (:require [anyware.buffer :as buffer]))
+  (:require [anyware.buffer :as buffer]
+            [anyware.html :as html]))
 
 (declare normal-mode insert-mode minibuffer-mode)
 
-(defrecord Editor [current buffers mode style])
+(defrecord Editor [current windows buffers mode style])
+
+(defn get-window [editor]
+  (get (:windows editor) (:current editor)))
 
 (defn get-buffer [editor]
-  (get (:buffers editor) (:current editor)))
+  (get (:buffers editor) (get-window editor)))
 
 (defn update-buffer [f editor]
-  (let [current (:current editor)
+  (let [key (get-window editor)
         buffers (:buffers editor)]
-    (assoc editor :buffers (assoc buffers current (f (get buffers current))))))
+    (assoc editor :buffers (assoc buffers key (f (get buffers key))))))
 
 (defn open [path editor]
-  (assoc editor :buffers (assoc (:buffers editor) path (buffer/create (slurp path)))))
+  (-> editor
+      (assoc :buffers (assoc (:buffers editor) path (buffer/create (slurp path))))
+      (assoc :windows (assoc (:windows editor) :main path))
+      (assoc :current :main)
+      (assoc :mode normal-mode)))
 
 (defn run [value editor]
   (let [mode (:mode editor)]
@@ -58,11 +66,9 @@
   (assoc editor :current current))
 
 (defn html [editor]
-  (str "<html><head><style>" (:style editor) "</style></head>"
-       "<body>"
-       (buffer/html (get (:buffers editor) "*scratch*"))
-       (buffer/html (get (:buffers editor) "*minibuffer*"))
-       "</body></html>"))
+  (html/elem "html" {} [(html/elem "head" {} (html/elem "style" {} (:style editor)))
+                        (html/elem "body" {} [(buffer/html (get (:buffers editor) (:main (:windows editor))))
+                                              (buffer/html (get (:buffers editor) (:minibuffer (:windows editor))))])]))
 
 (def normal-mode
   {"i" #(set-mode insert-mode %)
@@ -70,7 +76,7 @@
    "j" move-down
    "k" move-up
    "l" move-right
-   ":" #(->> % (set-current "*minibuffer*") (set-mode minibuffer-mode))
+   ":" #(->> % (set-current :minibuffer) (set-mode minibuffer-mode))
    :left move-left
    :up move-up
    :right move-right
@@ -89,4 +95,9 @@
 
 (def minibuffer-mode (assoc insert-mode :enter eval-minibuffer))
 
-(def default (Editor. "*scratch*" {"*scratch*" buffer/default "*minibuffer*" buffer/default} normal-mode ".cursor { color: white; background-color: black; }"))
+(def default
+  (Editor. :main
+           {:main "*scratch*" :minibuffer "*minibuffer*"}
+           {"*scratch*" buffer/default "*minibuffer*" buffer/default}
+           normal-mode
+           ".cursor { color: white; background-color: black; }"))

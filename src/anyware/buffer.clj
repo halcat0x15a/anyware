@@ -1,5 +1,6 @@
 (ns anyware.buffer
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [anyware.html :as html]))
 
 (defprotocol IBuffer
   (text [buffer])
@@ -17,11 +18,13 @@
           i (string/last-index-of left \newline)]
       (if (pos? i) (- n i) n)))
   (html [buffer]
-    (let [right (condp = (first right)
-                  \newline (str "<span class=\"cursor\"> </span>" \newline (subs right 1))
-                  nil "<span class=\"cursor\"> </span>"
-                  (str "<span class=\"cursor\">" (first right) "</span>" (subs right 1)))]
-      (str "<pre><code>" left right "</code></pre>"))))
+    (let [cursor (first right)
+          right (if cursor (subs right 1) "")
+          cursor (condp = cursor
+                   \newline (str \space \newline)
+                   nil \space
+                   cursor)]
+      (html/elem "pre" {} (html/elem "code" {} [left (html/elem "span" {"class" "cursor"} cursor) right])))))
 
 (defn create [text]
   (Buffer. "" text))
@@ -37,20 +40,26 @@
 
 (defn delete [n field buffer]
   (let [text (get buffer field)
-        text (case field
-                :left (subs text 0 (- (count text) n))
-                :right (subs text n))]
-    (assoc buffer field text)))
+        length (count text)]
+    (if (<= n length)
+      (let [text (case field
+                   :left (subs text 0 (- length n))
+                   :right (subs text n))]
+        (assoc buffer field text))
+      buffer)))
 
 (defn move [n field buffer]
   (let [text (get buffer field)
-        text (case field
-               :left (subs text (- (count text) n))
-               :right (subs text 0 n))
-        field' (case field
-                 :left :right
-                 :right :left)]
-    (->> buffer (delete n field) (insert text field'))))
+        length (count text)]
+    (if (<= n length)
+      (let [text (case field
+                   :left (subs text (- length n))
+                   :right (subs text 0 n))
+            field' (case field
+                     :left :right
+                     :right :left)]
+        (->> buffer (delete n field) (insert text field')))
+      buffer)))
 
 (defn move-line [field buffer]
   (let [text (get buffer field)]
