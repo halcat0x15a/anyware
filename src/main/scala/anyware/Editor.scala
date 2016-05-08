@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import scala.xml.Node
 
-case class Editor(current: String, buffers: Map[String, Buffer], mode: Mode, commands: Map[String, (Editor, List[String]) => Editor]) {
+case class Editor(focus: Boolean, windows: Map[Boolean, Window], buffers: Map[String, Buffer], mode: Mode, commands: Map[String, (Editor, List[String]) => Editor], row: Int, fontSize: Int) {
 
   def eval(name: String): Editor = {
     val text = buffers(name).toString
@@ -19,33 +19,37 @@ case class Editor(current: String, buffers: Map[String, Buffer], mode: Mode, com
   def run(input: Input): Editor =
     mode.keymap.get(input).fold(mode.default(this, input))(f => f(this))
 
-  def insert(field: Buffer.Field, value: String): Editor = {
-    val buffer = buffers(current).insert(field, value)
-    copy(buffers = buffers.updated(current, buffer))
+  def resize(row: Int): Editor =
+    copy(windows = Map(true -> windows(true).copy(height = row - 1), false -> windows(false).copy(height = 1)), row = row)
+
+  def updateBuffer(f: Buffer => Buffer): Editor = {
+    val window = windows(focus)
+    val newBuffer = f(buffers(window.name))
+    val y = if (window.y + window.height <= newBuffer.row)
+      newBuffer.row - window.height + 1
+    else if (window.y > newBuffer.row)
+      newBuffer.row
+    else
+      window.y
+    val newWindow = window.copy(y = y)
+    copy(windows = windows.updated(focus, newWindow), buffers = buffers.updated(window.name, newBuffer))
   }
 
-  def move(field: Buffer.Field, n: Int): Editor =
-    buffers(current).move(field, n).fold(this) { buffer => 
-      copy(buffers = buffers.updated(current, buffer))
-    }
+  def insert(field: Buffer.Field, value: String): Editor = updateBuffer(buffer => buffer.insert(field, value))
 
-  def delete(field: Buffer.Field, n: Int): Editor =
-    buffers(current).delete(field, n).fold(this) { buffer => 
-      copy(buffers = buffers.updated(current, buffer))
-    }
+  def delete(field: Buffer.Field, n: Int): Editor = updateBuffer(buffer => buffer.delete(field, n).getOrElse(buffer))
 
-  def moveLine(field: Buffer.Field): Editor =
-    buffers(current).moveLine(field).fold(this) { buffer => 
-      copy(buffers = buffers.updated(current, buffer))
-    }
+  def move(field: Buffer.Field, n: Int): Editor = updateBuffer(buffer => buffer.move(field, n).getOrElse(buffer))
+
+  def moveLine(field: Buffer.Field): Editor = updateBuffer(buffer => buffer.moveLine(field).getOrElse(buffer))
 
   def toHTML: Node =
-    <html><head><style>{".cursor { color: white; background-color: black; }"}</style></head><body><div>{buffers(current).toHTML}{buffers("*minibuffer*").toHTML}</div></body></html>
+    <html><head><style>{s"body { font-size: ${fontSize}px; line-height: ${fontSize}px; margin: 0; } pre { display: inline-block; margin: 0; } .cursor { color: white; background-color: black; }"}</style></head><body><div>{windows(true).toHTML(buffers)}<br />{windows(false).toHTML(buffers)}</div></body></html>
 
   def open(name: String): Editor = {
     val path = Paths.get(name)
     if (Files.exists(path))
-      copy(current = name, buffers = buffers + (name -> Buffer.fromString(new String(Files.readAllBytes(path)))))
+      copy(focus = true, windows = windows.updated(true, windows(true).copy(name = name)), buffers = buffers + (name -> Buffer.fromString(new String(Files.readAllBytes(path)))))
     else
       this
   }
@@ -56,15 +60,10 @@ object Editor {
 
   val commands: Map[String, (Editor, List[String]) => Editor] =
     Map(
-      "open" -> { (editor, args) =>
-        args match {
-          case path :: Nil => editor.open(path)
-          case _ => editor
-        }
-      }
+      "open" -> open
     )
 
-  val default: Editor = Editor("*scratch*", Map("*scratch*" -> Buffer.empty, "*minibuffer*" -> Buffer.empty), Mode.normal, commands)
+  val default: Editor = Editor(true, Map(true -> Window.create("*scratch*"), false -> Window.create("*minibuffer*")), Map("*scratch*" -> Buffer.empty, "*minibuffer*" -> Buffer.empty), Mode.normal, commands, 0, 16)
 
   def moveLeft(editor: Editor): Editor = editor.move(Buffer.Left, 1)
 
@@ -82,8 +81,14 @@ object Editor {
 
   def setMode(mode: Mode)(editor: Editor): Editor = editor.copy(mode = mode)
 
-  def setCurrent(current: String)(editor: Editor): Editor = editor.copy(current = current)
+  def setFocus(focus: Boolean)(editor: Editor): Editor = editor.copy(focus = focus)
 
   def eval(editor: Editor): Editor = editor.eval("*minibuffer*")
+
+  def open(editor: Editor, args: List[String]): Editor =
+    args match {
+      case path :: Nil => editor.open(path)
+      case _ => editor
+    }
 
 }

@@ -12,7 +12,7 @@ object Mode {
         Input.Text("j") -> Editor.moveDown,
         Input.Text("k") -> Editor.moveUp,
         Input.Text("l") -> Editor.moveRight,
-        Input.Text(":") -> (Editor.setCurrent("*minibuffer*") _ andThen Editor.setMode(minibuffer)),
+        Input.Text(":") -> (Editor.setFocus(false) _ andThen Editor.setMode(minibuffer)),
         Input.Left -> Editor.moveLeft,
         Input.Right -> Editor.moveRight,
         Input.Up -> Editor.moveUp,

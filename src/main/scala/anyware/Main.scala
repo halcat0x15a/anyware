@@ -27,6 +27,9 @@ class Main extends Application {
       editor = editor.run(input)
       engine.loadContent(editor.toHTML.toString)
     }
+    scene.heightProperty.addListener { (_, _, value) =>
+      editor = editor.resize(math.floor(value.doubleValue / editor.fontSize).toInt)
+    }
     stage.setTitle("Anyware")
     stage.setScene(scene)
     stage.show()

@@ -1,6 +1,6 @@
 package anyware
 
-import scala.xml.Node
+import scala.xml.{NodeSeq, Text}
 
 case class Buffer(left: String, right: String) {
 
@@ -54,16 +54,48 @@ case class Buffer(left: String, right: String) {
     n.flatMap(n => move(field, n))
   }
 
-  def toHTML: Node = {
-    val rightText = if (right.isEmpty) "" else right.substring(1)
-    val cursorText = if (right.isEmpty) " " else {
-      val cursor = right.charAt(0)
-      if (cursor == '\n') " \n" else cursor.toString
+  def toHTML: NodeSeq = {
+    def stringToNode(string: String, nodes: NodeSeq, cursor: Int, i: Int): NodeSeq =
+      if (string.length == cursor + i)
+        nodes :+ <span>{string.substring(cursor, cursor + i)}<br /></span>
+      else if (string.charAt(cursor + i) == '\n')
+        stringToNode(string, nodes :+ <span>{string.substring(cursor, cursor + i)}<br /></span>, cursor + i + 1, 0)
+      else
+        stringToNode(string, nodes, cursor, i + 1)
+    val (topNode :+ <span>{leftNode}<br /></span>) = stringToNode(left, NodeSeq.Empty, 0, 0)
+    val restNode = if (right.isEmpty) {
+      <span>{leftNode}<span class="cursor"> </span><br /></span>
+    } else {
+      val (<span>{rightNode@_*}</span> +: bottomNode) = stringToNode(right.substring(1), NodeSeq.Empty, 0, 0)
+      val centerNode = right.charAt(0) match {
+        case '\n' => Seq(<span>{leftNode}<span class="cursor"> </span><br /></span>, <span>{rightNode}</span>)
+        case cursor => <span>{leftNode}<span class="cursor">{cursor.toString}</span>{rightNode}</span>
+      }
+      centerNode ++ bottomNode
     }
-    <pre><code>{left}<span class="cursor">{cursorText}</span>{rightText}</code></pre>
+    topNode ++ restNode
   }
 
-  override def toString: String = left + right
+  override lazy val toString: String = left + right
+
+  lazy val row: Int = {
+    def count(text: String, i: Int, n: Int): Int =
+      if (text.length == i)
+        n
+      else if (text.charAt(i) == '\n')
+        count(text, i + 1, n + 1)
+      else
+        count(text, i + 1, n)
+    count(left, 0, 0)
+  }
+
+  lazy val column: Int = {
+    val i = left.lastIndexOf('\n')
+    if (i < 0)
+      left.length
+    else
+      left.length - i
+  }
 
 }
 
