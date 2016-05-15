@@ -8,11 +8,12 @@ object Mode {
     Mode(
       Map(
         Input.Text("i") -> Editor.setMode(insert),
+        Input.Text("a") -> Editor.setMode(insert),
         Input.Text("h") -> Editor.moveLeft,
         Input.Text("j") -> Editor.moveDown,
         Input.Text("k") -> Editor.moveUp,
         Input.Text("l") -> Editor.moveRight,
-        Input.Text(":") -> (Editor.setFocus(false) _ andThen Editor.setMode(minibuffer)),
+        Input.Text(":") -> Editor.minibuffer,
         Input.Left -> Editor.moveLeft,
         Input.Right -> Editor.moveRight,
         Input.Up -> Editor.moveUp,

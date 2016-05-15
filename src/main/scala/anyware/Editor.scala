@@ -46,12 +46,22 @@ case class Editor(focus: Boolean, windows: Map[Boolean, Window], buffers: Map[St
   def toHTML: Node =
     <html><head><style>{s"body { font-size: ${fontSize}px; line-height: ${fontSize}px; margin: 0; } pre { display: inline-block; margin: 0; } .cursor { color: white; background-color: black; }"}</style></head><body><div>{windows(true).toHTML(buffers)}<br />{windows(false).toHTML(buffers)}</div></body></html>
 
+  def escape: Editor = copy(focus = true, mode = Mode.normal)
+
   def open(name: String): Editor = {
     val path = Paths.get(name)
-    if (Files.exists(path))
-      copy(focus = true, windows = windows.updated(true, windows(true).copy(name = name)), buffers = buffers + (name -> Buffer.fromString(new String(Files.readAllBytes(path)))))
-    else
+    if (Files.exists(path)) {
+      val bytes = Files.readAllBytes(path)
+      copy(windows = windows.updated(true, windows(true).copy(name = name)), buffers = buffers + (name -> Buffer.fromString(new String(bytes, "UTF-8"))))
+    } else {
       this
+    }
+  }
+
+  def save(): Editor = {
+    val window = windows(true)
+    Files.write(Paths.get(window.name), buffers(window.name).toString.getBytes)
+    this
   }
 
 }
@@ -60,7 +70,8 @@ object Editor {
 
   val commands: Map[String, (Editor, List[String]) => Editor] =
     Map(
-      "open" -> open
+      "e" -> open,
+      "w" -> save
     )
 
   val default: Editor = Editor(true, Map(true -> Window.create("*scratch*"), false -> Window.create("*minibuffer*")), Map("*scratch*" -> Buffer.empty, "*minibuffer*" -> Buffer.empty), Mode.normal, commands, 0, 16)
@@ -81,13 +92,19 @@ object Editor {
 
   def setMode(mode: Mode)(editor: Editor): Editor = editor.copy(mode = mode)
 
-  def setFocus(focus: Boolean)(editor: Editor): Editor = editor.copy(focus = focus)
+  def eval(editor: Editor): Editor = editor.eval("*minibuffer*").escape
 
-  def eval(editor: Editor): Editor = editor.eval("*minibuffer*")
+  def minibuffer(editor: Editor): Editor = editor.copy(focus = false, buffers = editor.buffers.updated("*minibuffer*", Buffer.empty), mode = Mode.minibuffer)
 
   def open(editor: Editor, args: List[String]): Editor =
     args match {
       case path :: Nil => editor.open(path)
+      case _ => editor
+    }
+
+  def save(editor: Editor, args: List[String]): Editor =
+    args match {
+      case Nil => editor.save()
       case _ => editor
     }
 
