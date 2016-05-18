@@ -41,13 +41,13 @@ case class Buffer(left: String, right: String) {
       case Buffer.Left =>
         val i = left.lastIndexOf("\n")
         if (i >= 0)
-          Some(left.length - i)
+          Some(left.length - i - 1)
         else
           None
       case Buffer.Right =>
         val i = right.indexOf("\n")
         if (i >= 0)
-          Some(i + 1)
+          Some(i)
         else
           None
     }

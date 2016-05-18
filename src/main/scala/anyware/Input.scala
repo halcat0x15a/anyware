@@ -20,4 +20,6 @@ object Input {
 
   case object Backspace extends Input
 
+  case object Tab extends Input
+
 }

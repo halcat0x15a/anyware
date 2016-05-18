@@ -22,6 +22,7 @@ class Main extends Application {
         case KeyCode.ESCAPE => Input.Escape
         case KeyCode.ENTER => Input.Enter
         case KeyCode.BACK_SPACE => Input.Backspace
+        case KeyCode.TAB => Input.Tab
         case _ => Input.Text(e.getText)
       }
       editor = editor.run(input)
